@@ -1,0 +1,12 @@
+{
+  "task": "women-base",
+  "tool": "image_gen.imagegen",
+  "reference_image_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\zhiwei-base.png",
+  "tool_output_path": "C:\\Users\\xdd66\\.codex\\generated_images\\01a10a25-058b-7a21-a831-148e7360e730\\exec-0491ac2e-1651-491d-a0a0-aed99c2c5093.png",
+  "saved_image_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\women-base.png",
+  "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\references\\women-base.txt",
+  "assert_art": {
+    "allowed": true,
+    "script_hash": "1b9f1c30abce0aa8feffcdbd29235e20526fb644880290b82056fde7f1d49f28"
+  }
+}

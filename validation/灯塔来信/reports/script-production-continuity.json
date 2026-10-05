@@ -1,0 +1,24 @@
+{
+  "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6",
+  "reviewed_chapter_ids": [
+    "ch000001",
+    "ch000002",
+    "ch000003",
+    "ch000004"
+  ],
+  "checks": {
+    "causality": true,
+    "timeline": true,
+    "identity": true,
+    "states": true,
+    "knowledge_and_reveals": true
+  },
+  "evidence": "检查十六格时序与全部人物前后状态：旧信先由唐宁找到、周婶认字后沈知微读取；固定环问题先诊断再取备件；p11明确尚未点灯，p12才开闸。p09女性换围裙、p10男主换工作衬衫、p14男女主恢复基础衣服，各有来源支持的transition；唐宁在p13/p15保持工作围裙。最终木匣收纳回信，夜景结束。 主代理复查新增场景/道具基准：左窗、中台、后架、右门，木匣/玻璃透镜/固定环/铁盒用途明确；仅加入实际文件指纹，十六格动作、文字、状态和页序均未改变。参考中的完整固定环是装配完成的部件示意，p07须表现缺环，p10才修好。",
+  "issues": [
+    {
+      "severity": "minor",
+      "description": "初稿p13/p15唐宁误写基础服装；已改为工作围裙并复查正文来源。",
+      "resolved": true
+    }
+  ]
+}

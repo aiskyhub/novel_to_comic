@@ -1,0 +1,205 @@
+[
+  {
+    "panel_id": "p01",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p01-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\70d10633061c.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p01-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p01-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p02",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p02-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\70d10633061c.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\db6c15021b7a.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p02-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p02-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p03",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p03-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\1fd42a01a807.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\70d10633061c.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\db6c15021b7a.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p03-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p03-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p04",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p04-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\1fd42a01a807.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p04-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p04-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p05",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p05-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\70d10633061c.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p05-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p05-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p06",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p06-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\1fd42a01a807.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\70d10633061c.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p06-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p06-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p07",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p07-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\321caf748a04.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\db6c15021b7a.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p07-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p07-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p08",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p08-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\321caf748a04.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p08-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p08-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p09",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p09-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\ef3c70818616.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p09-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p09-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p10",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p10-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\321caf748a04.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\fff6c4bcf92d.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p10-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p10-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p11",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p11-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\ef3c70818616.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\fff6c4bcf92d.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p11-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p11-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p12",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p12-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\fff6c4bcf92d.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\ef3c70818616.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p12-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p12-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p13",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p13-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\1fd42a01a807.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\ef3c70818616.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p13-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p13-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p14",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p14-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\70d10633061c.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\db6c15021b7a.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p14-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p14-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p15",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p15-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\d998f5e9365a.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\ef3c70818616.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\workshop.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p15-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p15-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  },
+  {
+    "panel_id": "p16",
+    "attempt": 1,
+    "prompt_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\prompts\\production\\p16-a1.txt",
+    "referenced_image_paths": [
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\70d10633061c.png",
+      "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\references\\db6c15021b7a.png"
+    ],
+    "output_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\art\\raw\\p16-a1.png",
+    "tool_record_path": "D:\\Develop\\GitHub\\aiskyhub\\validation\\灯塔来信\\reports\\tool-executions\\p16-a1.json",
+    "script_hash": "e8719b296ca649447517f1813f1ffe4855660ae6f21bcedad925b9c3462e35d6"
+  }
+]

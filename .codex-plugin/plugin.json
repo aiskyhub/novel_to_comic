@@ -1,0 +1,32 @@
+{
+  "name": "novel-to-comic",
+  "version": "1.0.0",
+  "description": "A Codex plugin for converting novels and stories into complete comics faithfully.",
+  "author": {
+    "name": "xdd666t"
+  },
+  "repository": "https://github.com/aiskyhub/novel_to_comic",
+  "keywords": [
+    "codex",
+    "plugin",
+    "novel-to-comic",
+    "comic",
+    "manga",
+    "storyboard"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Novel to Comic",
+    "shortDescription": "Convert novels into complete comics faithfully.",
+    "longDescription": "Strictly faithful to original novel text, full script first, adaptive batch canvas generation, panel-by-panel review, typesetting and export.",
+    "developerName": "xdd666t",
+    "category": "Creative",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "将我提供的小说忠实改编为完整漫画。"
+    ]
+  }
+}

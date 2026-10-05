@@ -1,0 +1,39 @@
+{
+  "checks": {
+    "identity": true,
+    "distinctiveness": true,
+    "angles_and_expressions": true,
+    "source_faithfulness": true,
+    "gender_readability": true,
+    "body_design": true,
+    "design_tier_fit": true
+  },
+  "reviewed_ids": [
+    "zhiwei",
+    "tangning",
+    "zhou",
+    "luyan",
+    "xuchuan",
+    "zhao"
+  ],
+  "comparisons": [
+    {
+      "character_ids": [
+        "zhiwei",
+        "tangning"
+      ],
+      "evidence": "实际比较单人板、两女工作装板与六人无标签对照：知微中面部较长、眼形收窄、下颌缓收；唐宁脸长较短、脸颊饱满、眼形较圆。知微修长站姿，唐宁较矮轻盈且前倾。相同围裙仍可辨；两者女性面孔、肩颈与体态清楚。"
+    },
+    {
+      "character_ids": [
+        "luyan",
+        "xuchuan"
+      ],
+      "evidence": "实际比较男主单人板/工作装、双男性板与六人对照：陆砚长窄骨相、眼眉修长、颌线收敛；许川宽方脸、短粗低眉、宽鼻口。陆砚高修长挺直，许川矮壮肩背厚实。同灰衬衫仍区别明确，二者男性造型清楚。"
+    }
+  ],
+  "findings": [],
+  "evidence": "主代理实际查看六人同画风无标签对照：女性三人的年龄/脸型/体态清楚，男性三人的骨相/肩背/年龄清楚；男女主五官协调、肩颈姿态精致。普通角色保持结构与正常质量，背景衣装较简。对照板补正面并结合各独立角度板验收，没有仅靠发色认人。",
+  "reviewer": "root",
+  "review_method": "view_image: full image inspected; related original sheets compared"
+}

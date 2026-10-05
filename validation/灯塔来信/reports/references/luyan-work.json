@@ -1,0 +1,27 @@
+{
+  "checks": {
+    "identity": true,
+    "distinctiveness": true,
+    "angles_and_expressions": true,
+    "source_faithfulness": true,
+    "gender_readability": true,
+    "body_design": true,
+    "design_tier_fit": true
+  },
+  "reviewed_ids": [
+    "luyan"
+  ],
+  "comparisons": [
+    {
+      "character_ids": [
+        "luyan",
+        "xuchuan"
+      ],
+      "evidence": "实际比较男主单人板/工作装、双男性板与六人对照：陆砚长窄骨相、眼眉修长、颌线收敛；许川宽方脸、短粗低眉、宽鼻口。陆砚高修长挺直，许川矮壮肩背厚实。同灰衬衫仍区别明确，二者男性造型清楚。"
+    }
+  ],
+  "findings": [],
+  "evidence": "已看灰工作衬衫/卷袖的全身、正面、侧面和专注近景，与基础板眉眼、鼻颌、男性肩颈比例对应，改变衣色和袖口未换脸。常用笑容与其他表情使用基础板补充，不将工作板当全部表情来源。",
+  "reviewer": "root",
+  "review_method": "view_image: full image inspected; related original sheets compared"
+}

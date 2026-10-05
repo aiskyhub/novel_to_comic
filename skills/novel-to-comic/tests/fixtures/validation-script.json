@@ -1,0 +1,2215 @@
+{
+  "outline": "修复师携祖母透镜重返灯塔；旧信揭开姐妹误会，众人修复支架，灯塔重新点亮，周婶写回信，男女主角在灯光中离开。四章完整闭环，16个来源事件均有对应画格。",
+  "ending": "周婶的回信被收进木匣，沈知微与陆砚并肩走下石阶，约定先把话说清楚；灯塔继续照向海面。",
+  "style": {
+    "genre": "温暖现实题材短篇",
+    "look": "精致优雅的彩色叙事漫画，干净细致线条、清透的两级赛璐璐明暗、纯净象牙白与海蓝灰配色、大量有组织留白；人物五官体态精致、背景简洁清爽，无噪点纸纹与污旧纹理",
+    "palette": "清透象牙白、淡海蓝与雾蓝灰、墨绿、少量陶红；局部柔和金色点亮，不使用全画面黄褐色滤镜",
+    "selection_reason": "温暖现实题材以清透配色、细致线条、克制明暗和简洁空间表现修复与和解，人物与关键道具承载主要细节。",
+    "art_direction": {
+      "linework": "清晰、细致、稳定的深灰轮廓线，内线更轻；不用照片式纹理、脏纸噪点或密集刻线。",
+      "shape_language": "女性面部与体态明确：沈知微长椭圆脸、细致鼻唇与修长姿态；唐宁圆脸杏眼与轻快重心。男性陆砚长脸利落下颌与修长肩背，许川方脸厚眉与结实躯干。周婶和老赵年龄与体格各自明确。",
+      "shading": "清透的两级赛璐璐明暗，局部极轻柔过渡；暗面保留清晰色相，不涂脏棕灰色。",
+      "color_rules": "象牙白与浅海蓝灰为大面积底色，人物肤色自然清透；绿裙与陶红为小面积身份色，金光只用于局部叙事重点。",
+      "lighting": "傍晚柔和浅桃光配冷海色；开灯后局部暖光，夜景以干净海蓝和小面积柔金对照。禁止全图黄褐滤镜与重油光。",
+      "backgrounds": "浅色平整石墙、简洁浅木工作台、少量整齐档案；空间关系明确，背景按镜头适度概括并留白。场景基准台面不放透镜、固定环或备件盒，正文按当前状态添加。",
+      "composition": "人物表情与动作优先，背景杂物大幅减少，细节集中于必要五官和叙事道具；避免重纹理抢视觉中心。",
+      "effects": "灯光清澈克制，少量柔光，不加杂乱光点、泛黄雾霾或无依据粒子。",
+      "lettering": "清晰正文、统一气泡与旁白层级，留白充分；不以缩小字号解决拥挤。"
+    },
+    "references": [],
+    "format": "pages",
+    "reading_direction": "ltr",
+    "width": 1536,
+    "height": 2176,
+    "font_size": 38,
+    "max_segment_height": 6000,
+    "lettering_mode": "band"
+  },
+  "characters": [
+    {
+      "id": "zhiwei",
+      "name": "沈知微",
+      "aliases": [],
+      "importance": "major",
+      "design_tier": "lead",
+      "narrative": {
+        "goal": "归还透镜并理解祖母往事",
+        "motivation": "完成原文中的修复与和解",
+        "voice": "沉静细腻，紧张时收紧指尖",
+        "arc": "从各自参与到共同点亮灯塔；理解姐妹误会并作出回应"
+      },
+      "visual": {
+        "face_shape": "长椭圆脸，平顺细致颌线",
+        "eyes": "细长柔和眼形，内眼角清楚",
+        "brows": "自然弧眉，眉尾轻扬",
+        "nose_mouth": "鼻梁细直、鼻尖柔和，唇形精致清楚",
+        "body": "修长协调，肩颈柔和、腰身自然",
+        "posture": "挺立但放松，动作细致",
+        "hair": "黑色低束长发，面侧少量发丝",
+        "age": "22岁成年人"
+      },
+      "appearance": {
+        "gender_presentation": "feminine",
+        "requirements": "清晰女性造型，面部肩颈与体态协调，不因工作围裙中性化；五官体态精致耐看，符合温暖现实题材",
+        "source_unit_ids": []
+      },
+      "identity_card": {
+        "face": "长椭圆脸，平顺细致颌线",
+        "eyes_brows": "细长柔和眼形，内眼角清楚；自然弧眉，眉尾轻扬",
+        "nose_mouth": "鼻梁细直、鼻尖柔和，唇形精致清楚",
+        "body": "修长协调，肩颈柔和、腰身自然",
+        "posture": "挺立但放松，动作细致",
+        "temperament": "沉静细腻，紧张时收紧指尖",
+        "invariants": [
+          "长椭圆脸，平顺细致颌线",
+          "细长柔和眼形，内眼角清楚",
+          "修长协调，肩颈柔和、腰身自然"
+        ]
+      },
+      "appearance_versions": [
+        {
+          "id": "base",
+          "description": "基础造型：象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "visual": {
+            "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩"
+          }
+        },
+        {
+          "id": "work",
+          "description": "第三章同款灰围裙；沈知微取下披肩，脸型体态不变",
+          "visual": {
+            "costume": "灰色工作围裙；保留各自衬衫与半裙",
+            "hair": "黑色低束长发，面侧少量发丝"
+          }
+        }
+      ],
+      "comparison_with": [
+        "tangning"
+      ],
+      "distinctions": [
+        {
+          "other_character_id": "tangning",
+          "face_differences": [
+            "长椭圆脸与短圆脸",
+            "细长柔和眼形与圆润杏眼"
+          ],
+          "body_difference": "修长协调与较矮轻盈",
+          "performance_difference": "沉静细腻与爽快开放"
+        }
+      ],
+      "source_facts": [
+        {
+          "text": "傍晚，年轻修复师沈知微穿着象牙白衬衫、墨绿长裙和浅色针织披肩，抱着木匣走进旧灯塔的工作室。她面孔精致，目光沉静，来归还祖母留下的透镜。",
+          "source_unit_ids": [
+            "u0000002"
+          ]
+        }
+      ],
+      "design_notes": [
+        "成年年龄及原文未明确的五官细节是样例美术设计，原文明确信息保持不变。",
+        "原文未规定的服饰、发型与精细五官为本作设计；不把新增设计写成原作事实。"
+      ]
+    },
+    {
+      "id": "luyan",
+      "name": "陆砚",
+      "aliases": [],
+      "importance": "major",
+      "design_tier": "lead",
+      "narrative": {
+        "goal": "安全修复灯塔",
+        "motivation": "完成原文中的修复与和解",
+        "voice": "克制可靠，微笑幅度小",
+        "arc": "从各自参与到共同点亮灯塔；以本职行动支持修复"
+      },
+      "visual": {
+        "face_shape": "较长矩形脸，颌线利落",
+        "eyes": "狭长清朗眼形",
+        "brows": "平直浓眉",
+        "nose_mouth": "清晰鼻梁、紧实自然嘴唇",
+        "body": "修长但肩背挺拔，男性肩颈轮廓明确",
+        "posture": "重心稳定，观察时略前倾",
+        "hair": "黑色侧分短发",
+        "age": "25岁成年人"
+      },
+      "appearance": {
+        "gender_presentation": "masculine",
+        "requirements": "清晰男性造型，骨相与肩背体态协调；五官体态精致耐看，符合温暖现实题材",
+        "source_unit_ids": []
+      },
+      "identity_card": {
+        "face": "较长矩形脸，颌线利落",
+        "eyes_brows": "狭长清朗眼形；平直浓眉",
+        "nose_mouth": "清晰鼻梁、紧实自然嘴唇",
+        "body": "修长但肩背挺拔，男性肩颈轮廓明确",
+        "posture": "重心稳定，观察时略前倾",
+        "temperament": "克制可靠，微笑幅度小",
+        "invariants": [
+          "较长矩形脸，颌线利落",
+          "狭长清朗眼形",
+          "修长但肩背挺拔，男性肩颈轮廓明确"
+        ]
+      },
+      "appearance_versions": [
+        {
+          "id": "base",
+          "description": "基础造型：蓝灰衬衫与深色长裤",
+          "visual": {
+            "costume": "蓝灰衬衫与深色长裤"
+          }
+        },
+        {
+          "id": "work",
+          "description": "第三章灰工作衬衫，袖口卷起，脸型体态不变",
+          "visual": {
+            "costume": "灰色工作衬衫，袖口卷起，深色长裤"
+          }
+        }
+      ],
+      "comparison_with": [
+        "xuchuan"
+      ],
+      "distinctions": [
+        {
+          "other_character_id": "xuchuan",
+          "face_differences": [
+            "长矩形脸利落下颌与宽方脸明显颌角",
+            "清朗狭长眼睛与较小深眼窝眼睛"
+          ],
+          "body_difference": "修长挺拔与宽厚结实",
+          "performance_difference": "克制观察与务实俯身操作"
+        }
+      ],
+      "source_facts": [
+        {
+          "text": "工程师陆砚站在工作台旁，身形修长、肩背挺拔，眉眼明朗而下颌利落。他接过木匣，看见透镜边缘裂了一道细纹，说：“裂纹不能直接上灯，先检查支架。”",
+          "source_unit_ids": [
+            "u0000003"
+          ]
+        }
+      ],
+      "design_notes": [
+        "成年年龄及原文未明确的五官细节是样例美术设计，原文明确信息保持不变。",
+        "原文未规定的服饰、发型与精细五官为本作设计；不把新增设计写成原作事实。"
+      ]
+    },
+    {
+      "id": "tangning",
+      "name": "唐宁",
+      "aliases": [],
+      "importance": "supporting",
+      "design_tier": "core",
+      "narrative": {
+        "goal": "让档案里的旧信抵达收件人",
+        "motivation": "完成原文中的修复与和解",
+        "voice": "爽快活泼，表情开放",
+        "arc": "从各自参与到共同点亮灯塔；以本职行动支持修复"
+      },
+      "visual": {
+        "face_shape": "短圆脸，饱满面颊",
+        "eyes": "圆润杏眼",
+        "brows": "短弧眉",
+        "nose_mouth": "小巧鼻子与弧度清楚的嘴唇",
+        "body": "比沈知微矮，肩窄轻盈，体态圆润协调",
+        "posture": "轻快，交谈时头稍偏",
+        "hair": "深棕齐下颌短发",
+        "age": "24岁成年人"
+      },
+      "appearance": {
+        "gender_presentation": "feminine",
+        "requirements": "清晰女性造型，面部肩颈与体态协调，不因工作围裙中性化；独立脸型与体格，保持层级",
+        "source_unit_ids": []
+      },
+      "identity_card": {
+        "face": "短圆脸，饱满面颊",
+        "eyes_brows": "圆润杏眼；短弧眉",
+        "nose_mouth": "小巧鼻子与弧度清楚的嘴唇",
+        "body": "比沈知微矮，肩窄轻盈，体态圆润协调",
+        "posture": "轻快，交谈时头稍偏",
+        "temperament": "爽快活泼，表情开放",
+        "invariants": [
+          "短圆脸，饱满面颊",
+          "圆润杏眼",
+          "比沈知微矮，肩窄轻盈，体态圆润协调"
+        ]
+      },
+      "appearance_versions": [
+        {
+          "id": "base",
+          "description": "基础造型：米色衬衫与陶红半裙",
+          "visual": {
+            "costume": "米色衬衫与陶红半裙"
+          }
+        },
+        {
+          "id": "work",
+          "description": "第三章同款灰围裙；沈知微取下披肩，脸型体态不变",
+          "visual": {
+            "costume": "灰色工作围裙；保留各自衬衫与半裙",
+            "hair": "深棕齐下颌短发"
+          }
+        }
+      ],
+      "comparison_with": [
+        "zhiwei"
+      ],
+      "distinctions": [
+        {
+          "other_character_id": "zhiwei",
+          "face_differences": [
+            "长椭圆脸与短圆脸",
+            "细长柔和眼形与圆润杏眼"
+          ],
+          "body_difference": "修长协调与较矮轻盈",
+          "performance_difference": "沉静细腻与爽快开放"
+        }
+      ],
+      "source_facts": [
+        {
+          "text": "档案员唐宁从架上取下一封旧信。她圆脸、杏眼，体态轻盈，语气爽快：“这封信没寄出去，收件人是今晚来值班的周婶。”",
+          "source_unit_ids": [
+            "u0000004"
+          ]
+        }
+      ],
+      "design_notes": [
+        "成年年龄及原文未明确的五官细节是样例美术设计，原文明确信息保持不变。",
+        "原文未规定的服饰、发型与精细五官为本作设计；不把新增设计写成原作事实。"
+      ]
+    },
+    {
+      "id": "xuchuan",
+      "name": "许川",
+      "aliases": [],
+      "importance": "supporting",
+      "design_tier": "core",
+      "narrative": {
+        "goal": "修好固定环",
+        "motivation": "完成原文中的修复与和解",
+        "voice": "务实直接，专注时抿嘴",
+        "arc": "从各自参与到共同点亮灯塔；以本职行动支持修复"
+      },
+      "visual": {
+        "face_shape": "宽方脸，颌角明显",
+        "eyes": "较小深眼窝眼睛",
+        "brows": "较低厚平眉",
+        "nose_mouth": "宽鼻梁、较宽嘴型",
+        "body": "比陆砚略矮，肩背宽厚，结实前臂",
+        "posture": "沉稳略俯身，工具操作干脆",
+        "hair": "短寸黑发",
+        "age": "30岁成年人"
+      },
+      "appearance": {
+        "gender_presentation": "masculine",
+        "requirements": "清晰男性造型，骨相与肩背体态协调；独立脸型与体格，保持层级",
+        "source_unit_ids": []
+      },
+      "identity_card": {
+        "face": "宽方脸，颌角明显",
+        "eyes_brows": "较小深眼窝眼睛；较低厚平眉",
+        "nose_mouth": "宽鼻梁、较宽嘴型",
+        "body": "比陆砚略矮，肩背宽厚，结实前臂",
+        "posture": "沉稳略俯身，工具操作干脆",
+        "temperament": "务实直接，专注时抿嘴",
+        "invariants": [
+          "宽方脸，颌角明显",
+          "较小深眼窝眼睛",
+          "比陆砚略矮，肩背宽厚，结实前臂"
+        ]
+      },
+      "appearance_versions": [
+        {
+          "id": "base",
+          "description": "基础造型：灰色工作衬衫与深工装裤",
+          "visual": {
+            "costume": "灰色工作衬衫与深工装裤"
+          }
+        }
+      ],
+      "comparison_with": [
+        "luyan"
+      ],
+      "distinctions": [
+        {
+          "other_character_id": "luyan",
+          "face_differences": [
+            "长矩形脸利落下颌与宽方脸明显颌角",
+            "清朗狭长眼睛与较小深眼窝眼睛"
+          ],
+          "body_difference": "修长挺拔与宽厚结实",
+          "performance_difference": "克制观察与务实俯身操作"
+        }
+      ],
+      "source_facts": [
+        {
+          "text": "短发方脸、肩背结实的维修员许川提着工具箱进来，和陆砚并肩检查。他指着底座说：“缺的是固定环。我能重做，透镜不用换。”",
+          "source_unit_ids": [
+            "u0000009"
+          ]
+        }
+      ],
+      "design_notes": [
+        "成年年龄及原文未明确的五官细节是样例美术设计，原文明确信息保持不变。",
+        "原文未规定的服饰、发型与精细五官为本作设计；不把新增设计写成原作事实。"
+      ]
+    },
+    {
+      "id": "zhou",
+      "name": "周婶",
+      "aliases": [],
+      "importance": "minor",
+      "design_tier": "background",
+      "narrative": {
+        "goal": "读懂姐姐迟来的道歉并回信",
+        "motivation": "完成原文中的修复与和解",
+        "voice": "温厚朴实，回忆时垂眼",
+        "arc": "从各自参与到共同点亮灯塔；理解姐妹误会并作出回应"
+      },
+      "visual": {
+        "face_shape": "柔和圆脸，笑纹明显",
+        "eyes": "温和下弯眼形",
+        "brows": "稀疏弧眉",
+        "nose_mouth": "圆鼻头与薄唇",
+        "body": "圆润敦实，肩线柔和",
+        "posture": "略收肩，动作缓慢",
+        "hair": "灰黑短卷发",
+        "age": "58岁成年人"
+      },
+      "appearance": {
+        "gender_presentation": "feminine",
+        "requirements": "清晰女性造型，面部肩颈与体态协调，不因工作围裙中性化；独立脸型与体格，保持层级",
+        "source_unit_ids": []
+      },
+      "identity_card": {
+        "face": "柔和圆脸，笑纹明显",
+        "eyes_brows": "温和下弯眼形；稀疏弧眉",
+        "nose_mouth": "圆鼻头与薄唇",
+        "body": "圆润敦实，肩线柔和",
+        "posture": "略收肩，动作缓慢",
+        "temperament": "温厚朴实，回忆时垂眼",
+        "invariants": [
+          "柔和圆脸，笑纹明显",
+          "温和下弯眼形",
+          "圆润敦实，肩线柔和"
+        ]
+      },
+      "appearance_versions": [
+        {
+          "id": "base",
+          "description": "基础造型：朴素灰蓝外套与长裤",
+          "visual": {
+            "costume": "朴素灰蓝外套与长裤"
+          }
+        }
+      ],
+      "comparison_with": [],
+      "distinctions": [],
+      "source_facts": [
+        {
+          "text": "值班员周婶推门进来，圆润的身形裹在朴素灰蓝外套里，笑纹柔和。她看见信封便停住：“是我姐姐的字。”",
+          "source_unit_ids": [
+            "u0000005"
+          ]
+        }
+      ],
+      "design_notes": [
+        "成年年龄及原文未明确的五官细节是样例美术设计，原文明确信息保持不变。",
+        "原文未规定的服饰、发型与精细五官为本作设计；不把新增设计写成原作事实。"
+      ]
+    },
+    {
+      "id": "zhao",
+      "name": "老赵",
+      "aliases": [],
+      "importance": "minor",
+      "design_tier": "background",
+      "narrative": {
+        "goal": "提供备件帮助修复",
+        "motivation": "完成原文中的修复与和解",
+        "voice": "寡言热心，神态厚重",
+        "arc": "从各自参与到共同点亮灯塔；以本职行动支持修复"
+      },
+      "visual": {
+        "face_shape": "宽阔长方脸，额头宽",
+        "eyes": "较窄眼形",
+        "brows": "灰黑粗眉",
+        "nose_mouth": "宽鼻梁鼻翼与宽嘴",
+        "body": "矮壮敦实，男性宽肩，腹部自然",
+        "posture": "微驼但搬物稳当",
+        "hair": "灰黑短发，发际较高",
+        "age": "60岁成年人"
+      },
+      "appearance": {
+        "gender_presentation": "masculine",
+        "requirements": "清晰男性造型，骨相与肩背体态协调；独立脸型与体格，保持层级",
+        "source_unit_ids": []
+      },
+      "identity_card": {
+        "face": "宽阔长方脸，额头宽",
+        "eyes_brows": "较窄眼形；灰黑粗眉",
+        "nose_mouth": "宽鼻梁鼻翼与宽嘴",
+        "body": "矮壮敦实，男性宽肩，腹部自然",
+        "posture": "微驼但搬物稳当",
+        "temperament": "寡言热心，神态厚重",
+        "invariants": [
+          "宽阔长方脸，额头宽",
+          "较窄眼形",
+          "矮壮敦实，男性宽肩，腹部自然"
+        ]
+      },
+      "appearance_versions": [
+        {
+          "id": "base",
+          "description": "基础造型：普通棕色工装",
+          "visual": {
+            "costume": "普通棕色工装"
+          }
+        }
+      ],
+      "comparison_with": [],
+      "distinctions": [],
+      "source_facts": [
+        {
+          "text": "搬运员老赵体格敦实、面宽鼻阔，穿普通棕色工装，把旧铁盒搁到工作台边：“仓库还有备件，看看能不能用。”",
+          "source_unit_ids": [
+            "u0000010"
+          ]
+        }
+      ],
+      "design_notes": [
+        "成年年龄及原文未明确的五官细节是样例美术设计，原文明确信息保持不变。",
+        "原文未规定的服饰、发型与精细五官为本作设计；不把新增设计写成原作事实。"
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "id": "workshop",
+      "description": "旧灯塔工作室，左侧高窗，中央木工作台，后墙档案架，右侧入口；透镜支架在中央，电闸在后墙",
+      "reference_paths": [],
+      "reference_hashes": []
+    },
+    {
+      "id": "stairs",
+      "description": "灯塔外向下的石阶，背景海面与塔灯，夜晚",
+      "reference_paths": [],
+      "reference_hashes": []
+    }
+  ],
+  "props": [
+    {
+      "id": "lens",
+      "description": "透明圆形旧灯塔透镜，一处细边裂纹，放在浅木匣中，装入金属座后可用",
+      "reference_paths": [],
+      "reference_hashes": []
+    }
+  ],
+  "events": [
+    {
+      "id": "ev01",
+      "description": "傍晚，年轻修复师沈知微穿着象牙白衬衫、墨绿长裙和浅色针织披肩，抱着木匣走进旧灯塔的工作室。她面孔精致，目光沉静，来归还祖母留下的透镜。",
+      "source_unit_ids": [
+        "u0000002"
+      ]
+    },
+    {
+      "id": "ev02",
+      "description": "工程师陆砚站在工作台旁，身形修长、肩背挺拔，眉眼明朗而下颌利落。他接过木匣，看见透镜边缘裂了一道细纹，说：“裂纹不能直接上灯，先检查支架。”",
+      "source_unit_ids": [
+        "u0000003"
+      ]
+    },
+    {
+      "id": "ev03",
+      "description": "档案员唐宁从架上取下一封旧信。她圆脸、杏眼，体态轻盈，语气爽快：“这封信没寄出去，收件人是今晚来值班的周婶。”",
+      "source_unit_ids": [
+        "u0000004"
+      ]
+    },
+    {
+      "id": "ev04",
+      "description": "值班员周婶推门进来，圆润的身形裹在朴素灰蓝外套里，笑纹柔和。她看见信封便停住：“是我姐姐的字。”",
+      "source_unit_ids": [
+        "u0000005"
+      ]
+    },
+    {
+      "id": "ev05",
+      "description": "沈知微侧身站在窗边，展开信纸。祖母在信里说，当年的风暴夜，她拆下松动的透镜，把姐姐留在岸上的决定误解为胆怯，此后一直想道歉。",
+      "source_unit_ids": [
+        "u0000007"
+      ]
+    },
+    {
+      "id": "ev06",
+      "description": "周婶垂下眼，轻声说：“她留在岸上，是为了照看受伤的人。那一夜，谁都没闲着。”沈知微听完，握着信的手放松下来。",
+      "source_unit_ids": [
+        "u0000008"
+      ]
+    },
+    {
+      "id": "ev07",
+      "description": "短发方脸、肩背结实的维修员许川提着工具箱进来，和陆砚并肩检查。他指着底座说：“缺的是固定环。我能重做，透镜不用换。”",
+      "source_unit_ids": [
+        "u0000009"
+      ]
+    },
+    {
+      "id": "ev08",
+      "description": "搬运员老赵体格敦实、面宽鼻阔，穿普通棕色工装，把旧铁盒搁到工作台边：“仓库还有备件，看看能不能用。”",
+      "source_unit_ids": [
+        "u0000010"
+      ]
+    },
+    {
+      "id": "ev09",
+      "description": "沈知微脱下墨绿长裙外的浅色针织披肩，穿上灰色工作围裙；唐宁也套上同款围裙。两人站在一起，沈知微的长椭圆脸与唐宁的圆脸仍清楚不同。",
+      "source_unit_ids": [
+        "u0000012"
+      ]
+    },
+    {
+      "id": "ev10",
+      "description": "许川俯身将备件固定在底座上，陆砚侧脸检查水平仪。两位男性一个方脸结实、一个长脸修长，在同色工作衬衫里也不会混淆。",
+      "source_unit_ids": [
+        "u0000013"
+      ]
+    },
+    {
+      "id": "ev11",
+      "description": "沈知微双手托住透镜，陆砚在另一侧扶稳支架。两人只把透镜放入座内，尚未点灯；唐宁在旁记录装配位置。",
+      "source_unit_ids": [
+        "u0000014"
+      ]
+    },
+    {
+      "id": "ev12",
+      "description": "陆砚合上电闸，灯塔的暖光扫过海面。沈知微抬头，眼中紧张转为欣喜，陆砚看向稳定亮起的灯，微微一笑。",
+      "source_unit_ids": [
+        "u0000015"
+      ]
+    },
+    {
+      "id": "ev13",
+      "description": "周婶坐到桌边，唐宁递给她信纸。周婶想了想，认真写道：“姐姐，我终于读到了。你守住了灯，我守住了岸。我们都没有离开该在的地方。”",
+      "source_unit_ids": [
+        "u0000017"
+      ]
+    },
+    {
+      "id": "ev14",
+      "description": "沈知微恢复象牙白衬衫和墨绿长裙，把透镜木匣收好；陆砚把工作袖口放下。两人立在窗前，灯光照着各自清晰而不同的侧脸。",
+      "source_unit_ids": [
+        "u0000018"
+      ]
+    },
+    {
+      "id": "ev15",
+      "description": "门口，许川接回工具箱，老赵扶着空铁盒，唐宁向他们挥手。周婶把回信放进木匣，六人的年龄、面孔、体态和气质各不相同。",
+      "source_unit_ids": [
+        "u0000019"
+      ]
+    },
+    {
+      "id": "ev16",
+      "description": "夜色里，灯塔继续照向海面。沈知微与陆砚并肩走下石阶。沈知微说：“下次，先把话说清楚。”陆砚答：“好。”故事在平静的灯光中结束。",
+      "source_unit_ids": [
+        "u0000020"
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "id": "scene-ch000001",
+      "chapter_id": "ch000001",
+      "setting_id": "workshop"
+    },
+    {
+      "id": "scene-ch000002",
+      "chapter_id": "ch000002",
+      "setting_id": "workshop"
+    },
+    {
+      "id": "scene-ch000003",
+      "chapter_id": "ch000003",
+      "setting_id": "workshop"
+    },
+    {
+      "id": "scene-ch000004",
+      "chapter_id": "ch000004",
+      "setting_id": "workshop"
+    },
+    {
+      "id": "scene-stairs",
+      "chapter_id": "ch000004",
+      "setting_id": "stairs"
+    }
+  ],
+  "panels": [
+    {
+      "id": "p01",
+      "chapter_id": "ch000001",
+      "scene_id": "scene-ch000001",
+      "source_unit_ids": [
+        "u0000002"
+      ],
+      "event_ids": [
+        "ev01"
+      ],
+      "cast": [
+        "zhiwei"
+      ],
+      "action": "沈知微抱木匣迈入工作室，木匣保持关闭。",
+      "shot": "环境中远景",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "情绪按原文：专注、克制、自然",
+      "state_before": {
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [],
+      "dialogue": [
+        {
+          "kind": "caption",
+          "text": "傍晚，沈知微带着祖母留下的透镜，回到旧灯塔。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "zhiwei": "base"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "沈知微抱木匣迈入工作室，木匣保持关闭。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "柔和窗侧光"
+      },
+      "prop_ids": [
+        "lens"
+      ]
+    },
+    {
+      "id": "p02",
+      "chapter_id": "ch000001",
+      "scene_id": "scene-ch000001",
+      "source_unit_ids": [
+        "u0000003"
+      ],
+      "event_ids": [
+        "ev02"
+      ],
+      "cast": [
+        "zhiwei",
+        "luyan"
+      ],
+      "action": "陆砚双手托木匣观察裂纹，沈知微站在旁边。",
+      "shot": "双人中近景",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "情绪按原文：专注、克制、自然",
+      "state_before": {
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "base",
+          "costume": "蓝灰衬衫与深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "base",
+          "costume": "蓝灰衬衫与深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [],
+      "dialogue": [
+        {
+          "kind": "speech",
+          "speaker": "luyan",
+          "text": "裂纹不能直接上灯，先检查支架。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "zhiwei": "base",
+        "luyan": "base"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "陆砚双手托木匣观察裂纹，沈知微站在旁边。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "柔和窗侧光"
+      },
+      "prop_ids": [
+        "lens"
+      ]
+    },
+    {
+      "id": "p03",
+      "chapter_id": "ch000001",
+      "scene_id": "scene-ch000001",
+      "source_unit_ids": [
+        "u0000004"
+      ],
+      "event_ids": [
+        "ev03"
+      ],
+      "cast": [
+        "tangning",
+        "zhiwei",
+        "luyan"
+      ],
+      "action": "唐宁从档案架取下旧信，回身展示信封。",
+      "shot": "三人中景",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "情绪按原文：专注、克制、自然",
+      "state_before": {
+        "tangning": {
+          "form": "base",
+          "costume": "米色衬衫与陶红半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "base",
+          "costume": "蓝灰衬衫与深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "tangning": {
+          "form": "base",
+          "costume": "米色衬衫与陶红半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "base",
+          "costume": "蓝灰衬衫与深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [],
+      "dialogue": [
+        {
+          "kind": "speech",
+          "speaker": "tangning",
+          "text": "这封信没寄出去，收件人是今晚来值班的周婶。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "tangning": "base",
+        "zhiwei": "base",
+        "luyan": "base"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "唐宁从档案架取下旧信，回身展示信封。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "柔和窗侧光"
+      },
+      "prop_ids": []
+    },
+    {
+      "id": "p04",
+      "chapter_id": "ch000001",
+      "scene_id": "scene-ch000001",
+      "source_unit_ids": [
+        "u0000005"
+      ],
+      "event_ids": [
+        "ev04"
+      ],
+      "cast": [
+        "zhou",
+        "tangning"
+      ],
+      "action": "周婶停在门口，目光落在唐宁手里的旧信上。",
+      "shot": "双人近景",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "周婶认出字迹而惊讶、迟疑；唐宁安静注视。",
+      "state_before": {
+        "zhou": {
+          "form": "base",
+          "costume": "朴素灰蓝外套与长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "tangning": {
+          "form": "base",
+          "costume": "米色衬衫与陶红半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "zhou": {
+          "form": "base",
+          "costume": "朴素灰蓝外套与长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "tangning": {
+          "form": "base",
+          "costume": "米色衬衫与陶红半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [],
+      "dialogue": [
+        {
+          "kind": "speech",
+          "speaker": "zhou",
+          "text": "是我姐姐的字。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "zhou": "base",
+        "tangning": "base"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "周婶停在门口，目光落在唐宁手里的旧信上。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "柔和窗侧光"
+      },
+      "prop_ids": []
+    },
+    {
+      "id": "p05",
+      "chapter_id": "ch000002",
+      "scene_id": "scene-ch000002",
+      "source_unit_ids": [
+        "u0000007"
+      ],
+      "event_ids": [
+        "ev05"
+      ],
+      "cast": [
+        "zhiwei"
+      ],
+      "action": "沈知微在窗旁侧身阅读展开的旧信，信纸无可辨字符。",
+      "shot": "女性侧脸近景",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "情绪按原文：专注、克制、自然",
+      "state_before": {
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [],
+      "dialogue": [
+        {
+          "kind": "caption",
+          "text": "风暴夜，祖母拆下松动的透镜，却把姐姐留在岸上的决定误解为胆怯。此后，她一直想道歉。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "zhiwei": "base"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "沈知微在窗旁侧身阅读展开的旧信，信纸无可辨字符。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "柔和窗侧光"
+      },
+      "prop_ids": []
+    },
+    {
+      "id": "p06",
+      "chapter_id": "ch000002",
+      "scene_id": "scene-ch000002",
+      "source_unit_ids": [
+        "u0000008"
+      ],
+      "event_ids": [
+        "ev06"
+      ],
+      "cast": [
+        "zhou",
+        "zhiwei"
+      ],
+      "action": "周婶垂眼解释往事，沈知微聆听，握信手指放松。",
+      "shot": "双人半身中近景",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "周婶垂眼温和解释；沈知微的紧张缓和。",
+      "state_before": {
+        "zhou": {
+          "form": "base",
+          "costume": "朴素灰蓝外套与长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "zhou": {
+          "form": "base",
+          "costume": "朴素灰蓝外套与长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [],
+      "dialogue": [
+        {
+          "kind": "speech",
+          "speaker": "zhou",
+          "text": "她留在岸上，是为了照看受伤的人。那一夜，谁都没闲着。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "zhou": "base",
+        "zhiwei": "base"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "周婶垂眼解释往事，沈知微聆听，握信手指放松。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "柔和窗侧光"
+      },
+      "prop_ids": []
+    },
+    {
+      "id": "p07",
+      "chapter_id": "ch000002",
+      "scene_id": "scene-ch000002",
+      "source_unit_ids": [
+        "u0000009"
+      ],
+      "event_ids": [
+        "ev07"
+      ],
+      "cast": [
+        "xuchuan",
+        "luyan"
+      ],
+      "action": "许川在工作台前指向透镜底座的固定环缺口，陆砚查看。",
+      "shot": "双男性中景",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "情绪按原文：专注、克制、自然",
+      "state_before": {
+        "xuchuan": {
+          "form": "base",
+          "costume": "灰色工作衬衫与深工装裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "base",
+          "costume": "蓝灰衬衫与深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "xuchuan": {
+          "form": "base",
+          "costume": "灰色工作衬衫与深工装裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "base",
+          "costume": "蓝灰衬衫与深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [],
+      "dialogue": [
+        {
+          "kind": "speech",
+          "speaker": "xuchuan",
+          "text": "缺的是固定环。我能重做，透镜不用换。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "xuchuan": "base",
+        "luyan": "base"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "许川在工作台前指向透镜底座的固定环缺口，陆砚查看。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "柔和窗侧光"
+      },
+      "prop_ids": [
+        "lens"
+      ]
+    },
+    {
+      "id": "p08",
+      "chapter_id": "ch000002",
+      "scene_id": "scene-ch000002",
+      "source_unit_ids": [
+        "u0000010"
+      ],
+      "event_ids": [
+        "ev08"
+      ],
+      "cast": [
+        "zhao",
+        "xuchuan"
+      ],
+      "action": "老赵把旧铁盒搁到台边，许川看向备件。",
+      "shot": "中景",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "情绪按原文：专注、克制、自然",
+      "state_before": {
+        "zhao": {
+          "form": "base",
+          "costume": "普通棕色工装",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "xuchuan": {
+          "form": "base",
+          "costume": "灰色工作衬衫与深工装裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "zhao": {
+          "form": "base",
+          "costume": "普通棕色工装",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "xuchuan": {
+          "form": "base",
+          "costume": "灰色工作衬衫与深工装裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [],
+      "dialogue": [
+        {
+          "kind": "speech",
+          "speaker": "zhao",
+          "text": "仓库还有备件，看看能不能用。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "zhao": "base",
+        "xuchuan": "base"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "老赵把旧铁盒搁到台边，许川看向备件。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "柔和窗侧光"
+      },
+      "prop_ids": []
+    },
+    {
+      "id": "p09",
+      "chapter_id": "ch000003",
+      "scene_id": "scene-ch000003",
+      "source_unit_ids": [
+        "u0000012"
+      ],
+      "event_ids": [
+        "ev09"
+      ],
+      "cast": [
+        "zhiwei",
+        "tangning"
+      ],
+      "action": "沈知微与唐宁已穿同款灰工作围裙，沈知微把披肩挂在椅背。",
+      "shot": "双女性全身中景",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "情绪按原文：专注、克制、自然",
+      "state_before": {
+        "zhiwei": {
+          "form": "work",
+          "costume": "灰色工作围裙；保留各自衬衫与半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "tangning": {
+          "form": "work",
+          "costume": "灰色工作围裙；保留各自衬衫与半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "zhiwei": {
+          "form": "work",
+          "costume": "灰色工作围裙；保留各自衬衫与半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "tangning": {
+          "form": "work",
+          "costume": "灰色工作围裙；保留各自衬衫与半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [
+        {
+          "character_id": "zhiwei",
+          "fields": [
+            "form",
+            "costume"
+          ],
+          "reason": "原文中换装、恢复衣着或走到灯塔外石阶",
+          "source_unit_ids": [
+            "u0000012"
+          ]
+        },
+        {
+          "character_id": "tangning",
+          "fields": [
+            "form",
+            "costume"
+          ],
+          "reason": "原文中换装、恢复衣着或走到灯塔外石阶",
+          "source_unit_ids": [
+            "u0000012"
+          ]
+        }
+      ],
+      "dialogue": [
+        {
+          "kind": "caption",
+          "text": "两人换上同款灰围裙，开始准备安装。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "zhiwei": "work",
+        "tangning": "work"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "沈知微与唐宁已穿同款灰工作围裙，沈知微把披肩挂在椅背。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "柔和窗侧光"
+      },
+      "prop_ids": []
+    },
+    {
+      "id": "p10",
+      "chapter_id": "ch000003",
+      "scene_id": "scene-ch000003",
+      "source_unit_ids": [
+        "u0000013"
+      ],
+      "event_ids": [
+        "ev10"
+      ],
+      "cast": [
+        "xuchuan",
+        "luyan"
+      ],
+      "action": "许川俯身拧紧金属固定环，陆砚侧脸检查水平仪。",
+      "shot": "双男性侧向中景",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "情绪按原文：专注、克制、自然",
+      "state_before": {
+        "xuchuan": {
+          "form": "base",
+          "costume": "灰色工作衬衫与深工装裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "work",
+          "costume": "灰色工作衬衫，袖口卷起，深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "xuchuan": {
+          "form": "base",
+          "costume": "灰色工作衬衫与深工装裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "work",
+          "costume": "灰色工作衬衫，袖口卷起，深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [
+        {
+          "character_id": "luyan",
+          "fields": [
+            "form",
+            "costume"
+          ],
+          "reason": "原文中换装、恢复衣着或走到灯塔外石阶",
+          "source_unit_ids": [
+            "u0000013"
+          ]
+        }
+      ],
+      "dialogue": [
+        {
+          "kind": "caption",
+          "text": "许川修固定环，陆砚检查水平。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "xuchuan": "base",
+        "luyan": "work"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "许川俯身拧紧金属固定环，陆砚侧脸检查水平仪。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "柔和窗侧光"
+      },
+      "prop_ids": [
+        "lens"
+      ]
+    },
+    {
+      "id": "p11",
+      "chapter_id": "ch000003",
+      "scene_id": "scene-ch000003",
+      "source_unit_ids": [
+        "u0000014"
+      ],
+      "event_ids": [
+        "ev11"
+      ],
+      "cast": [
+        "zhiwei",
+        "luyan",
+        "tangning"
+      ],
+      "action": "沈知微与陆砚把同一块透镜稳定放入金属座，唐宁观察记录。",
+      "shot": "三人手部动作中近景",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "情绪按原文：专注、克制、自然",
+      "state_before": {
+        "zhiwei": {
+          "form": "work",
+          "costume": "灰色工作围裙；保留各自衬衫与半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "work",
+          "costume": "灰色工作衬衫，袖口卷起，深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "tangning": {
+          "form": "work",
+          "costume": "灰色工作围裙；保留各自衬衫与半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "zhiwei": {
+          "form": "work",
+          "costume": "灰色工作围裙；保留各自衬衫与半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "work",
+          "costume": "灰色工作衬衫，袖口卷起，深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "tangning": {
+          "form": "work",
+          "costume": "灰色工作围裙；保留各自衬衫与半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [],
+      "dialogue": [
+        {
+          "kind": "caption",
+          "text": "透镜稳稳落座。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "zhiwei": "work",
+        "luyan": "work",
+        "tangning": "work"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "沈知微与陆砚把同一块透镜稳定放入金属座，唐宁观察记录。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "柔和窗侧光"
+      },
+      "prop_ids": [
+        "lens"
+      ]
+    },
+    {
+      "id": "p12",
+      "chapter_id": "ch000003",
+      "scene_id": "scene-ch000003",
+      "source_unit_ids": [
+        "u0000015"
+      ],
+      "event_ids": [
+        "ev12"
+      ],
+      "cast": [
+        "luyan",
+        "zhiwei"
+      ],
+      "action": "陆砚刚合上电闸，暖光亮起；沈知微抬头欣喜。",
+      "shot": "双人中景，环境灯亮",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "情绪按原文：欣喜、释然",
+      "state_before": {
+        "luyan": {
+          "form": "work",
+          "costume": "灰色工作衬衫，袖口卷起，深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "zhiwei": {
+          "form": "work",
+          "costume": "灰色工作围裙；保留各自衬衫与半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "luyan": {
+          "form": "work",
+          "costume": "灰色工作衬衫，袖口卷起，深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "zhiwei": {
+          "form": "work",
+          "costume": "灰色工作围裙；保留各自衬衫与半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [],
+      "dialogue": [
+        {
+          "kind": "caption",
+          "text": "灯光重新扫过海面。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "luyan": "work",
+        "zhiwei": "work"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "陆砚刚合上电闸，暖光亮起；沈知微抬头欣喜。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "暖琥珀灯与海蓝夜色"
+      },
+      "prop_ids": [
+        "lens"
+      ]
+    },
+    {
+      "id": "p13",
+      "chapter_id": "ch000004",
+      "scene_id": "scene-ch000004",
+      "source_unit_ids": [
+        "u0000017"
+      ],
+      "event_ids": [
+        "ev13"
+      ],
+      "cast": [
+        "zhou",
+        "tangning"
+      ],
+      "action": "周婶坐在桌边认真写回信，唐宁安静站在旁边。",
+      "shot": "双人中近景",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "周婶认真、温和而释然，唐宁安静陪伴。",
+      "state_before": {
+        "zhou": {
+          "form": "base",
+          "costume": "朴素灰蓝外套与长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "tangning": {
+          "form": "work",
+          "costume": "灰色工作围裙；保留各自衬衫与半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "zhou": {
+          "form": "base",
+          "costume": "朴素灰蓝外套与长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "tangning": {
+          "form": "work",
+          "costume": "灰色工作围裙；保留各自衬衫与半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [],
+      "dialogue": [
+        {
+          "kind": "caption",
+          "text": "姐姐，我终于读到了。你守住了灯，我守住了岸。我们都没有离开该在的地方。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "zhou": "base",
+        "tangning": "work"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "周婶坐在桌边认真写回信，唐宁安静站在旁边。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "暖琥珀灯与海蓝夜色"
+      },
+      "prop_ids": []
+    },
+    {
+      "id": "p14",
+      "chapter_id": "ch000004",
+      "scene_id": "scene-ch000004",
+      "source_unit_ids": [
+        "u0000018"
+      ],
+      "event_ids": [
+        "ev14"
+      ],
+      "cast": [
+        "zhiwei",
+        "luyan"
+      ],
+      "action": "恢复基础服装的男女主角在窗前并立，沈知微收好木匣，陆砚放下袖口。",
+      "shot": "双主角侧面半身",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "情绪按原文：欣喜、释然",
+      "state_before": {
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "base",
+          "costume": "蓝灰衬衫与深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "base",
+          "costume": "蓝灰衬衫与深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [
+        {
+          "character_id": "zhiwei",
+          "fields": [
+            "form",
+            "costume"
+          ],
+          "reason": "原文中换装、恢复衣着或走到灯塔外石阶",
+          "source_unit_ids": [
+            "u0000018"
+          ]
+        },
+        {
+          "character_id": "luyan",
+          "fields": [
+            "form",
+            "costume"
+          ],
+          "reason": "原文中换装、恢复衣着或走到灯塔外石阶",
+          "source_unit_ids": [
+            "u0000018"
+          ]
+        }
+      ],
+      "dialogue": [
+        {
+          "kind": "caption",
+          "text": "旧匣收好，灯光照着窗前的两个人。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "zhiwei": "base",
+        "luyan": "base"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "恢复基础服装的男女主角在窗前并立，沈知微收好木匣，陆砚放下袖口。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "暖琥珀灯与海蓝夜色"
+      },
+      "prop_ids": [
+        "lens"
+      ]
+    },
+    {
+      "id": "p15",
+      "chapter_id": "ch000004",
+      "scene_id": "scene-ch000004",
+      "source_unit_ids": [
+        "u0000019"
+      ],
+      "event_ids": [
+        "ev15"
+      ],
+      "cast": [
+        "xuchuan",
+        "zhao",
+        "tangning",
+        "zhou",
+        "zhiwei",
+        "luyan"
+      ],
+      "action": "众人在门口收拾离开：许川拿工具箱，老赵扶空铁盒，唐宁挥手，周婶把回信放入木匣。",
+      "shot": "六人环境中远景",
+      "space": "工作室左窗、中台、后档案架、右门；人物按动作自然排列，避免错人",
+      "expression": "情绪按原文：欣喜、释然",
+      "state_before": {
+        "xuchuan": {
+          "form": "base",
+          "costume": "灰色工作衬衫与深工装裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "zhao": {
+          "form": "base",
+          "costume": "普通棕色工装",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "tangning": {
+          "form": "work",
+          "costume": "灰色工作围裙；保留各自衬衫与半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "zhou": {
+          "form": "base",
+          "costume": "朴素灰蓝外套与长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "base",
+          "costume": "蓝灰衬衫与深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "xuchuan": {
+          "form": "base",
+          "costume": "灰色工作衬衫与深工装裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "zhao": {
+          "form": "base",
+          "costume": "普通棕色工装",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "tangning": {
+          "form": "work",
+          "costume": "灰色工作围裙；保留各自衬衫与半裙",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "zhou": {
+          "form": "base",
+          "costume": "朴素灰蓝外套与长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "base",
+          "costume": "蓝灰衬衫与深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "workshop",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [],
+      "dialogue": [
+        {
+          "kind": "caption",
+          "text": "回信归入木匣，众人收拾离开。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "xuchuan": "base",
+        "zhao": "base",
+        "tangning": "work",
+        "zhou": "base",
+        "zhiwei": "base",
+        "luyan": "base"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "众人在门口收拾离开：许川拿工具箱，老赵扶空铁盒，唐宁挥手，周婶把回信放入木匣。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "暖琥珀灯与海蓝夜色"
+      },
+      "prop_ids": []
+    },
+    {
+      "id": "p16",
+      "chapter_id": "ch000004",
+      "scene_id": "scene-stairs",
+      "source_unit_ids": [
+        "u0000020"
+      ],
+      "event_ids": [
+        "ev16"
+      ],
+      "cast": [
+        "zhiwei",
+        "luyan"
+      ],
+      "action": "男女主角并肩走下灯塔石阶，海面与塔光在身后。",
+      "shot": "双主角全身中远景",
+      "space": "两人并肩在向下石阶，塔与海在后景",
+      "expression": "情绪按原文：欣喜、释然",
+      "state_before": {
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "stairs",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "base",
+          "costume": "蓝灰衬衫与深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "stairs",
+          "knowledge": []
+        }
+      },
+      "state_after": {
+        "zhiwei": {
+          "form": "base",
+          "costume": "象牙白衬衫、墨绿长裙、浅色针织披肩",
+          "injuries": [],
+          "items": [],
+          "location": "stairs",
+          "knowledge": []
+        },
+        "luyan": {
+          "form": "base",
+          "costume": "蓝灰衬衫与深色长裤",
+          "injuries": [],
+          "items": [],
+          "location": "stairs",
+          "knowledge": []
+        }
+      },
+      "state_transitions": [
+        {
+          "character_id": "zhiwei",
+          "fields": [
+            "location"
+          ],
+          "reason": "原文中换装、恢复衣着或走到灯塔外石阶",
+          "source_unit_ids": [
+            "u0000020"
+          ]
+        },
+        {
+          "character_id": "luyan",
+          "fields": [
+            "location"
+          ],
+          "reason": "原文中换装、恢复衣着或走到灯塔外石阶",
+          "source_unit_ids": [
+            "u0000020"
+          ]
+        }
+      ],
+      "dialogue": [
+        {
+          "kind": "speech",
+          "speaker": "zhiwei",
+          "text": "下次，先把话说清楚。",
+          "anchor": [
+            0.25,
+            0.7
+          ]
+        },
+        {
+          "kind": "speech",
+          "speaker": "luyan",
+          "text": "好。",
+          "anchor": [
+            0.75,
+            0.7
+          ]
+        }
+      ],
+      "appearance_versions": {
+        "zhiwei": "base",
+        "luyan": "base"
+      },
+      "aspect_ratio": 1.5,
+      "visual_plan": {
+        "focal_point": "男女主角并肩走下灯塔石阶，海面与塔光在身后。",
+        "depth": "前景人物/道具，中景工作台，后景窗与档案架",
+        "color_mood": "暖琥珀灯与海蓝夜色"
+      },
+      "prop_ids": []
+    }
+  ],
+  "pages": [
+    {
+      "id": "page01",
+      "chapter_id": "ch000001",
+      "panel_ids": [
+        "p01",
+        "p02",
+        "p03",
+        "p04"
+      ],
+      "rows": [
+        [
+          "p01",
+          "p02"
+        ],
+        [
+          "p03",
+          "p04"
+        ]
+      ],
+      "row_weights": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "narrative": {
+        "purpose": "介绍透镜与旧信",
+        "new_information": "旧信收件人是周婶",
+        "emotion": "好奇与迟疑",
+        "focus_panel_id": "p04",
+        "page_turn": "旧信的内容是什么"
+      }
+    },
+    {
+      "id": "page02",
+      "chapter_id": "ch000002",
+      "panel_ids": [
+        "p05",
+        "p06",
+        "p07",
+        "p08"
+      ],
+      "rows": [
+        [
+          "p05",
+          "p06"
+        ],
+        [
+          "p07",
+          "p08"
+        ]
+      ],
+      "row_weights": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "narrative": {
+        "purpose": "揭开误会并找到修复方案",
+        "new_information": "留岸是为了照看伤者，固定环可以修复",
+        "emotion": "理解与释然",
+        "focus_panel_id": "p08",
+        "page_turn": "修复能否成功"
+      }
+    },
+    {
+      "id": "page03",
+      "chapter_id": "ch000003",
+      "panel_ids": [
+        "p09",
+        "p10",
+        "p11",
+        "p12"
+      ],
+      "rows": [
+        [
+          "p09",
+          "p10"
+        ],
+        [
+          "p11",
+          "p12"
+        ]
+      ],
+      "row_weights": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "narrative": {
+        "purpose": "合作点灯并检验换装身份",
+        "new_information": "透镜重新归位，灯塔成功亮起",
+        "emotion": "专注转欣喜",
+        "focus_panel_id": "p12",
+        "page_turn": "周婶如何回应"
+      }
+    },
+    {
+      "id": "page04",
+      "chapter_id": "ch000004",
+      "panel_ids": [
+        "p13",
+        "p14",
+        "p15",
+        "p16"
+      ],
+      "rows": [
+        [
+          "p13",
+          "p14"
+        ],
+        [
+          "p15",
+          "p16"
+        ]
+      ],
+      "row_weights": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "narrative": {
+        "purpose": "完成回信和情绪收尾",
+        "new_information": "姐妹误会得到回应",
+        "emotion": "平静和解",
+        "focus_panel_id": "p16",
+        "page_turn": "结束，无新增悬念"
+      }
+    }
+  ],
+  "source_dispositions": []
+}

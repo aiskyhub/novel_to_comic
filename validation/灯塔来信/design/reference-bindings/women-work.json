@@ -1,0 +1,25 @@
+{
+  "purpose": "combined",
+  "subjects": [
+    {
+      "character_id": "zhiwei",
+      "version_id": "work",
+      "region": [
+        0,
+        0,
+        0.5,
+        1
+      ]
+    },
+    {
+      "character_id": "tangning",
+      "version_id": "work",
+      "region": [
+        0.5,
+        0,
+        0.5,
+        1
+      ]
+    }
+  ]
+}

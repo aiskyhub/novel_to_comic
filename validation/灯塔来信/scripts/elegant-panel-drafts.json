@@ -1,0 +1,98 @@
+[
+  {
+    "panel_id": "p01",
+    "prompt_path": "prompts\\elegant\\p01-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p02",
+    "prompt_path": "prompts\\elegant\\p02-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p03",
+    "prompt_path": "prompts\\elegant\\p03-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p04",
+    "prompt_path": "prompts\\elegant\\p04-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p05",
+    "prompt_path": "prompts\\elegant\\p05-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p06",
+    "prompt_path": "prompts\\elegant\\p06-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p07",
+    "prompt_path": "prompts\\elegant\\p07-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p08",
+    "prompt_path": "prompts\\elegant\\p08-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p09",
+    "prompt_path": "prompts\\elegant\\p09-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p10",
+    "prompt_path": "prompts\\elegant\\p10-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p11",
+    "prompt_path": "prompts\\elegant\\p11-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p12",
+    "prompt_path": "prompts\\elegant\\p12-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p13",
+    "prompt_path": "prompts\\elegant\\p13-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p14",
+    "prompt_path": "prompts\\elegant\\p14-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p15",
+    "prompt_path": "prompts\\elegant\\p15-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  },
+  {
+    "panel_id": "p16",
+    "prompt_path": "prompts\\elegant\\p16-draft.txt",
+    "state": "draft; actual reference IDs and regions must be added before begin-panel",
+    "attempt_allocated": false
+  }
+]

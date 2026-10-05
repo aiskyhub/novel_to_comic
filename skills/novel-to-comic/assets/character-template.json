@@ -1,0 +1,16 @@
+{
+  "id": "",
+  "name": "",
+  "aliases": [],
+  "importance": "major",
+  "design_tier": "",
+  "narrative": {"goal": "", "motivation": "", "voice": "", "arc": ""},
+  "visual": {"face_shape": "", "eyes": "", "brows": "", "nose_mouth": "", "body": "", "posture": "", "hair": "", "age": ""},
+  "appearance": {"gender_presentation": "", "requirements": "", "source_unit_ids": []},
+  "identity_card": {"face": "", "eyes_brows": "", "nose_mouth": "", "body": "", "posture": "", "temperament": "", "invariants": []},
+  "appearance_versions": [{"id": "base", "description": "", "visual": {}}],
+  "comparison_with": [],
+  "distinctions": [],
+  "source_facts": [],
+  "design_notes": []
+}

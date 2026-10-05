@@ -1,0 +1,48 @@
+{
+  "outline": "",
+  "ending": "",
+  "style": {
+    "genre": "",
+    "look": "",
+    "palette": "",
+    "selection_reason": "",
+    "art_direction": {
+      "linework": "细致清晰的稳定轮廓线，内线更轻；少量必要材质，不叠加纸纹噪点和密集刻线。",
+      "shape_language": "稳定人物比例和各自轮廓；表情夸张程度按题材统一。",
+      "shading": "克制清透的主要明暗层次，局部柔和过渡；暗面色相干净，保留表情和动作的可读性。",
+      "color_rules": "协调的主色与少量局部强调色；稳定肤色和角色识别色。",
+      "lighting": "光源方向清楚，按场景调整冷暖与对比；夜景和回忆变化有明确范围。",
+      "backgrounds": "用简洁形块交代空间，人物交流时适度概括；减少杂物与非叙事纹理，有组织留白，场景基准不堆放不同剧情阶段的道具。",
+      "composition": "每格有主要视觉中心；动作、视线与文字空间共同组织阅读动线。",
+      "effects": "速度线、粒子和光晕服务真实动作或能力，保持强度与造型一致。",
+      "lettering": "清晰正文、统一气泡与旁白层级，留白充分；不以缩小字号解决拥挤。"
+    },
+    "references": [],
+    "format": "pages",
+    "reading_direction": "ltr",
+    "width": 1536,
+    "height": 2176,
+    "font_size": 46,
+    "max_segment_height": 6000
+  },
+  "characters": [],
+  "settings": [],
+  "props": [],
+  "events": [],
+  "scenes": [],
+  "panels": [],
+  "pages": [],
+  "continuity_handover": {
+    "opening_state": {
+      "characters": {},
+      "world_state": {},
+      "open_mysteries": []
+    },
+    "closing_state": {
+      "characters": {},
+      "world_state": {},
+      "open_mysteries": []
+    }
+  },
+  "source_dispositions": []
+}

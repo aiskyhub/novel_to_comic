@@ -1,0 +1,25 @@
+{
+  "purpose": "combined",
+  "subjects": [
+    {
+      "character_id": "xuchuan",
+      "version_id": "base",
+      "region": [
+        0,
+        0,
+        0.5,
+        1
+      ]
+    },
+    {
+      "character_id": "zhao",
+      "version_id": "base",
+      "region": [
+        0.5,
+        0,
+        0.5,
+        1
+      ]
+    }
+  ]
+}
