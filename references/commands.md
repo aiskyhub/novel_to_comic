@@ -115,6 +115,8 @@ $comicCli = '本技能 scripts/comic_pipeline.py 的绝对路径'
 
 `init` 不调用模型；`set-script` 不替你编剧；`review` 不代替阅读；`begin-batch` 不自动出图；`split-batch` 不自动通过 QA；`compose` 不重绘画面。模型负责这些创作与判断，脚本负责可靠的机械步骤。
 
+编剧按原文章节顺序执行 `chapter` → 实际阅读及 `mark-read` → 保存本章细节清单与逐场详细剧本 → 保存章节分镜 JSON → 逐项核查并修复 → 进入下一章。材料分别存于当前状态目录的 `docs/adaptation/<chapter_id>.md` 与 `scripts/chapters/<chapter_id>.json`；初次编写时直接保存章节草稿，需要导入就将已完成部分合并到本卷工作 JSON 后用 `set-script`，不代表局部稿已满足 check-script/lock-script 条件。`set-script-chapter` 会做整卷结构校验，用于已有完整结构稿的单章修改，不用于初次逐章积累未完整稿。全部章节完成后汇总完整稿，再正式三轮审查和锁定；不增加用户逐章审批。
+
 生产队列：先跑 status，恢复 pending 批次，再按画布容量和画质规划未完成格。preflight --plan 的 planned_batches 返回最低所需画布、复用/待生成/pending 清单；混有复用格时移除它们，重新排满画布并重写提示词，再启动。begin-batch 对部分复用计划拒绝且不登记尝试；返回 generation_required=false 时全部复用，不出图。否则只绘制 panels 中的实际画格，并使用返回的 prompt 文件。拿到图后 split-batch，再逐格 qa-inputs 与 finish/fail。适合的失败格可合并返修，pending 必须结算后才能重试；分组变化不刷新三次上限。
 
 页面与交付文件有 input_hash。用 project.json 中最新 layout.input_hash 和 layout.pages[].id 填入对应报告；不要沿用旧报告或猜页数。

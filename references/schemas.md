@@ -30,6 +30,8 @@ files 记录原始输入绝对路径、项目内 archive_path、格式、编码�
 
 panels 数组就是本卷镜头顺序；pages 按此顺序覆盖每格恰好一次，不能遗漏、重复或改变顺序。相同章号的不同卷使用不同内部 chapter_id。所有分镜内容严格忠于原著，严禁胡编乱造。
 
+编剧工作按章递进：当前状态目录的 `docs/adaptation/<chapter_id>.md` 保存该章细节映射、逐场详细剧情剧本、格数依据、核查记录与章末交接；`scripts/chapters/<chapter_id>.json` 保存含 events/scenes/panels/pages/source_dispositions 的详细章节草稿，相关人物/场景档案在本卷工作稿中维护。章节文件是工作材料，不另建 project.json 或伪造独立锁；初次编写直接保存草稿，用 `set-script` 导入已汇总的工作稿。`set-script-chapter` 校验整卷结构，适用于完整结构稿上的单章更新。最终关卡仍要求本卷全部章节与同版本审查。
+
 ### 来源引用与跨卷命名空间
 
 `source_unit_ids` 支持本卷短字符串 ID（如 `"u0000001"`）与跨卷命名空间对象：
