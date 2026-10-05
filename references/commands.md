@@ -98,7 +98,7 @@ $comicCli = '本技能 scripts/comic_pipeline.py 的绝对路径'
 | qa-inputs | 新参考：--file 图像，加 --bindings 绑定文件或 --characters ID…；已登记参考：--reference ID；pending 画格：--panel ID --attempt N --file 图像 | 只读输出 QA 所需图像与输入指纹，不生成检查结论 |
 | register-reference | --file 图像 --qa 报告JSON；--bindings 绑定JSON 或 --characters 角色ID… | 登记基准并返回 reference_id；--characters 便捷入口绑定 base |
 | bind-panel | --panel ID --bindings 绑定JSON | 明确绑定形态和参考 ID，不修改冻结剧情 |
-| begin-batch | --plan 含canvas_pixels的批次计划JSON --prompt 实际提示词TXT | 容量与全组条件通过后一次登记非空画格组；部分复用须先重排，无固定格数上限 |
+| begin-batch | --plan 含canvas_pixels的批次计划JSON --prompt 实际提示词TXT | 容量与全组条件通过后一次登记非空画格组；普通正文每张 3–5 格，多余拆批次，部分复用须先重排 |
 | split-batch | --batch 真实批次ID --file 原图 --regions 像素格区JSON | 归档原图并无损提取，像素不足逐格拒绝；不自动验收 |
 | finish-panel | --panel ID --attempt 尝试号 --file 图像 --qa 报告JSON | 校验并复制通过的画格 |
 | fail-panel | --panel ID --attempt 尝试号 --reason 原因 [--category 类别] [--outcome failed/cancelled/stale] | 结算 pending 尝试；支持 9 大失败分类，不重置尝试上限 |

@@ -68,6 +68,7 @@ ID 使用稳定、短且适合文件名的字母数字/连字符，避免路径�
 ```
 
 coverage 检查项：all_source_read/events_preserved/arcs_preserved/ending_preserved（必须核对原著事件 100% 覆盖且零虚构事件）。
+`events_preserved` 的语义检查须覆盖段内细节、事件过程、对白交锋和心理/情绪转折，不能只统计来源 ID 或事件 ID。逐章细节清单与分镜映射保存在当前状态目录的 `docs/adaptation/<chapter_id>.md`；coverage 的 evidence 引用清单路径、具体来源/画格、合并依据和实际复查结果。使用现有字段，不新增程序检查项；细则见 [narrative-density.md](narrative-density.md)。
 continuity：causality/timeline/identity/states/knowledge_and_reveals（核对因果与状态逻辑 100% 来源于原著，严禁自设因果）。
 comic：drawable_panels/dialogue_and_speakers/reading_order/pacing/text_density（核对分镜可绘制且台词/旁白忠于原著，严禁捏造台词）。
 
@@ -127,7 +128,7 @@ script-chapter 输出章节集合及相关人物、场景与相邻状态；set-s
 
 ## 批次计划、裁切与尝试
 
-单格和多格都使用 begin-batch；计划不修改冻结剧情，只描述本次生成的制作格区和最低像素。panels 为非空数组，无固定格数上限；ID 不重复、按剧本顺序排列，可跨成品页面。target_region 是归一化 [x,y,w,h]，区域不能重叠，单格必须为 [0,0,1,1]。min_pixels 是最低原生 [width,height]，不能低于成品展示尺寸。没有 aspect_ratio 时用计划像素比例确定预期高度，实际验收再按裁切图与排版画幅核查无需放大。
+单格和多格都使用 begin-batch；计划不修改冻结剧情，只描述本次生成的制作格区和最低像素。panels 为非空数组；默认普通正文每张 3–5 格，更多镜头拆批次，重点或复杂画格可单独生成。接口按容量验证计划，不自动替代 production.md 的分组决策。ID 不重复、按剧本顺序排列，可跨成品页面。target_region 是归一化 [x,y,w,h]，区域不能重叠，单格必须为 [0,0,1,1]。min_pixels 是最低原生 [width,height]，不能低于成品展示尺寸。没有 aspect_ratio 时用计划像素比例确定预期高度，实际验收再按裁切图与排版画幅核查无需放大。
 
 canvas_pixels 为必填的正整数 [width,height] 规划目标，各格区域份额必须能容纳其 min_pixels。所需最低画布由每方向最大的 ceil(min_pixels/区域份额) 决定，仅消除一个浮点 ULP 的整数边界误差；规划画布与所需画布每边不超过 12,000、总像素不超过 24,000,000。预算不足启动前拒绝，且不登记尝试；不能用扩大规划值冒充工具已经具备大图能力。
 
