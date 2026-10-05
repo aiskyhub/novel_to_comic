@@ -14,7 +14,7 @@
     "manga",
     "storyboard"
   ],
-  "skills": "./skills/",
+  "skills": "./",
   "interface": {
     "displayName": "Novel to Comic",
     "shortDescription": "Convert novels into complete comics faithfully.",

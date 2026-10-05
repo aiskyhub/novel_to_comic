@@ -17,16 +17,14 @@
 novel_to_comic/
 ├── .codex-plugin/
 │   └── plugin.json                  # Codex 插件清单配置
-├── skills/
-│   └── novel-to-comic/              # 通用小说转漫画技能核心
-│       ├── SKILL.md                 # 技能主入口及指令说明
-│       ├── VERSION.json             # 技能版本信息
-│       ├── agents/                  # 代理定义
-│       ├── assets/                  # 模板与静态资源
-│       ├── README/                  # 书名与分卷模块化文档规范模板
-│       ├── references/              # 美术、分镜、指令、质量标准与架构规范
-│       ├── scripts/                 # 批次规划、排版、流水线与切分脚本
-│       └── tests/                   # 自动化单元测试与回归套件
+├── SKILL.md                         # 技能主入口及指令说明
+├── VERSION.json                     # 技能版本信息
+├── agents/                          # 代理定义
+├── assets/                          # 模板与静态资源
+├── README/                          # 书名与分卷模块化文档规范模板
+├── references/                      # 美术、分镜、指令、质量标准与架构规范
+├── scripts/                         # 批次规划、排版、流水线与切分脚本
+├── tests/                           # 自动化单元测试与回归套件
 ├── validation/                      # 测试样本与技能包校验工具
 │   ├── check_skill_package.py       # 技能包完整性校验
 │   ├── sync_installed_skill.py      # 本地环境技能同步工具
@@ -59,7 +57,7 @@ $novel-to-comic 将我提供的小说忠实改编为完整漫画。
 运行单元测试套件：
 
 ```bash
-python -B -m unittest discover -s skills/novel-to-comic/tests -v
+python -B -m unittest discover -s tests -v
 ```
 
 运行技能包格式与引用校验：

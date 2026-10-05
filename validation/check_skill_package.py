@@ -1,12 +1,11 @@
 from pathlib import Path
 import ast,json,re,yaml
 repo_root = Path(__file__).resolve().parents[1]
-root = repo_root / 'skills' / 'novel-to-comic'
-if not root.exists():
-    root = repo_root / 'novel_to_comic_skills'
+root = repo_root
 counts={'json':0,'yaml':0,'python':0,'markdown_links':0}
+excluded_parts = {'__pycache__', '.pytest_cache', '.git', '.codex-plugin', 'validation', '.venv'}
 for path in root.rglob('*'):
-    if not path.is_file() or '__pycache__' in path.parts:continue
+    if not path.is_file() or any(p in path.parts for p in excluded_parts):continue
     text=path.read_text(encoding='utf-8-sig')
     if path.suffix=='.json':json.loads(text);counts['json']+=1
     elif path.suffix=='.yaml':yaml.safe_load(text);counts['yaml']+=1

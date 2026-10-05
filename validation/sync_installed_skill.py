@@ -4,9 +4,9 @@ from datetime import datetime
 import hashlib, json, shutil
 
 repo = Path(__file__).resolve().parents[1]
-source = (repo / 'skills' / 'novel-to-comic').resolve()
-if not source.exists():
-    source = (repo / 'novel_to_comic_skills').resolve()
+source = repo.resolve()
+skill_dirs = {'agents', 'assets', 'README', 'references', 'scripts', 'tests'}
+skill_files = {'SKILL.md', 'VERSION.json'}
 
 targets = [
     Path('C:/Users/xdd66/.codex/skills/novel-to-comic'),
@@ -14,7 +14,8 @@ targets = [
 ]
 
 files = [p for p in source.rglob('*') if p.is_file() and '__pycache__' not in p.parts
-         and '.pytest_cache' not in p.parts and '.venv' not in p.parts and p.suffix not in ('.pyc', '.pyo')]
+         and '.pytest_cache' not in p.parts and '.venv' not in p.parts and p.suffix not in ('.pyc', '.pyo')
+         and (p.name in skill_files or any(part in skill_dirs for part in p.parts))]
 if not files or not (source / 'SKILL.md').is_file():
     raise ValueError('Incomplete maintained source')
 
