@@ -1,8 +1,8 @@
 {
-  "repository": "https://github.com/aiskyhub/aiskyhub",
-  "commit_sha": "3cc2b0b8ad783d02df053f472ec59ed3ded693ef",
-  "commit_date": "2026-10-06T03:33:44Z",
+  "repository": "https://github.com/aiskyhub/novel_to_comic",
+  "commit_sha": "c305fbc691c10ec0a779648bec34a1db25660254",
+  "commit_date": "2026-10-06T04:14:26Z",
   "commit_author": "小呆呆666",
-  "commit_message": "refactor!: 彻底重构移除图文分离机制，全面采用原生手绘气泡与手机紧凑排版，保持通用规范",
-  "installed_at": "2026-10-06T11:35:30+08:00"
+  "commit_message": "refactor: 架构彻底重构，默认复制归档原稿、确立三级改编推断边界、双轨质检分离与模板单一权威化",
+  "installed_at": "2026-10-06T12:14:35+08:00"
 }

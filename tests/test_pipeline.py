@@ -552,22 +552,38 @@ class PipelineTests(unittest.TestCase):
             encoding='utf-8'
         )
 
-        # 1. 运行 init-book，验证小说被移动到 source_texts，创建 split_texts、docs 及 README.md
+        # 1. 运行 init-book，验证默认 action='copy' 保留原稿并归档副本至 source_texts
         init_res = cp.run(Namespace(
             command='init-book',
             book_dir=str(book_dir),
             title='星辰变',
             source=[str(raw_novel)],
-            action='move',
+            action='copy',
             description='热血修真史诗'
         ))
         self.assertTrue(init_res['ok'])
         self.assertEqual(init_res['title'], '星辰变')
-        self.assertFalse(raw_novel.exists(), "原小说文件应该已被移动")
+        self.assertTrue(raw_novel.exists(), "默认 copy 模式下原小说文件必须予以保留")
         archived_novel = book_dir / 'source_texts' / '星辰变全书.txt'
-        self.assertTrue(archived_novel.is_file(), "原稿应存在于 source_texts/")
+        self.assertTrue(archived_novel.is_file(), "原稿副本应存在于 source_texts/")
+        self.assertEqual(cp.sha_file(raw_novel), cp.sha_file(archived_novel), "归档副本哈希必须与原稿一致")
         self.assertTrue((book_dir / 'split_texts').is_dir(), "split_texts/ 目录应已创建")
         self.assertTrue((book_dir / 'docs').is_dir(), "docs/ 目录应已创建")
+
+        # 验证显式 action='move' 时的移动行为
+        move_source = self.base / '额外附录.txt'
+        move_source.write_text("附录设定内容\n", encoding='utf-8')
+        init_move_res = cp.run(Namespace(
+            command='init-book',
+            book_dir=str(book_dir),
+            title='星辰变',
+            source=[str(move_source)],
+            action='move',
+            description='热血修真史诗'
+        ))
+        self.assertTrue(init_move_res['ok'])
+        self.assertFalse(move_source.exists(), "显式 move 模式下原文件应已被移动")
+        self.assertTrue((book_dir / 'source_texts' / '额外附录.txt').is_file())
         for doc_name in ('overview.md', 'structure.md', 'worldview.md', 'characters.md', 'art_direction.md', 'progress.md'):
             self.assertTrue((book_dir / 'docs' / doc_name).is_file(), f"docs/{doc_name} 应存在")
 

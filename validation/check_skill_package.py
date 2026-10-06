@@ -17,4 +17,16 @@ for path in root.rglob('*'):
             ref=ref.split('#',1)[0]
             if ref and not is_template and not (path.parent/ref).is_file():raise ValueError(f'{path}: missing link {ref}')
             counts['markdown_links']+=1
+
+# Validate schema_version consistency
+schema_m = re.search(r'SCHEMA_VERSION\s*=\s*(\d+)', (root / 'scripts/comic_pipeline.py').read_text(encoding='utf-8'))
+if not schema_m: raise ValueError("Could not find SCHEMA_VERSION in comic_pipeline.py")
+expected_schema = int(schema_m.group(1))
+for md_path in root.rglob('*.md'):
+    if any(p in md_path.parts for p in excluded_parts): continue
+    for sm in re.finditer(r'(?:schema_version[ =:]+|schema\s+v|Schema\s+v)(\d+)', md_path.read_text(encoding='utf-8'), re.I):
+        if int(sm.group(1)) != expected_schema:
+            raise ValueError(f"Schema version mismatch in {md_path}: found {sm.group(1)}, expected {expected_schema}")
+counts['schema_verified'] = expected_schema
+
 print(json.dumps({'package_validation':'passed','checked':counts},ensure_ascii=False))

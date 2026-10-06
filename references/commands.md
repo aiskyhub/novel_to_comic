@@ -25,7 +25,7 @@ $comicCli = '本技能 scripts/comic_pipeline.py 的绝对路径'
     characters.md             # 跨卷核心角色档案与视觉基准指南
     art_direction.md          # 全书统一美术规范（线条、上色、光影、版式）
     progress.md               # 全书制作进度与分卷实施看板
-  source_texts/               # 原始小说文本文档归档目录（创建书名项目时将小说移动至此）
+  source_texts/               # 原始小说文本文档归档目录（集中复制归档并校验副本，保留外部原稿）
     原稿.txt
   split_texts/                # 文本切割统一存放目录（按卷/部/篇拆分）
     第1卷.txt
@@ -81,7 +81,7 @@ $comicCli = '本技能 scripts/comic_pipeline.py 的绝对路径'
 
 | 命令 | 其他参数 | 行为 |
 |---|---|---|
-| init-book | --book-dir 目录 [--title 书名] [--source 原文...] [--action move/copy] | 一键建立书名项目、移动原文至 source_texts、建立 split_texts、生成 docs/ 模块模板与顶层 README.md |
+| init-book | --book-dir 目录 [--title 书名] [--source 原文...] [--action copy/move] | 一键建立书名项目、集中复制归档原文至 source_texts（默认 copy 保留原稿并校验哈希；move 需显式指定）、建立 split_texts、生成 docs/ 模块模板与顶层 README.md |
 | split-source | --book-dir 目录 --file 原文 [--output-dir 目标目录] [--pattern 正则] | 将长篇原文按卷切分并统一输出到 split_texts/ 目录 |
 | init | --source 一个或多个文件 [--title 书名] [--volume 卷名] | 新卷目录提取输入，创建空剧本与索引，生成本卷 README.md |
 | chapter | [--chapter ID] | 读取真实原文单元；长篇一次只读所需章节 |

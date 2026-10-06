@@ -5,7 +5,7 @@ import hashlib, json, shutil
 
 repo = Path(__file__).resolve().parents[1]
 source = repo.resolve()
-skill_dirs = {'agents', 'assets', 'README', 'references', 'scripts', 'tests'}
+skill_dirs = {'agents', 'assets', 'references', 'scripts', 'tests'}
 skill_files = {'SKILL.md', 'VERSION.json'}
 
 targets = [

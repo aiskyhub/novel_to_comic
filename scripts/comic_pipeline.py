@@ -22,18 +22,10 @@ SCHEMA_VERSION = 5
 
 def find_template_file(category: str, name: str) -> Path:
     skill_root = Path(__file__).resolve().parent.parent
-    short_cat = category.split('_')[0]
-    candidates = [
-        skill_root / 'README' / category / name,
-        skill_root / 'README' / short_cat / name,
-        skill_root / 'README' / f"{short_cat}_{name}",
-        skill_root / 'README' / name,
-        skill_root / 'assets' / 'templates' / category / name,
-    ]
-    for c in candidates:
-        if c.is_file():
-            return c
-    raise GateError(f'Template file not found. Checked: {[str(c) for c in candidates]}')
+    canonical = skill_root / 'assets' / 'templates' / category / name
+    if canonical.is_file():
+        return canonical
+    raise GateError(f'Template file not found at canonical path: {canonical}')
 
 
 def render_template(category: str, name: str, context: dict = None) -> str:
@@ -1530,8 +1522,8 @@ def qa_inputs(root, project, args):
             'subjects': subjects, 'reviewed_ids': ids}
 
 
-def init_book(book_dir, title=None, sources=None, action='move', description=''):
-    """Initialize top-level book project directory, archive novel text, create docs folder, and generate README.md."""
+def init_book(book_dir, title=None, sources=None, action='copy', description=''):
+    """Initialize top-level book project directory, archive novel text (copy and verify by default), create docs folder, and generate README.md."""
     book_path = Path(book_dir).resolve()
     book_title = title or book_path.name
     book_path.mkdir(parents=True, exist_ok=True)
@@ -2652,8 +2644,8 @@ def parser():
                         help='Path to top-level book directory')
     book_p.add_argument('--title', help='Book title')
     book_p.add_argument('--source', nargs='*', help='One or more source novel files to archive into source_texts/')
-    book_p.add_argument('--action', choices=['move', 'copy'], default='move',
-                        help='Action for source novel files: move or copy')
+    book_p.add_argument('--action', choices=['copy', 'move'], default='copy',
+                        help='Action for source novel files: copy (default, preserve original) or move (explicit only)')
     book_p.add_argument('--description', default='', help='Brief book description')
 
     split_p = subs.add_parser('split-source')
