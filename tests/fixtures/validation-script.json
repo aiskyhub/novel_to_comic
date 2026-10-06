@@ -23,8 +23,7 @@
     "width": 1536,
     "height": 2176,
     "font_size": 38,
-    "max_segment_height": 6000,
-    "lettering_mode": "band"
+    "max_segment_height": 6000
   },
   "characters": [
     {

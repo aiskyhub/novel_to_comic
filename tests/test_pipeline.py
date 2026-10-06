@@ -653,7 +653,8 @@ class PipelineTests(unittest.TestCase):
         # Verify preflight-typeset in native mode
         typeset_res = self.invoke('preflight-typeset')
         self.assertTrue(typeset_res['ok'])
-        self.assertTrue(typeset_res['native_integrated'])
+        self.assertGreater(typeset_res['total_dialogue_items'], 0)
+        self.assertGreater(typeset_res['total_dialogue_chars'], 0)
 
         # Verify build-prompt generates phone-reading optimized prompt with dialogue
         prompt_res = self.invoke('build-prompt', panels=['p1', 'p2'])

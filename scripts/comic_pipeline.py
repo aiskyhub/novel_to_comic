@@ -725,55 +725,6 @@ def script_errors(project, root=None):
                 if (not isinstance(anchor, list) or len(anchor) != 2 or
                         any(type(v) not in (int, float) or not math.isfinite(v) or not 0 <= v <= 1 for v in anchor)):
                     errors.append(f'script.panels[{pid}].dialogue[{dindex}].anchor: expected normalized [x,y].')
-        lettering_mode = panel.get('lettering_mode', style.get('lettering_mode', 'native'))
-        if lettering_mode not in ('band', 'bubbles', 'native'):
-            errors.append(f'script.panels[{pid}].lettering_mode: expected band, bubbles, or native.')
-        bubbles = panel.get('bubbles', [])
-        if not isinstance(bubbles, list):
-            errors.append(f'script.panels[{pid}].bubbles: expected an array.')
-            bubbles = []
-        bubble_indexes, orders, centers = [], [], []
-        for bindex, bubble in enumerate(bubbles):
-            if not isinstance(bubble, dict):
-                errors.append(f'script.panels[{pid}].bubbles[{bindex}]: expected an object.')
-                continue
-            dialogue_index = bubble.get('dialogue_index')
-            rect = bubble.get('rect')
-            order = bubble.get('order')
-            if type(dialogue_index) is not int or not 0 <= dialogue_index < len(dialogue):
-                errors.append(f'script.panels[{pid}].bubbles[{bindex}].dialogue_index: out of range.')
-            else:
-                bubble_indexes.append(dialogue_index)
-            if (not isinstance(rect, list) or len(rect) != 4 or
-                    any(type(v) not in (int, float) or not math.isfinite(v) for v in rect) or
-                    rect[0] < 0 or rect[1] < 0 or rect[2] <= 0 or rect[3] <= 0 or rect[0] + rect[2] > 1 or rect[1] + rect[3] > 1):
-                errors.append(f'script.panels[{pid}].bubbles[{bindex}].rect: expected normalized [x,y,w,h] inside panel.')
-            else:
-                centers.append((order, rect[1] + rect[3] / 2, rect[0] + rect[2] / 2))
-            if type(order) is not int:
-                errors.append(f'script.panels[{pid}].bubbles[{bindex}].order: expected integer reading order.')
-            else:
-                orders.append(order)
-            tail = bubble.get('tail')
-            if tail is not None and (not isinstance(tail, list) or len(tail) != 2 or
-                    any(type(v) not in (int, float) or not math.isfinite(v) or not 0 <= v <= 1 for v in tail)):
-                errors.append(f'script.panels[{pid}].bubbles[{bindex}].tail: expected null or normalized [x,y].')
-        if lettering_mode == 'bubbles':
-            if sorted(bubble_indexes) != list(range(len(dialogue))):
-                errors.append(f'script.panels[{pid}].bubbles: every dialogue item must appear exactly once.')
-            if len(orders) != len(set(orders)):
-                errors.append(f'script.panels[{pid}].bubbles.order: reading order values must be unique.')
-            if centers:
-                direction = style.get('reading_direction', 'ltr')
-                ordered = sorted(centers, key=lambda point: point[0] if type(point[0]) is int else -1)
-                for before_point, after_point in zip(ordered, ordered[1:]):
-                    if after_point[1] < before_point[1] - 0.08:
-                        errors.append(f'script.panels[{pid}].bubbles.order: conflicts with top-to-bottom reading order.')
-                    elif abs(after_point[1] - before_point[1]) <= 0.08:
-                        wrong = after_point[2] < before_point[2] if direction == 'ltr' else after_point[2] > before_point[2]
-                        if wrong:
-                            errors.append(f'script.panels[{pid}].bubbles.order: conflicts with {direction} horizontal reading order.')
-                            break
 
     handover = script.get('continuity_handover') or project.get('continuity_handover')
     if handover is not None:
@@ -987,7 +938,7 @@ def assert_script_lock(project, root=None):
 
 
 LAYOUT_STYLE_KEYS = {'width', 'height', 'font_size', 'font_path', 'max_segment_height', 'format',
-                     'reading_direction', 'lettering_mode'}
+                     'reading_direction'}
 
 
 def visual_style(project):
@@ -1325,8 +1276,6 @@ def script_markdown(project):
         parts.append('人物形态版本：' + json.dumps(panel.get('appearance_versions', {}), ensure_ascii=False))
         if panel.get('prop_ids'):
             parts.append('关键道具：' + ', '.join(panel['prop_ids']))
-        if panel.get('lettering_mode') == 'bubbles':
-            parts.append('气泡布局：' + json.dumps(panel.get('bubbles', []), ensure_ascii=False))
         for dialogue in panel.get('dialogue', []):
             parts.append(dialogue['kind'] + ' / ' + names.get(dialogue.get('speaker'), '旁白') + '：' + dialogue['text'])
         parts.append('')
@@ -1456,7 +1405,7 @@ def impact_report(root, project, candidate):
         panels_value = panels_value if isinstance(panels_value, list) else []
         style_value = script_value.get('style', {})
         style_value = style_value if isinstance(style_value, dict) else {}
-        return {'dialogue': [(p.get('id'), p.get('dialogue'), p.get('lettering_mode'), p.get('bubbles'))
+        return {'dialogue': [(p.get('id'), p.get('dialogue'))
                              for p in panels_value if isinstance(p, dict)],
                 'pages': script_value.get('pages'),
                 'style': {k: v for k, v in style_value.items() if k in LAYOUT_STYLE_KEYS}}
@@ -2064,22 +2013,9 @@ def doctor(root_dir=None):
 
 
 def check_typeset_feasibility(project, explicit_font=None):
-    """Check dialogue text capacity, bubble geometry and font readability before script lock."""
-    style = project.get('script', {}).get('style', {})
-    default_mode = style.get('lettering_mode', 'native')
+    """Check dialogue text capacity and dialogue completeness before script lock."""
     panels = project.get('script', {}).get('panels', [])
     pages = project.get('script', {}).get('pages', [])
-
-    all_native = all(panel.get('lettering_mode', default_mode) == 'native' for panel in panels) if panels else (default_mode == 'native')
-    font_path = None
-    font_size = style.get('font_size', 46)
-
-    try:
-        from comic_layout import find_font
-        font_path = find_font(explicit_font or style.get('font_path'))
-    except Exception:
-        if not all_native:
-            raise
 
     issues = []
     total_dialogue_chars = 0
@@ -2088,26 +2024,17 @@ def check_typeset_feasibility(project, explicit_font=None):
     for panel in panels:
         pid = panel.get('id', '?')
         dialogue = panel.get('dialogue', [])
-        mode = panel.get('lettering_mode', default_mode)
         for dindex, d in enumerate(dialogue):
             text = d.get('text', '')
+            if not text.strip():
+                issues.append({'panel_id': pid, 'dialogue_index': dindex,
+                               'issue': 'Dialogue text is empty.'})
             total_dialogue_chars += len(text)
             total_dialogue_items += 1
-            if mode == 'bubbles':
-                bubbles = panel.get('bubbles', [])
-                bubble = next((b for b in bubbles if b.get('dialogue_index') == dindex), None)
-                if bubble:
-                    rect = bubble.get('rect', [0, 0, 1, 1])
-                    if rect[2] <= 0 or rect[3] <= 0:
-                        issues.append({'panel_id': pid, 'dialogue_index': dindex,
-                                       'issue': 'Bubble rect has zero or negative dimension.'})
+
     return {
         'ok': len(issues) == 0,
         'issues': issues,
-        'lettering_mode': 'native' if all_native else default_mode,
-        'native_integrated': all_native,
-        'font_path': font_path,
-        'font_size': font_size,
         'total_dialogue_items': total_dialogue_items,
         'total_dialogue_chars': total_dialogue_chars,
         'panel_count': len(panels),

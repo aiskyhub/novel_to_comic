@@ -150,17 +150,16 @@ class ProductionGateTests(unittest.TestCase):
         project=cp.project_load(f.root);project['script']['style']['height']=600
         with self.assertRaises(cp.GateError):cl.compose(f.root,project)
 
-    def test_bubble_overflow_and_editable_manifest(self):
+    def test_editable_manifest_and_composition(self):
         f=self.f;f.locked();f.accept_all()
-        script=cp.project_load(f.root)['script'];panel=script['panels'][0]
-        panel['lettering_mode']='bubbles'
-        panel['bubbles']=[{'dialogue_index':0,'rect':[0.05,0.05,0.8,0.3],'tail':None,'order':0}]
-        f.invoke('set-script',file=f.json_file(script));f.add_reviews();f.invoke('lock-script');f.invoke('compose',font=None)
+        f.invoke('compose',font=None)
         layout=cp.project_load(f.root)['layout']
         self.assertTrue(all(page.get('lettering_manifest_path') for page in layout['pages']))
-        panel['bubbles'][0]['rect']=[0.05,0.05,0.1,0.01]
-        f.invoke('set-script',file=f.json_file(script));f.add_reviews();f.invoke('lock-script')
-        with self.assertRaises(cp.GateError):f.invoke('compose',font=None)
+        manifest_path = cp.inside(f.root, layout['pages'][0]['lettering_manifest_path'])
+        self.assertTrue(manifest_path.is_file())
+        manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+        self.assertEqual(manifest['composition_id'], layout['pages'][0]['id'])
+        self.assertIn('dialogue', manifest['panels'][0])
 
     def test_archived_source_survives_original_move(self):
         f=self.f;f.locked();f.source.unlink()
@@ -347,18 +346,14 @@ class ProductionGateTests(unittest.TestCase):
                 self.assertEqual(direction=='ltr',b[0]<c[0])
                 self.assertEqual(['p1','p2','p3','p4'],page['panel_ids'])
 
-    def test_bubbles_cannot_cover_declared_faces_or_reverse_reading_order(self):
+    def test_dialogue_feasibility_catches_empty_dialogue(self):
         f=self.f;f.locked();f.accept_all()
-        script=cp.project_load(f.root)['script'];panel=script['panels'][0]
-        panel.update(lettering_mode='bubbles',protected_regions=[[.1,.1,.2,.2]],
-                     bubbles=[{'dialogue_index':0,'rect':[.05,.05,.8,.3],'tail':None,'order':0}])
-        f.invoke('set-script',file=f.json_file(script));f.add_reviews();f.invoke('lock-script')
-        with self.assertRaisesRegex(cp.GateError,'protected_regions'):f.invoke('compose',font=None)
-        panel['dialogue'].append(copy.deepcopy(panel['dialogue'][0]))
-        panel['bubbles']=[{'dialogue_index':0,'rect':[.6,.05,.35,.3],'tail':None,'order':0},
-                         {'dialogue_index':1,'rect':[.05,.05,.35,.3],'tail':None,'order':1}]
+        script=cp.project_load(f.root)['script']
+        script['panels'][0]['dialogue'].append({'kind':'speech','speaker':'char-a','text':'   '})
         f.invoke('set-script',file=f.json_file(script))
-        self.assertTrue(any('horizontal reading order' in e for e in f.invoke('check-script')['errors']))
+        report = f.invoke('preflight-typeset')
+        self.assertFalse(report['ok'])
+        self.assertTrue(any(issue['issue'] == 'Dialogue text is empty.' for issue in report['issues']))
 
     def test_reference_regions_and_reviewed_targets_are_validated(self):
         f=self.f;f.locked()

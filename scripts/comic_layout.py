@@ -49,11 +49,7 @@ def _effective_font(root, project, explicit_font=None):
     try:
         return find_font(None), False
     except c.GateError:
-        panels = project.get('script', {}).get('panels', [])
-        default_mode = style.get('lettering_mode', 'native')
-        if all(p.get('lettering_mode', default_mode) == 'native' for p in panels):
-            return None, False
-        raise
+        return None, False
 
 
 def layout_fingerprint(root, project, explicit_font=None):
@@ -119,137 +115,17 @@ def _check_raster_dimensions(width, height, context, style_field):
         )
 
 
-def _dialogue_render_text(panel, index, dialogue, names):
-    kind, text = dialogue.get('kind'), dialogue.get('text')
-    if not isinstance(text, str):
-        raise _panel_error(panel['id'], f'dialogue[{index}].text', 'must be text.')
-    prefix = ''
-    speaker = dialogue.get('speaker')
-    if kind in ('speech', 'thought'):
-        if speaker not in names:
-            raise _panel_error(panel['id'], f'dialogue[{index}].speaker', 'must name a present character.')
-        prefix = names[speaker] + (' · 内心：' if kind == 'thought' else '：')
-    return prefix + text, speaker
-
-
-def _rect(value, panel_id, field):
-    if (not isinstance(value, list) or len(value) != 4 or
-            any(isinstance(n, bool) or not isinstance(n, (int, float)) or not math.isfinite(n) for n in value)):
-        raise _panel_error(panel_id, field, 'must be [x,y,width,height] with finite normalized numbers.')
-    x, y, width, height = map(float, value)
-    if x < 0 or y < 0 or width <= 0 or height <= 0 or x + width > 1 or y + height > 1:
-        raise _panel_error(panel_id, field, 'must be a positive rectangle within the picture canvas.')
-    return [x, y, width, height]
-
-
-def _overlap(a, b):
-    return a[0] < b[0] + b[2] and b[0] < a[0] + a[2] and a[1] < b[1] + b[3] and b[1] < a[1] + a[3]
-
-
-def _segment_intersects_rect(start, end, rect):
-    # Liang-Barsky clipping against an axis-aligned normalized rectangle.
-    dx, dy = end[0] - start[0], end[1] - start[1]
-    low, high = 0.0, 1.0
-    for p, q in ((-dx, start[0] - rect[0]), (dx, rect[0] + rect[2] - start[0]),
-                 (-dy, start[1] - rect[1]), (dy, rect[1] + rect[3] - start[1])):
-        if p == 0:
-            if q < 0:
-                return False
-            continue
-        value = q / p
-        if p < 0:
-            low = max(low, value)
-        else:
-            high = min(high, value)
-        if low > high:
-            return False
-    return True
-
-
-def _bubble_specs(panel, dialogue, names, default_mode):
-    panel_id = panel['id']
-    mode = panel.get('lettering_mode', default_mode)
-    if mode not in ('band', 'bubbles', 'native'):
-        raise _panel_error(panel_id, 'lettering_mode', "must be 'band', 'bubbles', or 'native'.")
-    for index, item in enumerate(dialogue):
-        _dialogue_render_text(panel, index, item, names)
-    if mode == 'native':
-        return mode, []
-    if mode == 'band':
-        return mode, [{'dialogue_index': i, 'order': i,
-                       'speaker': item.get('speaker'), 'text': _dialogue_render_text(panel, i, item, names)[0]}
-                      for i, item in enumerate(dialogue)]
-
-    bubbles = panel.get('bubbles')
-    if not isinstance(bubbles, list):
-        raise _panel_error(panel_id, 'bubbles', 'must be an array for bubbles lettering.')
-    if len(bubbles) != len(dialogue):
-        raise _panel_error(panel_id, 'bubbles', 'each dialogue entry must have exactly one bubble.')
-    protected_values = panel.get('protected_regions', [])
-    if not isinstance(protected_values, list):
-        raise _panel_error(panel_id, 'protected_regions', 'must be an array of normalized rectangles.')
-    protected = [_rect(r, panel_id, f'protected_regions[{i}]') for i, r in enumerate(protected_values)]
-    specs, dialogue_indexes, orders = [], [], []
-    for bubble_index, bubble in enumerate(bubbles):
-        field = f'bubbles[{bubble_index}]'
-        if not isinstance(bubble, dict):
-            raise _panel_error(panel_id, field, 'must be an object.')
-        dialogue_index = bubble.get('dialogue_index')
-        if type(dialogue_index) is not int or not 0 <= dialogue_index < len(dialogue):
-            raise _panel_error(panel_id, field + '.dialogue_index', 'must reference one dialogue entry.')
-        order = bubble.get('order')
-        if type(order) is not int or order < 0:
-            raise _panel_error(panel_id, field + '.order', 'must be a nonnegative integer.')
-        rect = _rect(bubble.get('rect'), panel_id, field + '.rect')
-        tail = bubble.get('tail')
-        if tail is not None:
-            if (not isinstance(tail, list) or len(tail) != 2 or
-                    any(isinstance(n, bool) or not isinstance(n, (int, float)) or not math.isfinite(n) or n < 0 or n > 1 for n in tail)):
-                raise _panel_error(panel_id, field + '.tail', 'must be null or a bounded normalized [x,y] point.')
-            tail = [float(tail[0]), float(tail[1])]
-        assigned = dialogue[dialogue_index]
-        if 'speaker' in bubble and bubble.get('speaker') != assigned.get('speaker'):
-            raise _panel_error(panel_id, field + '.speaker', 'must exactly match the referenced dialogue speaker.')
-        if 'text' in bubble:
-            raise _panel_error(panel_id, field + '.text', 'text comes only from the referenced dialogue entry.')
-        for region_index, region in enumerate(protected):
-            if _overlap(rect, region):
-                raise _panel_error(panel_id, field + '.rect', f'geometrically occludes protected_regions[{region_index}].')
-            if tail is not None:
-                edge = (min(max(tail[0], rect[0]), rect[0] + rect[2]),
-                        min(max(tail[1], rect[1]), rect[1] + rect[3]))
-                if _segment_intersects_rect(edge, tail, region):
-                    raise _panel_error(panel_id, field + '.tail', f'geometrically crosses protected_regions[{region_index}].')
-        text, speaker = _dialogue_render_text(panel, dialogue_index, assigned, names)
-        specs.append({'dialogue_index': dialogue_index, 'order': order, 'rect': rect,
-                      'tail': tail, 'speaker': speaker, 'text': text})
-        dialogue_indexes.append(dialogue_index)
-        orders.append(order)
-    if sorted(dialogue_indexes) != list(range(len(dialogue))):
-        raise _panel_error(panel_id, 'bubbles.dialogue_index', 'every dialogue entry must appear exactly once.')
-    if sorted(orders) != list(range(len(bubbles))):
-        raise _panel_error(panel_id, 'bubbles.order', 'orders must be unique and contiguous starting at zero.')
-    return mode, specs
-
-
-def _manifest_panel(panel, style, names):
+def _manifest_panel(panel, names):
     dialogue = panel.get('dialogue', [])
-    if not isinstance(dialogue, list):
-        raise _panel_error(panel['id'], 'dialogue', 'must be an array.')
-    mode, specs = _bubble_specs(panel, dialogue, names, style.get('lettering_mode', 'band'))
-    if mode == 'native':
-        entries = [{'dialogue_index': i, 'kind': dialogue[i].get('kind'),
-                    'speaker': dialogue[i].get('speaker'), 'text': dialogue[i].get('text', '')}
-                   for i in range(len(dialogue))]
-    elif mode == 'band':
-        entries = [{'dialogue_index': item['dialogue_index'], 'kind': dialogue[item['dialogue_index']].get('kind'),
-                    'speaker': item['speaker'], 'text': item['text']} for item in specs]
-    else:
-        entries = [{'dialogue_index': item['dialogue_index'], 'order': item['order'], 'rect': item['rect'],
-                    'tail': item['tail'], 'kind': dialogue[item['dialogue_index']].get('kind'),
-                    'speaker': item['speaker'], 'text': item['text']}
-                   for item in sorted(specs, key=lambda x: x['order'])]
-    return {'panel_id': panel['id'], 'lettering_mode': mode, 'dialogue': entries}
+    entries = []
+    for i, item in enumerate(dialogue):
+        entries.append({
+            'dialogue_index': i,
+            'kind': item.get('kind'),
+            'speaker': item.get('speaker'),
+            'text': item.get('text', '')
+        })
+    return {'panel_id': panel['id'], 'dialogue': entries}
 
 
 def _panel_target_ratio(panel):
@@ -263,29 +139,13 @@ def _panel_target_ratio(panel):
 
 def panel_tile(root, project, panel, width, font_path, font_size, *,
                available_height, style_field, context):
-    from PIL import Image, ImageDraw, ImageFont, ImageOps
+    from PIL import Image, ImageDraw, ImageOps
     c = core()
     attempt = c.accepted_panel(root, project, panel)
     path = c.inside(root, attempt['path'])
-    font = ImageFont.truetype(font_path, font_size)
     names = {item['id']: item['name'] for item in project['script']['characters']}
-    style = project['script']['style']
-    mode, specs = _bubble_specs(panel, panel.get('dialogue', []), names, style.get('lettering_mode', 'band'))
-    manifest_panel = _manifest_panel(panel, style, names)
-    line_height = math.ceil(font_size * 1.4)
-    padding = max(14, font_size // 2)
+    manifest_panel = _manifest_panel(panel, names)
     stroke = max(1, round(width / 768))
-    blocks, band_height = [], 0
-    if mode == 'band':
-        for index, dialogue in enumerate(panel.get('dialogue', [])):
-            text = _dialogue_render_text(panel, index, dialogue, names)[0]
-            try:
-                lines = wrap_text(text, font, width - padding * 4)
-            except c.GateError as error:
-                raise _panel_error(panel['id'], f'dialogue[{index}]', str(error)) from error
-            block_height = line_height * len(lines) + padding * 2
-            blocks.append((dialogue, text, lines, block_height))
-        band_height = sum(height + padding for _, _, _, height in blocks) + (padding if blocks else 0)
     with Image.open(path) as source_image:
         _check_raster_dimensions(source_image.width, source_image.height, context, style_field)
         ratio = _panel_target_ratio(panel)
@@ -293,94 +153,17 @@ def panel_tile(root, project, panel, width, font_path, font_size, *,
             picture_height = max(1, round(source_image.height * width / source_image.width))
         else:
             picture_height = max(1, round(width / ratio))
-        tile_height = picture_height + band_height
         _check_raster_dimensions(width, picture_height, context, style_field)
-        _check_raster_dimensions(width, tile_height, context, style_field)
-        if tile_height > available_height:
+        if picture_height > available_height:
             raise c.GateError(
                 f'{context}: {style_field} allows at most {available_height}px for this panel row, '
-                f'but its composed tile needs {tile_height}px.'
+                f'but its composed tile needs {picture_height}px.'
             )
         source_image = source_image.convert('RGB')
         picture = Image.new('RGB', (width, picture_height), PAPER_COLOR)
         contained = ImageOps.contain(source_image, (width, picture_height), method=Image.Resampling.LANCZOS)
         picture.paste(contained, ((width - contained.width) // 2, (picture_height - contained.height) // 2))
-    if mode == 'band':
-        tile = Image.new('RGB', (width, picture_height + band_height), PAPER_COLOR)
-        tile.paste(picture, (0, 0))
-        draw = ImageDraw.Draw(tile)
-        y = picture_height + padding
-        for index, (dialogue, _, lines, height) in enumerate(blocks):
-            bounds = (padding, y, width - padding - 1, y + height)
-            if dialogue['kind'] == 'speech':
-                anchor = dialogue.get('anchor', [0.5, 0.8])
-                x = max(padding * 2, min(width - padding * 2, int(width * float(anchor[0]))))
-                draw.polygon([(x - padding // 2, y), (x, max(5, picture_height - padding)),
-                              (x + padding // 2, y)], fill='white', outline=INK_COLOR)
-                draw.rounded_rectangle(bounds, radius=padding, fill='white', outline=INK_COLOR, width=stroke)
-            elif dialogue['kind'] == 'thought':
-                draw.rounded_rectangle(bounds, radius=padding * 2, fill='#f5f4f0', outline='#747069', width=stroke)
-            else:
-                draw.rectangle(bounds, fill='#eeece6', outline='#89867e', width=stroke)
-            for number, line in enumerate(lines):
-                draw.text((padding * 2, y + padding + number * line_height), line, font=font,
-                          fill='#25262a', anchor='lt')
-            y += height + padding
-    elif mode == 'bubbles':
-        _check_raster_dimensions(width, picture_height, context, style_field)
-        tile = picture.copy()
-        draw = ImageDraw.Draw(tile)
-        for item in sorted(specs, key=lambda x: x['order']):
-            dialogue_index = item['dialogue_index']
-            rect = item['rect']
-            left, top = round(rect[0] * width), round(rect[1] * picture_height)
-            right = round((rect[0] + rect[2]) * width) - 1
-            bottom = round((rect[1] + rect[3]) * picture_height) - 1
-            bubble_width, bubble_height = right - left + 1, bottom - top + 1
-            bubble_padding = max(6, font_size // 3)
-            text_width = bubble_width - 2 * bubble_padding
-            try:
-                lines = wrap_text(item['text'], font, text_width)
-            except c.GateError as error:
-                raise _panel_error(panel['id'], f'bubbles[{item["order"]}].rect', str(error)) from error
-            needed_height = line_height * len(lines) + 2 * bubble_padding
-            if needed_height > bubble_height:
-                raise _panel_error(panel['id'], f'bubbles[{item["order"]}].rect',
-                                   f'text requires {needed_height}px high, rectangle provides {bubble_height}px.')
-            dialogue = panel['dialogue'][dialogue_index]
-            if item['tail'] is not None:
-                tail_x, tail_y = round(item['tail'][0] * width), round(item['tail'][1] * picture_height)
-                center_x, center_y = (left + right) // 2, (top + bottom) // 2
-                dx, dy = tail_x - center_x, tail_y - center_y
-                if abs(dx) / max(1, bubble_width) > abs(dy) / max(1, bubble_height):
-                    edge_x = left if dx < 0 else right
-                    base_y = max(top + bubble_padding, min(bottom - bubble_padding, center_y))
-                    half = max(3, font_size // 5)
-                    draw.polygon([(edge_x, base_y - half), (tail_x, tail_y), (edge_x, base_y + half)],
-                                 fill='white', outline=INK_COLOR)
-                else:
-                    edge_y = top if dy < 0 else bottom
-                    base_x = max(left + bubble_padding, min(right - bubble_padding, center_x))
-                    half = max(3, font_size // 5)
-                    draw.polygon([(base_x - half, edge_y), (tail_x, tail_y), (base_x + half, edge_y)],
-                                 fill='white', outline=INK_COLOR)
-            if dialogue['kind'] == 'thought':
-                fill, outline, radius = '#f5f4f0', '#747069', bubble_height // 2
-            elif dialogue['kind'] == 'speech':
-                fill, outline, radius = 'white', INK_COLOR, max(8, bubble_height // 3)
-            else:
-                fill, outline, radius = '#eeece6', '#89867e', 0
-            if radius:
-                draw.rounded_rectangle((left, top, right, bottom), radius=radius, fill=fill, outline=outline, width=stroke)
-            else:
-                draw.rectangle((left, top, right, bottom), fill=fill, outline=outline, width=stroke)
-            first_y = top + max(bubble_padding, (bubble_height - line_height * len(lines)) // 2)
-            for number, line in enumerate(lines):
-                draw.text((left + bubble_padding, first_y + number * line_height), line, font=font,
-                          fill='#25262a', anchor='lt')
-    else:
-        _check_raster_dimensions(width, picture_height, context, style_field)
-        tile = picture.copy()
+    tile = picture.copy()
     draw = ImageDraw.Draw(tile)
     draw.rectangle((0, 0, width - 1, picture_height - 1), outline=INK_COLOR, width=stroke)
     return tile, manifest_panel
@@ -475,11 +258,7 @@ def compose(root, project, explicit_font=None):
         chapter_titles = {chapter['id']: chapter['title'] for chapter in project['source']['chapters']}
         texts = [chapter_titles[page['chapter_id']] for page in project['script']['pages']]
         for panel in project['script']['panels']:
-            mode, specs = _bubble_specs(panel, panel.get('dialogue', []), names, style.get('lettering_mode', 'band'))
-            if mode == 'native':
-                texts.extend(d.get('text', '') for d in panel.get('dialogue', []))
-            else:
-                texts.extend(item['text'] for item in specs)
+            texts.extend(d.get('text', '') for d in panel.get('dialogue', []))
         missing = {ch for text in texts for ch in text if not ch.isspace() and ord(ch) not in cmap}
         if missing:
             raise c.GateError('Chosen font lacks emitted glyphs: ' + ''.join(sorted(missing))[:80])
@@ -742,7 +521,7 @@ def verify_exports(root, project):
             raise c.GateError('Editable lettering manifest is invalid: ' + page['id']) from error
         expected_manifest = {'manifest_version': 1, 'composition_id': page['id'],
                              'panel_ids': page['panel_ids'],
-                             'panels': [_manifest_panel(panels[pid], project['script']['style'], names)
+                             'panels': [_manifest_panel(panels[pid], names)
                                         for pid in page['panel_ids']]}
         if manifest != expected_manifest:
             raise c.GateError('Editable lettering manifest no longer matches canonical panel/dialogue data: ' + page['id'])

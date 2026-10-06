@@ -122,9 +122,11 @@ page.narrative={purpose,new_information,emotion,focus_panel_id,page_turn} 用于
 
 panel.aspect_ratio 为目标宽高比。完整图像等比例容纳，不能裁掉叙事内容。改画幅先检查构图；同样的图像可完整容纳时重新排版，明确需要构图变化时修改 visual_plan 并返修。
 
-lettering_mode=native/band/bubbles（画格优先于 style，默认 native）。native 模式为推荐的首选原生一体化气泡模式，对白与气泡直接由生图模型原生渲染在画格内，一张图上尽量占满漫画内容，无需外部文字带；bubbles 模式用于代码绘制气泡，每句对白恰好对应一项 bubbles={dialogue_index,rect:[x,y,w,h],tail:[x,y]或null,order}；band 模式用于代码绘制底部文字带。坐标为画格图像区的归一化坐标，order 从 0 连续且不重复。文字及说话人只取 dialogue。可用 protected_regions=[归一化矩形] 指定必须避让区域；程序检查几何碰撞，主代理仍亲自检查面部与动作。
+全面采用原生一体化出图架构：对白文字与规范的手绘漫画气泡（Speech Balloon）、内心独白框或旁白框直接由生图模型在画面中一次性生成，与画面的线条风格、透视、光影及角色神态浑然一体。不需要也不生成外部文字带，一张图上尽量占满漫画内容，避免无意义的空旷留白。
 
-compose 保存可编辑排版 manifest、字体内容及各页面指纹。页漫画布严格等于 width×height，内容溢出时调整相应页面的行、气泡或分格并重审；条漫按完整行拆为不超过 max_segment_height 的片段。字号、字体、页序、对白和气泡变化只更新排版；视觉风格、角色造型、动作、构图和实际参考变化才影响绘图。
+文字源自已经通过并锁定的剧本 `dialogue`，生图提示词通过 `build-prompt` 自动注入原生对白规范与紧凑构图要求。剧本中的 `dialogue` 既是生图台词源，也是质检核验依据与排版 manifest 的文本源。
+
+compose 保存可编辑排版 manifest（包含画格与对应台词）及各页面指纹。本地拼版仅负责画格裁切组装、边框规范、页面多格排版（一页 3–5 格手机阅读布局）与文件导出，不再承担任何代码贴字工作。页漫画布严格等于 width×height，条漫按完整行拆为不超过 max_segment_height 的片段。页面行序、画格排版变化只更新排版；视觉风格、角色造型、动作、构图和实际参考变化才影响绘图。
 
 script-chapter 输出章节集合及相关人物、场景与相邻状态；set-script-chapter 仅合并该章的 events/scenes/panels/pages，完整冻结关卡仍检查全书。impact 对候选完整剧本给出修改影响且不写项目。
 
