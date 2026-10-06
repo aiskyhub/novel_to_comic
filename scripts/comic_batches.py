@@ -193,7 +193,7 @@ def begin_batch(root, project, plan_path, prompt_path):
     prompt = Path(prompt_file).read_text(encoding='utf-8-sig')
     if not c.nonempty(prompt):
         raise c.GateError('Persist a real batch drawing prompt before generation.')
-    prompt = ('本次只绘制以下实际画格及格区；不绘制已复用画格，不在画面中写画格 ID、对白或标签。\n'
+    prompt = ('本次只绘制以下实际画格及格区；不绘制已复用画格。在画面中以原生漫画对话气泡/旁白框清晰呈现对白，不写画格 ID、技术参数或开发标签。\n'
               + '画布规划目标（不是工具尺寸保证）：' + json.dumps(canvas) + '\n'
               + json.dumps([{key: item[key] for key in ('panel_id', 'target_region', 'min_pixels')}
                             for item in ready], ensure_ascii=False, indent=2)

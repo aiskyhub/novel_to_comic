@@ -88,21 +88,23 @@ $comicCli = '本技能 scripts/comic_pipeline.py 的绝对路径'
 | resolve-issue | --id 问题ID --evidence 证据 | 记录已经查明的提取问题 |
 | confirm-source | --note 证据 [--scope 范围说明] | 确认获取范围；所有提取问题须解决 |
 | doctor | [--project 卷目录] | 只读检测 Python 环境、系统依赖 (Pillow, reportlab, pypdf)、字体及工程状态 |
-| preflight-typeset | [--font 字体路径] | 在出图前预检台词长度、字符密度与排版可行性，避免绘图后无法排版 |
+| preflight-typeset | [--font 字体路径] | 预检剧本台词完整性与字符统计（原生一体化模式自动免检本地字体溢出） |
 | mark-read | --chapter ID --note 实际阅读笔记 | 记录实际读完的章节 |
 | set-script | --file 完整或工作中剧本JSON | 导入稿件，变化使锁失效 |
-| check-script | 无 | 结构、引用、覆盖与状态检查，输出 script_hash |
+| check-adaptation | --chapter ID [--file 章节草稿JSON] | 只读核对当前章细节记录、原文引句、分镜摘句与文档指纹；输出 draft_hash，仍需实际语义审查 |
+| check-script | 无 | 全卷结构、引用、细节记录、文档指纹、覆盖与状态检查，输出 script_hash |
 | review | --kind coverage/continuity/comic --file 报告JSON | 记录实际通过且版本一致的本卷审查 |
 | lock-script | 无 | 三轮齐备且通过，冻结并输出 full-script.md，更新本卷 README.md |
 | assert-art | 无 | 任何生成/编辑图像前的本卷关卡 |
 | qa-inputs | 新参考：--file 图像，加 --bindings 绑定文件或 --characters ID…；已登记参考：--reference ID；pending 画格：--panel ID --attempt N --file 图像 | 只读输出 QA 所需图像与输入指纹，不生成检查结论 |
 | register-reference | --file 图像 --qa 报告JSON；--bindings 绑定JSON 或 --characters 角色ID… | 登记基准并返回 reference_id；--characters 便捷入口绑定 base |
 | bind-panel | --panel ID --bindings 绑定JSON | 明确绑定形态和参考 ID，不修改冻结剧情 |
+| build-prompt | [--panels 画格ID...] [--plan 计划JSON] [--output 导出文件] | 自动提取剧本台词、角色、镜头与对白气泡指引，生成面向手机阅读的饱满构图生图提示词 |
 | begin-batch | --plan 含canvas_pixels的批次计划JSON --prompt 实际提示词TXT | 容量与全组条件通过后一次登记非空画格组；普通正文每张 3–5 格，多余拆批次，部分复用须先重排 |
 | split-batch | --batch 真实批次ID --file 原图 --regions 像素格区JSON | 归档原图并无损提取，像素不足逐格拒绝；不自动验收 |
 | finish-panel | --panel ID --attempt 尝试号 --file 图像 --qa 报告JSON | 校验并复制通过的画格 |
 | fail-panel | --panel ID --attempt 尝试号 --reason 原因 [--category 类别] [--outcome failed/cancelled/stale] | 结算 pending 尝试；支持 9 大失败分类，不重置尝试上限 |
-| compose | [--font 字体路径] | 通过画格 → 图文排版 PNG |
+| compose | [--font 字体路径] | 通过画格 → 页面拼版合成 PNG（原生一体化模式直接组装原图，不硬贴代码文字） |
 | review-layout | --file 报告JSON | 全部页面实际看图后登记 |
 | export | 无 | 导出离线阅读器、PDF、CBZ，更新本卷 README.md |
 | verify-export | 无 | 验证实际交付内容与顺序 |

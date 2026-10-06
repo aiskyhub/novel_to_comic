@@ -179,7 +179,7 @@ class ProductionGateTests(unittest.TestCase):
         self.assertEqual(before['script']['panels'][1],cp.project_load(f.root)['script']['panels'][1])
         self.assertFalse(f.invoke('status')['script_locked'])
 
-    def test_original_sample_is_full_and_structurally_valid(self):
+    def test_original_sample_needs_detail_records_despite_source_coverage(self):
         f=self.f
         source=Path(__file__).parent/'fixtures'/'validation-story.txt'
         root=f.base/'真实样例结构'
@@ -189,7 +189,10 @@ class ProductionGateTests(unittest.TestCase):
             f.invoke('mark-read',chapter=chapter['id'],note='机械夹具阅读记录，不代表真实语义审查')
         script=cp.load_json(Path(__file__).parent/'fixtures'/'validation-script.json')
         f.invoke('set-script',file=f.json_file(script))
-        self.assertEqual([],f.invoke('check-script')['errors'])
+        # Legacy sample proves old structural coverage, not detailed adaptation completeness.
+        errors = f.invoke('check-script')['errors']
+        self.assertTrue(any('chapter_adaptations' in error for error in errors))
+        self.assertEqual([], [error for error in errors if 'chapter_adaptations' not in error])
         self.assertEqual(16,len(script['panels']));self.assertEqual(4,len(script['pages']))
 
     def test_bad_identifier_types_return_field_diagnostics(self):

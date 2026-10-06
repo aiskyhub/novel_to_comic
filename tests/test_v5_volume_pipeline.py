@@ -17,6 +17,7 @@ import comic_sources as cs
 import comic_layout as cl
 import comic_batches as cb
 from PIL import Image
+from adaptation_fixtures import attach_adaptations
 
 
 def make_dummy_png(path: Path, width: int = 100, height: int = 100, color=(200, 200, 200)):
@@ -125,6 +126,7 @@ class VolumeV5PipelineTests(unittest.TestCase):
         # 4. create script with continuity_handover
         proj = cp.project_load(vol1_dir)
         script = fixture_v5_script(proj['source'])
+        attach_adaptations(vol1_dir, proj['source'], script)
         script_file = self.base / 'v1_script.json'
         script_file.write_text(json.dumps(script, ensure_ascii=False), encoding='utf-8')
         cp.run(Namespace(command='set-script', project=str(vol1_dir), file=str(script_file)))

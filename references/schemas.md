@@ -27,10 +27,11 @@ files 记录原始输入绝对路径、项目内 archive_path、格式、编码�
 | page | id、chapter_id、按阅读顺序排列的 panel_ids；columns=1/2；可用 rows 指定每行一格或两格，混合整宽和双格行 |
 | continuity_handover | opening_state 与 closing_state，记录本卷开场继承与结末状态（人物状态、世界规则、未回收伏笔），供跨卷交接审查核验 |
 | source_disposition | unit_id、kind=context/repetition/paratext、reason；context 还需真实 panel_ids |
+| chapter_adaptation | 每个正文章恰好一条：chapter_id、document_path、document_sha256、details、unit_audits；具体字段与呈现证据见 [detail-records.md](detail-records.md) |
 
 panels 数组就是本卷镜头顺序；pages 按此顺序覆盖每格恰好一次，不能遗漏、重复或改变顺序。相同章号的不同卷使用不同内部 chapter_id。所有分镜内容严格忠于原著，严禁胡编乱造。
 
-编剧工作按章递进：当前状态目录的 `docs/adaptation/<chapter_id>.md` 保存该章细节映射、逐场详细剧情剧本、格数依据、核查记录与章末交接；`scripts/chapters/<chapter_id>.json` 保存含 events/scenes/panels/pages/source_dispositions 的详细章节草稿，相关人物/场景档案在本卷工作稿中维护。章节文件是工作材料，不另建 project.json 或伪造独立锁；初次编写直接保存草稿，用 `set-script` 导入已汇总的工作稿。`set-script-chapter` 校验整卷结构，适用于完整结构稿上的单章更新。最终关卡仍要求本卷全部章节与同版本审查。
+编剧工作按章递进：当前状态目录的 `docs/adaptation/<chapter_id>.md` 保存该章细节映射、逐场详细剧情剧本、格数依据、核查记录与章末交接；`scripts/chapters/<chapter_id>.json` 保存含 events/scenes/panels/pages/source_dispositions/chapter_adaptations 的详细章节草稿，相关人物/场景档案在本卷工作稿中维护。章节文件是工作材料，不另建 project.json 或伪造独立锁；初次编写直接保存草稿，用 `check-adaptation` 核对本章，再用 `set-script` 导入已汇总的工作稿。`set-script-chapter` 校验整卷结构，适用于完整结构稿上的单章更新，必须带对应章细节记录。最终关卡仍要求本卷全部章节与同版本审查。
 
 ### 来源引用与跨卷命名空间
 
@@ -70,7 +71,7 @@ ID 使用稳定、短且适合文件名的字母数字/连字符，避免路径�
 ```
 
 coverage 检查项：all_source_read/events_preserved/arcs_preserved/ending_preserved（必须核对原著事件 100% 覆盖且零虚构事件）。
-`events_preserved` 的语义检查须覆盖段内细节、事件过程、对白交锋和心理/情绪转折，不能只统计来源 ID 或事件 ID。逐章细节清单与分镜映射保存在当前状态目录的 `docs/adaptation/<chapter_id>.md`；coverage 的 evidence 引用清单路径、具体来源/画格、合并依据和实际复查结果。使用现有字段，不新增程序检查项；细则见 [narrative-density.md](narrative-density.md)。
+`events_preserved` 的语义检查须覆盖段内细节、事件过程、对白交锋和心理/情绪转折，不能只统计来源 ID 或事件 ID。逐章细节清单与分镜映射保存在当前状态目录的 `docs/adaptation/<chapter_id>.md`；结构化记录必须写入 script.chapter_adaptations，关卡核验来源引句、实际字段摘句、合并依据、逐段核查记录和文档指纹。coverage 的 evidence 引用清单路径、具体来源/画格、合并依据和实际复查结果；报告检查项保持原有字段，机械记录不替代语义检查。细则见 [narrative-density.md](narrative-density.md) 与 [detail-records.md](detail-records.md)。
 continuity：causality/timeline/identity/states/knowledge_and_reveals（核对因果与状态逻辑 100% 来源于原著，严禁自设因果）。
 comic：drawable_panels/dialogue_and_speakers/reading_order/pacing/text_density（核对分镜可绘制且台词/旁白忠于原著，严禁捏造台词）。
 
@@ -121,7 +122,7 @@ page.narrative={purpose,new_information,emotion,focus_panel_id,page_turn} 用于
 
 panel.aspect_ratio 为目标宽高比。完整图像等比例容纳，不能裁掉叙事内容。改画幅先检查构图；同样的图像可完整容纳时重新排版，明确需要构图变化时修改 visual_plan 并返修。
 
-lettering_mode=band/bubbles（画格优先于 style，默认 band）。bubbles 模式每句对白恰好对应一项 bubbles={dialogue_index,rect:[x,y,w,h],tail:[x,y]或null,order}；坐标为画格图像区的归一化坐标，order 从 0 连续且不重复。文字及说话人只取 dialogue。可用 protected_regions=[归一化矩形] 指定必须避让区域；程序检查几何碰撞，主代理仍亲自检查面部与动作。
+lettering_mode=native/band/bubbles（画格优先于 style，默认 native）。native 模式为推荐的首选原生一体化气泡模式，对白与气泡直接由生图模型原生渲染在画格内，一张图上尽量占满漫画内容，无需外部文字带；bubbles 模式用于代码绘制气泡，每句对白恰好对应一项 bubbles={dialogue_index,rect:[x,y,w,h],tail:[x,y]或null,order}；band 模式用于代码绘制底部文字带。坐标为画格图像区的归一化坐标，order 从 0 连续且不重复。文字及说话人只取 dialogue。可用 protected_regions=[归一化矩形] 指定必须避让区域；程序检查几何碰撞，主代理仍亲自检查面部与动作。
 
 compose 保存可编辑排版 manifest、字体内容及各页面指纹。页漫画布严格等于 width×height，内容溢出时调整相应页面的行、气泡或分格并重审；条漫按完整行拆为不超过 max_segment_height 的片段。字号、字体、页序、对白和气泡变化只更新排版；视觉风格、角色造型、动作、构图和实际参考变化才影响绘图。
 
@@ -194,4 +195,3 @@ QA、通过记录及后续复用都要求登记原图、提示词和裁切文件
 1. **本卷完成（Volume Complete）**：本卷全部画格通过、排版通过、完成导出并签署 final_review。第一卷锁定并制作交付时，第二卷即使尚未初始化，第一卷亦能完整交付并准确报告“第一卷交付完成”；
 2. **作品目标完成（Work Complete）**：用户指定的所有分卷均达到完成交付状态；
 3. **原作完结（Source Finished）**：根据小说实际连载与实体出版状态客观记录。
-

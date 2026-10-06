@@ -8,6 +8,8 @@
 
 每个原文正文单元必须关联画格，或给出明确的 context/repetition/paratext 处理。一个段落若含多个独立事件、对白意义或心理/情绪转折，应拆出细节并对应具体镜头内容；“已映射一格”不是完整保留的证明。按 [narrative-density.md](narrative-density.md) 保存逐章细节清单及映射，编剧和审查时重新对照原文，不能只凭章摘要。
 
+章节草稿同时包含 [detail-records.md](detail-records.md) 定义的 `chapter_adaptations`：原文短引句、独立事实、叙事作用、实际分镜摘句、逐段重读记录及章节文档指纹。完成本章时执行 `check-adaptation --chapter ID --file scripts/chapters/ID.json`；结构通过后仍亲自完成语义核查，修复遗漏再进入下一章。本卷 `check-script`、审查、锁定与出图关卡均复核这些记录；仅旧式来源全覆盖的稿件不能放行。
+
 ## 原著真实性与绝对零胡编原则（Zero-Hallucination & Plot Fidelity）
 
 **所有漫画剧情、分镜描述以及 README/文档中的剧情概括，必须 100% 严格忠于小说原著文本，绝对禁止胡编乱造！**

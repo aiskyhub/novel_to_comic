@@ -1,18 +1,18 @@
 [
   {
-    "backup_path": "C:\\Users\\xdd66\\.codex\\skill-backups\\20261005-181315-309924-novel-to-comic",
+    "backup_path": "C:\\Users\\xdd66\\.codex\\skill-backups\\20261006-111505-811371-novel-to-comic",
     "installed_path": "C:\\Users\\xdd66\\.codex\\skills\\novel-to-comic",
     "resolved_installed_path": "C:\\Users\\xdd66\\.codex\\skills\\novel-to-comic",
     "update_mode": "copied_source",
-    "files_verified": 107,
+    "files_verified": 112,
     "result": "passed"
   },
   {
-    "backup_path": "C:\\Users\\xdd66\\.gemini\\config\\skill-backups\\20261005-181315-309924-novel-to-comic",
+    "backup_path": "C:\\Users\\xdd66\\.gemini\\config\\skill-backups\\20261006-111505-811371-novel-to-comic",
     "installed_path": "C:\\Users\\xdd66\\.gemini\\config\\skills\\novel-to-comic",
     "resolved_installed_path": "C:\\Users\\xdd66\\.gemini\\config\\skills\\novel-to-comic",
     "update_mode": "copied_source",
-    "files_verified": 107,
+    "files_verified": 112,
     "result": "passed"
   }
 ]

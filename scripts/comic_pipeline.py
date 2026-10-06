@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from comic_sources import SourceError, extract, sha_file
+from comic_adaptation import adaptation_errors
 
 SCHEMA_VERSION = 5
 
@@ -724,9 +725,9 @@ def script_errors(project, root=None):
                 if (not isinstance(anchor, list) or len(anchor) != 2 or
                         any(type(v) not in (int, float) or not math.isfinite(v) or not 0 <= v <= 1 for v in anchor)):
                     errors.append(f'script.panels[{pid}].dialogue[{dindex}].anchor: expected normalized [x,y].')
-        lettering_mode = panel.get('lettering_mode', 'band')
-        if lettering_mode not in ('band', 'bubbles'):
-            errors.append(f'script.panels[{pid}].lettering_mode: expected band or bubbles.')
+        lettering_mode = panel.get('lettering_mode', style.get('lettering_mode', 'native'))
+        if lettering_mode not in ('band', 'bubbles', 'native'):
+            errors.append(f'script.panels[{pid}].lettering_mode: expected band, bubbles, or native.')
         bubbles = panel.get('bubbles', [])
         if not isinstance(bubbles, list):
             errors.append(f'script.panels[{pid}].bubbles: expected an array.')
@@ -842,6 +843,8 @@ def script_errors(project, root=None):
         errors.append('Pages must cover all panels exactly once in script reading order.')
     if not registries['panels'] or not registries['pages']:
         errors.append('Complete drawable panels and page plan required.')
+    errors.extend(adaptation_errors(source, script, root, source_index_hash=project.get('source_index_hash'),
+                                    current_names=(project.get('volume'), project.get('title'))))
     return errors
 
 
@@ -1398,6 +1401,8 @@ def script_chapter(project, chapter_id):
         neighbors[cid] = {'before': before, 'after': after}
     return {'chapter_id': chapter_id, 'chapter': chapter, 'source_units': units, 'panels': panels, 'pages': pages,
             'events': events, 'scenes': scenes, 'settings': settings, 'characters': characters,
+            'chapter_adaptations': [r for r in script.get('chapter_adaptations', [])
+                                    if isinstance(r, dict) and r.get('chapter_id') == chapter_id],
             'source_dispositions': source_dispositions, 'neighboring_character_states': neighbors,
             'script_hash': digest(script)}
 
@@ -2060,14 +2065,21 @@ def doctor(root_dir=None):
 
 def check_typeset_feasibility(project, explicit_font=None):
     """Check dialogue text capacity, bubble geometry and font readability before script lock."""
-    from comic_layout import find_font
-    from PIL import ImageFont
     style = project.get('script', {}).get('style', {})
-    font_path = find_font(explicit_font or style.get('font_path'))
-    font_size = style.get('font_size', 46)
-    font = ImageFont.truetype(font_path, font_size)
+    default_mode = style.get('lettering_mode', 'native')
     panels = project.get('script', {}).get('panels', [])
     pages = project.get('script', {}).get('pages', [])
+
+    all_native = all(panel.get('lettering_mode', default_mode) == 'native' for panel in panels) if panels else (default_mode == 'native')
+    font_path = None
+    font_size = style.get('font_size', 46)
+
+    try:
+        from comic_layout import find_font
+        font_path = find_font(explicit_font or style.get('font_path'))
+    except Exception:
+        if not all_native:
+            raise
 
     issues = []
     total_dialogue_chars = 0
@@ -2076,7 +2088,7 @@ def check_typeset_feasibility(project, explicit_font=None):
     for panel in panels:
         pid = panel.get('id', '?')
         dialogue = panel.get('dialogue', [])
-        mode = panel.get('lettering_mode', style.get('lettering_mode', 'band'))
+        mode = panel.get('lettering_mode', default_mode)
         for dindex, d in enumerate(dialogue):
             text = d.get('text', '')
             total_dialogue_chars += len(text)
@@ -2092,6 +2104,8 @@ def check_typeset_feasibility(project, explicit_font=None):
     return {
         'ok': len(issues) == 0,
         'issues': issues,
+        'lettering_mode': 'native' if all_native else default_mode,
+        'native_integrated': all_native,
         'font_path': font_path,
         'font_size': font_size,
         'total_dialogue_items': total_dialogue_items,
@@ -2099,6 +2113,72 @@ def check_typeset_feasibility(project, explicit_font=None):
         'panel_count': len(panels),
         'page_count': len(pages)
     }
+
+
+def build_batch_prompt(project, panel_ids=None, plan_path=None):
+    """Compile native drawing prompts with dialogue, speech bubbles, and compact phone-reading composition."""
+    script = project.get('script', {})
+    panels_map = {p['id']: p for p in script.get('panels', [])}
+    characters_map = {c['id']: c for c in script.get('characters', [])}
+    style = script.get('style', {})
+    art_dir = style.get('art_direction', {})
+
+    target_ids = []
+    if plan_path:
+        plan_data = load_json(plan_path)
+        target_ids = [item['panel_id'] for item in plan_data.get('panels', [])]
+    elif panel_ids:
+        target_ids = list(panel_ids)
+    else:
+        target_ids = [p['id'] for p in script.get('panels', [])]
+
+    lines = []
+    lines.append("【用途】高质量叙事漫画画面，适配手机阅读体验；一页3–5格紧凑排列，一张图上尽量占满漫画内容，避免无意义的空旷留白。")
+    if art_dir:
+        lines.append(f"【统一画风】线条：{art_dir.get('linework', '细致清晰轮廓线')}；色彩与光影：{art_dir.get('shading', '克制清透明暗')}；色彩规则：{art_dir.get('color_rules', '协调主色')}。")
+    lines.append("【对白与气泡规范】在画面中原生生成规范的漫画手绘对话气泡（Speech Balloon）、内心独白框或旁白框；字迹端正清晰工整，严禁错字乱码；气泡自然嵌入画面构图，绝对不遮挡人物主要面部、眼神与关键动作。不生成画格ID、技术参数或开发标签。")
+    lines.append("")
+
+    for index, pid in enumerate(target_ids, 1):
+        panel = panels_map.get(pid)
+        if not panel:
+            continue
+        lines.append(f"--- 画格 [{pid}] ---")
+        lines.append(f"镜头与景别：{panel.get('shot', '中景')}，空间场景：{panel.get('space', '室内')}")
+        lines.append(f"动作与动态：{panel.get('action', '动作进行中')}")
+        lines.append(f"角色表情：{panel.get('expression', '平静')}（神态与对白情绪深度呼应）")
+
+        versions = panel.get('appearance_versions', {})
+        char_desc = []
+        for cid, vid in versions.items():
+            cinfo = characters_map.get(cid, {})
+            cname = cinfo.get('name', cid)
+            char_desc.append(f"{cname}（形态版本：{vid}）")
+        if char_desc:
+            lines.append("登场角色：" + "，".join(char_desc))
+        if panel.get('prop_ids'):
+            lines.append("关键道具：" + "，".join(panel['prop_ids']))
+
+        dialogues = panel.get('dialogue', [])
+        if dialogues:
+            lines.append("【原生台词与气泡内容】")
+            for d in dialogues:
+                kind = d.get('kind', 'speech')
+                speaker = characters_map.get(d.get('speaker'), {}).get('name', d.get('speaker', '旁白'))
+                text = d.get('text', '')
+                if kind == 'thought':
+                    lines.append(f"  * 内心独白（柔和圆角独白框）：{speaker}：“{text}”")
+                elif kind == 'caption':
+                    lines.append(f"  * 旁白解说（矩形浅色旁白方框）：{text}")
+                else:
+                    lines.append(f"  * 角色对话（手绘对话气泡，尾巴指向说话者）：{speaker}：“{text}”")
+        else:
+            lines.append("【台词】纯动作/环境镜头，无对白气泡。")
+        lines.append("")
+
+    lines.append("【阅读与排版终检】构图饱满充满张力，人物线条清晰，文字端正易读，无水印无边框杂色。")
+    return "\n".join(lines)
+
 
 def run(args):
     command = args.command
@@ -2154,6 +2234,16 @@ def run(args):
     if getattr(args, 'bindings', None) and not str(args.bindings).lstrip().startswith('{'):
         args.bindings = str(resolve_file_arg(args.bindings, project_dir=root))
 
+    if command == 'build-prompt':
+        plan = getattr(args, 'plan', None)
+        prompt_text = build_batch_prompt(project, panel_ids=getattr(args, 'panels', None), plan_path=plan)
+        output = getattr(args, 'output', None)
+        if output:
+            out_path = Path(output).resolve()
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(prompt_text, encoding='utf-8')
+            return {'output_path': str(out_path), 'char_count': len(prompt_text)}
+        return {'prompt': prompt_text, 'char_count': len(prompt_text)}
     if command == 'preflight-typeset':
         return check_typeset_feasibility(project, getattr(args, 'font', None))
     if command == 'qa-inputs':
@@ -2162,6 +2252,14 @@ def run(args):
         return [u for u in project['source']['units'] if not args.chapter or u['chapter_id'] == args.chapter]
     if command == 'script-chapter':
         return script_chapter(project, args.chapter)
+    if command == 'check-adaptation':
+        draft = load_json(args.file) if getattr(args, 'file', None) else project['script']
+        errors = source_errors(project, root)
+        errors.extend(adaptation_errors(project['source'], draft, root, args.chapter,
+                                        source_index_hash=project.get('source_index_hash'),
+                                        current_names=(project.get('volume'), project.get('title'))))
+        return {'chapter_id': args.chapter, 'draft_hash': digest(draft), 'errors': errors[:100],
+                'error_count': len(errors), 'semantic_review_required': True}
     if command == 'impact':
         return impact_report(root, project, load_json(args.file))
     if command == 'resolve-issue':
@@ -2260,6 +2358,12 @@ def run(args):
         if not inserted_dispositions:
             merged_dispositions.extend(additions)
         script['source_dispositions'] = merged_dispositions
+        adaptations = fragment.get('chapter_adaptations')
+        if (not isinstance(adaptations, list) or len(adaptations) != 1
+                or not isinstance(adaptations[0], dict) or adaptations[0].get('chapter_id') != chapter_id):
+            raise GateError('Chapter update requires exactly one matching chapter_adaptations record.')
+        script['chapter_adaptations'] = [r for r in script.get('chapter_adaptations', [])
+                                        if isinstance(r, dict) and r.get('chapter_id') != chapter_id] + adaptations
         if any(isinstance(item, dict) and units.get(item.get('unit_id'), {}).get('chapter_id') != chapter_id
                for item in fragment['source_dispositions']):
             raise GateError('Chapter update source dispositions must refer only to the selected chapter.')
@@ -2639,8 +2743,14 @@ def parser():
     typeset_p.add_argument('--project', required=True, help='Volume project directory')
     typeset_p.add_argument('--font', help='Explicit font path for feasibility check')
 
+    build_prompt_p = subs.add_parser('build-prompt')
+    build_prompt_p.add_argument('--project', required=True, help='Volume project directory')
+    build_prompt_p.add_argument('--panels', nargs='+', help='Panel IDs to compile prompt for')
+    build_prompt_p.add_argument('--plan', help='Batch plan JSON file to compile prompt for')
+    build_prompt_p.add_argument('--output', help='Output prompt file path (default stdout)')
+
     for name in ('init', 'preflight', 'qa-inputs', 'chapter', 'script-chapter', 'resolve-issue', 'confirm-source',
-                 'mark-read', 'set-script', 'set-script-chapter', 'impact', 'check-script', 'review',
+                 'mark-read', 'set-script', 'set-script-chapter', 'impact', 'check-script', 'check-adaptation', 'review',
                  'lock-script', 'assert-art', 'register-reference', 'bind-panel',
                  'begin-batch', 'split-batch', 'finish-panel', 'fail-panel', 'compose',
                  'review-layout', 'export', 'verify-export', 'complete', 'status'):
@@ -2671,6 +2781,9 @@ def parser():
             sub.add_argument('--file', required=True)
         if name == 'set-script-chapter':
             sub.add_argument('--chapter', required=True)
+        if name == 'check-adaptation':
+            sub.add_argument('--chapter', required=True)
+            sub.add_argument('--file', help='Chapter draft JSON; defaults to imported volume script.')
         if name == 'review':
             sub.add_argument('--kind', choices=REVIEW_CHECKS, required=True)
         if name == 'register-reference':

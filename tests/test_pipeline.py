@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 import comic_pipeline as cp
 import comic_sources as cs
 import comic_layout as cl
+from adaptation_fixtures import attach_adaptations
 
 
 def fixture_script(source):
@@ -80,6 +81,7 @@ class PipelineTests(unittest.TestCase):
             if chapter['has_body']:
                 self.invoke('mark-read', chapter=chapter['id'], note='已读取夹具正文：' + chapter['title'])
         script = fixture_script(project['source'])
+        attach_adaptations(self.root, project['source'], script)
         self.invoke('set-script', file=self.json_file(script))
         return script
 
@@ -527,6 +529,7 @@ class PipelineTests(unittest.TestCase):
             if ch['has_body']:
                 cp.run(Namespace(command='mark-read', project=str(vol1_dir), chapter=ch['id'], note='读完'))
         script = fixture_script(loaded['source'])
+        attach_adaptations(vol1_dir, loaded['source'], script)
         script_file = self.json_file(script)
         cp.run(Namespace(command='set-script', project=str(vol1_dir), file=script_file))
         updated = cp.project_load(vol1_dir)
@@ -643,6 +646,26 @@ class PipelineTests(unittest.TestCase):
         self.assertIn("docs/structure.md", vol1_readme_text)
         self.assertIn("docs/notes.md", vol1_readme_text)
         self.assertIn("docs/deliverables.md", vol1_readme_text)
+
+    def test_native_lettering_mode_and_build_prompt(self):
+        self.locked()
+        self.accept_all()
+        # Verify preflight-typeset in native mode
+        typeset_res = self.invoke('preflight-typeset')
+        self.assertTrue(typeset_res['ok'])
+        self.assertTrue(typeset_res['native_integrated'])
+
+        # Verify build-prompt generates phone-reading optimized prompt with dialogue
+        prompt_res = self.invoke('build-prompt', panels=['p1', 'p2'])
+        self.assertIn('手机阅读体验', prompt_res['prompt'])
+        self.assertIn('一页3–5格紧凑排列', prompt_res['prompt'])
+        self.assertIn('一张图上尽量占满漫画内容', prompt_res['prompt'])
+        self.assertIn('原生台词与气泡内容', prompt_res['prompt'])
+
+        # Verify compose runs cleanly in native mode
+        self.invoke('compose', font=None)
+        layout = cp.project_load(self.root)['layout']
+        self.assertTrue(len(layout['pages']) > 0)
 
 
 if __name__ == '__main__':

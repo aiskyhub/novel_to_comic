@@ -46,13 +46,20 @@ def _effective_font(root, project, explicit_font=None):
         return path, True
     if style_font_path is not None:
         return find_font(style_font_path), False
-    return find_font(None), False
+    try:
+        return find_font(None), False
+    except c.GateError:
+        panels = project.get('script', {}).get('panels', [])
+        default_mode = style.get('lettering_mode', 'native')
+        if all(p.get('lettering_mode', default_mode) == 'native' for p in panels):
+            return None, False
+        raise
 
 
 def layout_fingerprint(root, project, explicit_font=None):
     c = core()
     font_path, _ = _effective_font(root, project, explicit_font)
-    font_sha = c.sha_file(font_path)
+    font_sha = c.sha_file(font_path) if font_path else None
     images = []
     for panel in project['script']['panels']:
         attempt = c.accepted_panel(root, project, panel)
@@ -162,10 +169,12 @@ def _segment_intersects_rect(start, end, rect):
 def _bubble_specs(panel, dialogue, names, default_mode):
     panel_id = panel['id']
     mode = panel.get('lettering_mode', default_mode)
-    if mode not in ('band', 'bubbles'):
-        raise _panel_error(panel_id, 'lettering_mode', "must be 'band' or 'bubbles'.")
+    if mode not in ('band', 'bubbles', 'native'):
+        raise _panel_error(panel_id, 'lettering_mode', "must be 'band', 'bubbles', or 'native'.")
     for index, item in enumerate(dialogue):
         _dialogue_render_text(panel, index, item, names)
+    if mode == 'native':
+        return mode, []
     if mode == 'band':
         return mode, [{'dialogue_index': i, 'order': i,
                        'speaker': item.get('speaker'), 'text': _dialogue_render_text(panel, i, item, names)[0]}
@@ -228,7 +237,11 @@ def _manifest_panel(panel, style, names):
     if not isinstance(dialogue, list):
         raise _panel_error(panel['id'], 'dialogue', 'must be an array.')
     mode, specs = _bubble_specs(panel, dialogue, names, style.get('lettering_mode', 'band'))
-    if mode == 'band':
+    if mode == 'native':
+        entries = [{'dialogue_index': i, 'kind': dialogue[i].get('kind'),
+                    'speaker': dialogue[i].get('speaker'), 'text': dialogue[i].get('text', '')}
+                   for i in range(len(dialogue))]
+    elif mode == 'band':
         entries = [{'dialogue_index': item['dialogue_index'], 'kind': dialogue[item['dialogue_index']].get('kind'),
                     'speaker': item['speaker'], 'text': item['text']} for item in specs]
     else:
@@ -313,7 +326,7 @@ def panel_tile(root, project, panel, width, font_path, font_size, *,
                 draw.text((padding * 2, y + padding + number * line_height), line, font=font,
                           fill='#25262a', anchor='lt')
             y += height + padding
-    else:
+    elif mode == 'bubbles':
         _check_raster_dimensions(width, picture_height, context, style_field)
         tile = picture.copy()
         draw = ImageDraw.Draw(tile)
@@ -365,6 +378,9 @@ def panel_tile(root, project, panel, width, font_path, font_size, *,
             for number, line in enumerate(lines):
                 draw.text((left + bubble_padding, first_y + number * line_height), line, font=font,
                           fill='#25262a', anchor='lt')
+    else:
+        _check_raster_dimensions(width, picture_height, context, style_field)
+        tile = picture.copy()
     draw = ImageDraw.Draw(tile)
     draw.rectangle((0, 0, width - 1, picture_height - 1), outline=INK_COLOR, width=stroke)
     return tile, manifest_panel
@@ -460,7 +476,10 @@ def compose(root, project, explicit_font=None):
         texts = [chapter_titles[page['chapter_id']] for page in project['script']['pages']]
         for panel in project['script']['panels']:
             mode, specs = _bubble_specs(panel, panel.get('dialogue', []), names, style.get('lettering_mode', 'band'))
-            texts.extend(item['text'] for item in specs)
+            if mode == 'native':
+                texts.extend(d.get('text', '') for d in panel.get('dialogue', []))
+            else:
+                texts.extend(item['text'] for item in specs)
         missing = {ch for text in texts for ch in text if not ch.isspace() and ord(ch) not in cmap}
         if missing:
             raise c.GateError('Chosen font lacks emitted glyphs: ' + ''.join(sorted(missing))[:80])

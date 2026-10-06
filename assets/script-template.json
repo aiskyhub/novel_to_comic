@@ -15,11 +15,12 @@
       "backgrounds": "用简洁形块交代空间，人物交流时适度概括；减少杂物与非叙事纹理，有组织留白，场景基准不堆放不同剧情阶段的道具。",
       "composition": "每格有主要视觉中心；动作、视线与文字空间共同组织阅读动线。",
       "effects": "速度线、粒子和光晕服务真实动作或能力，保持强度与造型一致。",
-      "lettering": "清晰正文、统一气泡与旁白层级，留白充分；不以缩小字号解决拥挤。"
+      "lettering": "画面原生生成规范漫画对话气泡与旁白，字迹清晰工整端正；自然融入镜头，不遮挡人物主要面部。"
     },
     "references": [],
     "format": "pages",
     "reading_direction": "ltr",
+    "lettering_mode": "native",
     "width": 1536,
     "height": 2176,
     "font_size": 46,
@@ -44,5 +45,6 @@
       "open_mysteries": []
     }
   },
-  "source_dispositions": []
+  "source_dispositions": [],
+  "chapter_adaptations": []
 }
