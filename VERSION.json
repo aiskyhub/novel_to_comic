@@ -1,8 +1,8 @@
 {
   "repository": "https://github.com/aiskyhub/aiskyhub",
-  "commit_sha": "f89c17aef82b6edb52a10dc367dcfc12610ee3e8",
-  "commit_date": "2026-10-05T08:17:23Z",
+  "commit_sha": "ce0ea3c0c74a86557a8f8a4714e62fcc180e2d31",
+  "commit_date": "2026-10-06T03:29:22Z",
   "commit_author": "小呆呆666",
-  "commit_message": "feat(skill): add volume docs modularization and subagent fallback to parent model and reasoning effort",
-  "installed_at": "2026-10-05T16:21:09+08:00"
+  "commit_message": "refactor!: 彻底移除图文分离机制与PIL贴字代码，全面采用画面原生手绘气泡与手机紧凑排版",
+  "installed_at": "2026-10-06T11:29:30+08:00"
 }
