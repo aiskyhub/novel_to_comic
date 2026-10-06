@@ -1,1 +1,0 @@
-{"reviewed_ids":["p13"],"accepted":false,"reviewer":"root","evidence":"实际查看原图：周婶年龄、体态、写信手势与唐宁圆短脸、灰围裙身份均正确；但右下木匣里出现玻璃透镜、左下桌面出现独立固定环。正文p11已安装透镜、p12已点灯，不能在p13回到木匣或再次拆出环。","findings":[{"severity":"major","description":"透镜与固定环连续性错误","resolved":false}],"repair":"保留人物与写信构图，只去掉独立环与工具、木匣中的透镜，木匣变为空匣。已登记第一次失败，拟执行第二次图像编辑。"}

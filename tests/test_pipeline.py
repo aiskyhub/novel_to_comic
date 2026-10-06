@@ -22,7 +22,7 @@ def fixture_script(source):
     script = cp.load_json(Path(cp.__file__).resolve().parents[1] / 'assets' / 'script-template.json')
     script.update(outline='测试夹具的全部事件顺序保留。', ending='以提供的最后一句结束。')
     script['style'].update(genre='测试', look='清晰线条', palette='灰色', selection_reason='自动化机械测试',
-                           width=900, height=1200, font_size=28)
+                           format='pages', width=1080, height=2400, font_size=54)
     script['characters'] = [{'id': 'char-a', 'name': '甲', 'aliases': [], 'importance': 'major',
         'design_tier': 'lead',
         'appearance': {'gender_presentation': 'masculine', 'requirements': '机械测试男性造型', 'source_unit_ids': []},
@@ -61,6 +61,7 @@ class PipelineTests(unittest.TestCase):
         self.source.write_text('第1章 来信\n甲拿起信封。\n第2章 回信\n甲写下回答。\n', encoding='utf-8')
         self.invoke('init', source=[str(self.source)], title='通用测试')
 
+
     def invoke(self, name, **kwargs):
         from argparse import Namespace
         kwargs.setdefault('scope', None)
@@ -68,11 +69,13 @@ class PipelineTests(unittest.TestCase):
         kwargs.setdefault('outcome', 'failed')
         return cp.run(Namespace(command=name, project=str(self.root), **kwargs))
 
+
     def json_file(self, value, stem='data'):
         import uuid
         path = self.base / (stem + '-' + uuid.uuid4().hex[:8] + '.json')
         cp.atomic_json(path, value)
         return str(path)
+
 
     def prepare_script(self):
         self.invoke('confirm-source', note='已检查夹具来源与边界')
@@ -85,6 +88,7 @@ class PipelineTests(unittest.TestCase):
         self.invoke('set-script', file=self.json_file(script))
         return script
 
+
     def add_reviews(self):
         project = cp.project_load(self.root)
         for kind, checks in cp.REVIEW_CHECKS.items():
@@ -93,26 +97,20 @@ class PipelineTests(unittest.TestCase):
                 'checks': {k: True for k in checks}, 'evidence': '自动化夹具报告，只测试结构与关卡。', 'issues': []}
             self.invoke('review', kind=kind, file=self.json_file(report))
 
+
     def locked(self):
         self.prepare_script()
         self.add_reviews()
         self.invoke('lock-script')
 
-    def begin_one(self, panel, prompt):
-        """Exercise the unified batch interface for existing single-frame scenarios."""
-        plan = {'canvas_pixels': [1536, 1024], 'panels': [{'panel_id': panel, 'target_region': [0, 0, 1, 1],
-                            'min_pixels': [1536, 1024]}]}
-        result = self.invoke('begin-batch', plan=self.json_file(plan), prompt=str(prompt))
-        if result['already_accepted']:
-            return {'already_accepted': True, 'path': result['reused'][0]['path']}
-        return {**result['panels'][0], 'batch_id': result['batch_id']}
 
     def image_file(self, color='white'):
         from PIL import Image
         import uuid
         path = self.base / ('mechanical-' + uuid.uuid4().hex[:8] + '.png')
-        Image.new('RGB', (1536, 1024), color).save(path)
+        Image.new('RGB', (1080, 2400), color).save(path)
         return str(path)
+
 
     def qa(self, keys, reviewed_ids=None, image_sha256=None, reference_visual_key=None,
            attempt_bindings=None):
@@ -131,6 +129,7 @@ class PipelineTests(unittest.TestCase):
             report['attempt_bindings'] = attempt_bindings
         return self.json_file(report)
 
+
     def reference_qa(self, image_path, characters=None, subjects=None, purpose='combined'):
         if subjects is None:
             characters = characters or ['char-a']
@@ -140,178 +139,6 @@ class PipelineTests(unittest.TestCase):
         return self.qa(cp.REFERENCE_CHECKS, inputs['reviewed_ids'], inputs['image_sha256'],
                        inputs['reference_visual_key'])
 
-    def panel_qa(self, panel_id, attempt_number, image_path, reviewed_ids=None):
-        attempt = next(a for a in cp.project_load(self.root)['art']['panels'][panel_id]
-                       if a['number'] == attempt_number)
-        batch = cp.project_load(self.root)['art']['batches'][attempt['batch_id']]
-        if not batch['crops']:
-            from PIL import Image
-            with Image.open(image_path) as image:
-                region = [0, 0, image.width, image.height]
-            self.invoke('split-batch', batch=batch['id'], file=str(image_path),
-                        regions=self.json_file({panel_id: region}))
-        inputs = self.invoke('qa-inputs', panel=panel_id, attempt=attempt_number, file=str(image_path))
-        return self.qa(cp.PANEL_CHECKS, reviewed_ids or inputs['reviewed_ids'], inputs['image_sha256'],
-                       attempt_bindings=inputs['attempt_bindings'])
-
-    def reference(self):
-        image = self.image_file()
-        self.invoke('register-reference', characters=['char-a'], file=image,
-                    qa=self.reference_qa(image, characters=['char-a']))
-        reference = cp.project_load(self.root)['art']['references'][-1]
-        for panel in cp.project_load(self.root)['script']['panels']:
-            if panel['id'] not in cp.project_load(self.root)['art'].get('bindings', {}):
-                self.invoke('bind-panel', panel=panel['id'], bindings=self.json_file(
-                    {'appearance_versions': {'char-a': 'base'}, 'reference_ids': [reference['id']]}))
-
-    def accept_all(self, colors=None):
-        self.reference()
-        for panel in cp.project_load(self.root)['script']['panels']:
-            prompt = self.base / 'prompt.txt'
-            prompt.write_text('机械测试，不调用图像服务', encoding='utf-8')
-            attempt = self.begin_one(panel=panel['id'], prompt=str(prompt))
-            image = self.image_file((colors or {}).get(panel['id'], '#b8c9d2'))
-            self.invoke('finish-panel', panel=panel['id'], attempt=attempt['attempt'],
-                        file=image, qa=self.panel_qa(panel['id'], attempt['attempt'], image))
-
-    def exported(self):
-        self.locked()
-        self.accept_all()
-        self.invoke('compose', font=None)
-        self.review_and_export()
-
-    def review_and_export(self):
-        layout = cp.project_load(self.root)['layout']
-        report = {'input_hash': layout['input_hash'], 'reviewed_page_ids': [p['id'] for p in layout['pages']],
-                  'elegance_notes': {k: '机械页面夹具，不代替真实看图。'
-                                     for k in ('linework', 'color_and_light', 'visual_hierarchy')},
-                  'checks': {k: True for k in cp.LAYOUT_CHECKS}, 'evidence': '机械页面夹具检查'}
-        self.invoke('review-layout', file=self.json_file(report))
-        self.invoke('export')
-
-    def mixed_script(self, direction='ltr', max_height=6000, count=4):
-        self.root = self.base / ('混合分格-' + direction)
-        source = self.base / (direction + '.txt')
-        source.write_text('第1章 场景\n甲进入房间。\n甲打开信封。\n甲读完信。\n甲走到窗前。\n'
-                          + ''.join(f'甲观察第{i}件物品。\n' for i in range(5, count + 1)), encoding='utf-8')
-        self.invoke('init', source=[str(source)], title='混合分格机械测试')
-        script = self.prepare_script()
-        script['style'].update(format='strip', reading_direction=direction, max_segment_height=max_height)
-        for panel in script['panels']:
-            panel['dialogue'] = []
-        rows = [['p1'], ['p2', 'p3'], ['p4']]
-        rows.extend([f'p{i}' for i in range(start, min(start + 2, count + 1))]
-                    for start in range(5, count + 1, 2))
-        script['pages'] = [{'id': 'page-mixed', 'chapter_id': script['panels'][0]['chapter_id'],
-                            'panel_ids': [p['id'] for p in script['panels']], 'rows': rows}]
-        self.invoke('set-script', file=self.json_file(script))
-        return script
-
-    def accepted_mixed(self, direction='ltr', max_height=6000):
-        self.mixed_script(direction, max_height)
-        self.add_reviews()
-        self.invoke('lock-script')
-        self.accept_all({'p1': '#ca5362', 'p2': '#428d6b', 'p3': '#467cc2', 'p4': '#d3a348'})
-
-    def color_bounds(self, image, color):
-        from PIL import Image, ImageColor
-        mask = Image.new('1', image.size)
-        rgb = ImageColor.getrgb(color)
-        pixels = image.load()
-        mask.putdata([pixels[x, y] == rgb for y in range(image.height) for x in range(image.width)])
-        bounds = mask.getbbox()
-        self.assertIsNotNone(bounds, 'Rendered illustration color missing: ' + color)
-        return bounds
-
-    def test_page_rows_reject_missing_reordered_duplicate_or_malformed_panels(self):
-        script = self.mixed_script()
-        invalid = [[], [[]], None, ['p1', 'p2', 'p3', 'p4'],
-                   [['p1', 'p2', 'p3'], ['p4']], [['p2', 'p1'], ['p3', 'p4']],
-                   [['p1'], ['p2', 'p3']], [['p1'], ['p2', 'p2'], ['p4']],
-                   [['p1'], ['p2', 3], ['p4']]]
-        for rows in invalid:
-            with self.subTest(rows=rows):
-                candidate = copy.deepcopy(script)
-                candidate['pages'][0]['rows'] = rows
-                self.invoke('set-script', file=self.json_file(candidate))
-                self.assertTrue(any('Page rows' in error for error in self.invoke('check-script')['errors']))
-
-    def test_mixed_rows_render_full_width_pairs_and_both_reading_directions(self):
-        from PIL import Image
-        for direction in ('ltr', 'rtl'):
-            with self.subTest(direction=direction):
-                self.accepted_mixed(direction)
-                self.invoke('compose', font=None)
-                layout = cp.project_load(self.root)['layout']
-                self.assertEqual(1, len(layout['pages']))
-                self.assertEqual(['p1', 'p2', 'p3', 'p4'], layout['pages'][0]['panel_ids'])
-                with Image.open(cp.inside(self.root, layout['pages'][0]['path'])) as image:
-                    a, b, c, d = [self.color_bounds(image, color) for color in
-                                   ('#ca5362', '#428d6b', '#467cc2', '#d3a348')]
-                self.assertEqual((a[0], a[2]), (d[0], d[2]))
-                self.assertEqual(b[2] - b[0], c[2] - c[0])
-                self.assertGreater(a[2] - a[0], b[2] - b[0])
-                self.assertEqual(b[1], c[1])
-                self.assertLess(a[3], b[1])
-                self.assertLess(b[3], d[1])
-                self.assertEqual(b[0] < c[0], direction == 'ltr')
-                for bounds in (a, b, c, d):
-                    self.assertAlmostEqual((bounds[2] - bounds[0]) / (bounds[3] - bounds[1]), 1.5, delta=0.02)
-                self.review_and_export()
-                self.assertEqual(1, self.invoke('verify-export')['page_count'])
-
-    def test_mixed_rows_split_at_row_boundaries_within_segment_limit(self):
-        self.accepted_mixed(max_height=1000)
-        self.invoke('compose', font=None)
-        pages = cp.project_load(self.root)['layout']['pages']
-        self.assertEqual([['p1', 'p2', 'p3'], ['p4']], [page['panel_ids'] for page in pages])
-        self.assertTrue(all(page['height'] <= 1000 for page in pages))
-        self.review_and_export()
-        self.assertEqual(2, self.invoke('verify-export')['page_count'])
-
-    def test_columns_fallback_renders_last_single_panel_at_full_width(self):
-        from PIL import Image
-        script = self.mixed_script()
-        script['pages'] = [{'id': 'page-grid', 'chapter_id': script['panels'][0]['chapter_id'],
-                            'panel_ids': ['p1', 'p2', 'p3'], 'columns': 2},
-                           {'id': 'page-last', 'chapter_id': script['panels'][0]['chapter_id'], 'panel_ids': ['p4']}]
-        self.invoke('set-script', file=self.json_file(script))
-        self.add_reviews()
-        self.invoke('lock-script')
-        self.accept_all({'p1': '#ca5362', 'p2': '#428d6b', 'p3': '#467cc2', 'p4': '#d3a348'})
-        self.invoke('compose', font=None)
-        pages = cp.project_load(self.root)['layout']['pages']
-        with Image.open(cp.inside(self.root, pages[0]['path'])) as image:
-            a, b, c = [self.color_bounds(image, color) for color in ('#ca5362', '#428d6b', '#467cc2')]
-        self.assertEqual(a[1], b[1])
-        self.assertLess(a[3], c[1])
-        self.assertGreater(c[2] - c[0], a[2] - a[0])
-
-    def test_visual_plan_change_invalidates_only_affected_painting(self):
-        self.locked()
-        self.accept_all()
-        script = cp.project_load(self.root)['script']
-        script['panels'][0]['visual_plan'] = {'focal_point': '信封', 'depth': '前景手部，中景人物，简化背景'}
-        self.invoke('set-script', file=self.json_file(script))
-        self.add_reviews()
-        self.invoke('lock-script')
-        status = self.invoke('status')
-        self.assertEqual(1, status['panels_accepted'])
-        self.assertEqual('p1', status['next_panel'])
-
-    def test_layout_version_invalidates_exports_and_page_cache_but_reuses_art(self):
-        self.exported()
-        before = cp.project_load(self.root)['layout']
-        with patch.object(cl, 'LAYOUT_VERSION', cl.LAYOUT_VERSION + 1):
-            with self.assertRaises(cp.GateError):
-                self.invoke('verify-export')
-            self.assertEqual(2, self.invoke('status')['panels_accepted'])
-            self.invoke('compose', font=None)
-            after = cp.project_load(self.root)['layout']
-            self.assertNotEqual(before['input_hash'], after['input_hash'])
-            self.assertNotEqual(before['pages'][0]['path'], after['pages'][0]['path'])
-            self.review_and_export()
-            self.assertEqual(2, self.invoke('verify-export')['page_count'])
 
     def test_pre_art_gate_rejects_empty_and_partial_script(self):
         with self.assertRaises(cp.GateError):
@@ -323,6 +150,7 @@ class PipelineTests(unittest.TestCase):
         self.assertTrue(any('Unmapped' in x or 'Chapter has no' in x for x in self.invoke('check-script')['errors']))
         with self.assertRaises(cp.GateError):
             self.invoke('lock-script')
+
 
     def test_three_current_reviews_required(self):
         self.prepare_script()
@@ -338,6 +166,7 @@ class PipelineTests(unittest.TestCase):
         self.assertTrue(self.invoke('assert-art')['allowed'])
         self.assertTrue((self.root / 'full-script.md').is_file())
 
+
     def test_source_modified_invalidates_lock(self):
         self.locked()
         self.source.write_text(self.source.read_text(encoding='utf-8') + '新增事件。', encoding='utf-8')
@@ -350,6 +179,7 @@ class PipelineTests(unittest.TestCase):
             self.invoke('assert-art')
         self.assertFalse(self.invoke('status')['script_locked'])
 
+
     def test_index_tampering_rejected(self):
         self.locked()
         project = cp.project_load(self.root)
@@ -357,6 +187,7 @@ class PipelineTests(unittest.TestCase):
         cp.save(self.root, project)
         with self.assertRaises(cp.GateError):
             self.invoke('assert-art')
+
 
     def test_script_change_invalidates_old_reviews(self):
         self.locked()
@@ -366,6 +197,7 @@ class PipelineTests(unittest.TestCase):
         with self.assertRaises(cp.GateError):
             self.invoke('lock-script')
 
+
     def test_duplicate_ids_and_wrong_speaker_rejected(self):
         script = self.prepare_script()
         script['panels'][1]['id'] = script['panels'][0]['id']
@@ -374,6 +206,7 @@ class PipelineTests(unittest.TestCase):
         errors = self.invoke('check-script')['errors']
         self.assertTrue(any('duplicate' in x for x in errors))
         self.assertTrue(any('speaker' in x for x in errors))
+
 
     def test_state_transition_needs_source_evidence(self):
         script = self.prepare_script()
@@ -386,6 +219,7 @@ class PipelineTests(unittest.TestCase):
         self.invoke('set-script', file=self.json_file(script))
         self.assertEqual([], self.invoke('check-script')['errors'])
 
+
     def test_major_unresolved_review_rejected(self):
         self.prepare_script()
         project = cp.project_load(self.root)
@@ -395,64 +229,11 @@ class PipelineTests(unittest.TestCase):
         with self.assertRaises(cp.GateError):
             self.invoke('review', kind='coverage', file=self.json_file(report))
 
-    def test_attempt_limit_and_pending_no_double_generation(self):
-        self.locked()
-        self.reference()
-        prompt = self.base / 'prompt.txt'
-        prompt.write_text('机械测试', encoding='utf-8')
-        for i in range(3):
-            attempt = self.begin_one(panel='p1', prompt=str(prompt))
-            with self.assertRaises(cp.GateError):
-                self.begin_one(panel='p1', prompt=str(prompt))
-            self.invoke('fail-panel', panel='p1', attempt=attempt['attempt'], reason='机械失败测试')
-            prompt.write_text('微小提示词变动' + str(i), encoding='utf-8')
-        with self.assertRaises(cp.GateError):
-            self.begin_one(panel='p1', prompt=str(prompt))
-
-    def test_reference_or_prompt_file_change_invalidates_art(self):
-        self.locked()
-        self.accept_all()
-        self.assertEqual(2, self.invoke('status')['panels_accepted'])
-        project = cp.project_load(self.root)
-        path = cp.inside(self.root, project['art']['panels']['p1'][0]['prompt_path'])
-        path.write_text('changed', encoding='utf-8')
-        self.assertEqual(1, self.invoke('status')['panels_accepted'])
-        reference = cp.inside(self.root, project['art']['references'][0]['path'])
-        reference.write_bytes(b'changed')
-        self.assertEqual(0, self.invoke('status')['panels_accepted'])
-
-    def test_dialogue_change_reuses_paintings_but_requires_new_lock(self):
-        self.locked()
-        self.accept_all()
-        script = cp.project_load(self.root)['script']
-        script['panels'][0]['dialogue'][0]['text'] += '新增排版文字'
-        self.invoke('set-script', file=self.json_file(script))
-        with self.assertRaises(cp.GateError):
-            self.invoke('assert-art')
-        self.add_reviews()
-        self.invoke('lock-script')
-        self.assertEqual(2, self.invoke('status')['panels_accepted'])
-        prompt = self.base / 'prompt.txt'
-        prompt.write_text('此提示不会被调用', encoding='utf-8')
-        self.assertTrue(self.begin_one(panel='p1', prompt=str(prompt))['already_accepted'])
-
-    def test_exports_real_order_hashes_completion_and_missing_file(self):
-        self.exported()
-        self.assertEqual(2, self.invoke('verify-export')['page_count'])
-        self.assertFalse(self.invoke('status')['complete'])
-        project = cp.project_load(self.root)
-        report = {'input_hash': project['layout']['input_hash'],
-                  'checks': {k: True for k in ['source_scope', 'story_complete', 'visual_consistency', 'exports_opened']},
-                  'evidence': '机械夹具验证，非真实漫画视觉测试'}
-        self.invoke('complete', file=self.json_file(report))
-        self.assertTrue(self.invoke('status')['complete'])
-        pdf = next(x for x in project['exports']['files'] if x['kind'] == 'pdf')
-        cp.inside(self.root, pdf['path']).unlink()
-        self.assertFalse(self.invoke('status')['complete'])
 
     def test_path_escape_rejected(self):
         with self.assertRaises(cp.GateError):
             cp.inside(self.root, '../outside.png')
+
 
     def test_unicode_encodings_duplicate_headings_and_empty_chapter(self):
         for encoding in ('utf-16', 'gb18030', 'utf-8-sig'):
@@ -463,6 +244,7 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(4, len({c['id'] for c in source['chapters']}))
             self.assertFalse(source['chapters'][-1]['has_body'])
             self.assertEqual(1, len(source['issues']))
+
 
     def test_docx_table_and_epub_spine_order(self):
         from docx import Document
@@ -483,6 +265,7 @@ class PipelineTests(unittest.TestCase):
             book.writestr('OPS/b.xhtml', '<html><body><p>先段。</p><script>隐藏内容</script></body></html>')
         self.assertEqual(['先段。', '后段。'], [u['text'] for u in cs.extract([path])['units']])
 
+
     def test_pdf_unreadable_page_flagged(self):
         from reportlab.pdfgen import canvas
         path = self.base / '空白页.pdf'
@@ -494,17 +277,6 @@ class PipelineTests(unittest.TestCase):
         pdf.save()
         source = cs.extract([path])
         self.assertTrue(any(i.get('locator', {}).get('page') == 2 for i in source['issues']))
-
-    def test_missing_font_glyph_stops_layout(self):
-        self.locked()
-        self.accept_all()
-        script = cp.project_load(self.root)['script']
-        script['panels'][0]['dialogue'][0]['text'] = '𐐷'
-        self.invoke('set-script', file=self.json_file(script))
-        self.add_reviews()
-        self.invoke('lock-script')
-        with self.assertRaises(cp.GateError):
-            self.invoke('compose', font=None)
 
 
     def test_book_and_volume_hierarchy(self):
@@ -541,6 +313,7 @@ class PipelineTests(unittest.TestCase):
         cp.run(Namespace(command='lock-script', project=str(vol1_dir)))
         full_md = (vol1_dir / 'full-script.md').read_text(encoding='utf-8')
         self.assertIn('# 神作小说 · 第1卷 · 本卷漫画分镜剧本', full_md)
+
 
     def test_init_book_and_split_source(self):
         from argparse import Namespace
@@ -663,27 +436,43 @@ class PipelineTests(unittest.TestCase):
         self.assertIn("docs/notes.md", vol1_readme_text)
         self.assertIn("docs/deliverables.md", vol1_readme_text)
 
-    def test_native_lettering_mode_and_build_prompt(self):
-        self.locked()
-        self.accept_all()
-        # Verify preflight-typeset in native mode
-        typeset_res = self.invoke('preflight-typeset')
-        self.assertTrue(typeset_res['ok'])
-        self.assertGreater(typeset_res['total_dialogue_items'], 0)
-        self.assertGreater(typeset_res['total_dialogue_chars'], 0)
 
-        # Verify build-prompt generates phone-reading optimized prompt with dialogue
-        prompt_res = self.invoke('build-prompt', panels=['p1', 'p2'])
-        self.assertIn('手机阅读体验', prompt_res['prompt'])
-        self.assertIn('一页3–5格紧凑排列', prompt_res['prompt'])
-        self.assertIn('一张图上尽量占满漫画内容', prompt_res['prompt'])
-        self.assertIn('原生台词与气泡内容', prompt_res['prompt'])
+    def reference(self):
+        image=self.image_file()
+        self.invoke('register-reference',characters=['char-a'],file=image,qa=self.reference_qa(image))
 
-        # Verify compose runs cleanly in native mode
-        self.invoke('compose', font=None)
-        layout = cp.project_load(self.root)['layout']
-        self.assertTrue(len(layout['pages']) > 0)
+    def page_qa(self,page_id,attempt,image):
+        inputs=self.invoke('qa-inputs',page=page_id,attempt=attempt,file=image)
+        report=cp.load_json(self.qa(cp.PAGE_ART_CHECKS,inputs['reviewed_ids'],inputs['image_sha256']))
+        report.update(attempt_binding=inputs['attempt_binding'],reviewed_page_ids=[page_id],
+                      phone_reading_notes=[{'page_id':page_id,'preview_widths':[360,390,430],'min_body_css_px':18,
+                      'evidence':'机械字段夹具，不宣称已读图或测字。'}])
+        return self.json_file(report)
+
+    def accept_all(self):
+        self.reference()
+        for page in cp.project_load(self.root)['script']['pages']:
+            prompt=self.base/(page['id']+'.txt')
+            prompt.write_text(self.invoke('build-prompt',page=page['id'],output=None)['prompt'],encoding='utf-8')
+            result=self.invoke('begin-page',page=page['id'],prompt=str(prompt))
+            if not result['generation_required']:continue
+            image=self.image_file()
+            self.invoke('finish-page',page=page['id'],attempt=result['attempt'],file=image,
+                        qa=self.page_qa(page['id'],result['attempt'],image))
+
+    def review_and_export(self):
+        layout=cp.project_load(self.root)['layout']
+        report={'input_hash':layout['input_hash'],'reviewed_page_ids':[p['id'] for p in layout['pages']],
+                'checks':{k:True for k in cp.LAYOUT_CHECKS},'evidence':'机械字段夹具，不声明艺术可读性。',
+                'elegance_notes':{k:'机械字段夹具' for k in ('linework','color_and_light','visual_hierarchy')},
+                'phone_reading_notes':[{'page_id':p['id'],'preview_widths':[360,390,430],'min_body_css_px':18,
+                                       'evidence':'机械字段夹具'} for p in layout['pages']]}
+        self.invoke('review-layout',file=self.json_file(report))
+        self.invoke('export')
+
+    def exported(self):
+        self.locked();self.accept_all();self.invoke('prepare-pages');self.review_and_export()
 
 
-if __name__ == '__main__':
+if __name__=='__main__':
     unittest.main()

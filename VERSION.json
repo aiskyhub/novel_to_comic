@@ -4,5 +4,8 @@
   "commit_date": "2026-10-06T04:14:26Z",
   "commit_author": "小呆呆666",
   "commit_message": "refactor: 架构彻底重构，默认复制归档原稿、确立三级改编推断边界、双轨质检分离与模板单一权威化",
-  "installed_at": "2026-10-06T12:14:35+08:00"
+  "installed_at": "2026-10-06T12:14:35+08:00",
+  "production_mode": "whole-page",
+  "schema_version": 6,
+  "local_revision": "2.0.0"
 }

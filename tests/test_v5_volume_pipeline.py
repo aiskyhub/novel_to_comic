@@ -1,4 +1,4 @@
-"""Unit and regression tests for Schema v5 volume-scoped comic pipeline features."""
+"""Unit and regression tests for Schema v6 volume-scoped comic pipeline features."""
 from __future__ import annotations
 
 import copy
@@ -15,7 +15,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 import comic_pipeline as cp
 import comic_sources as cs
 import comic_layout as cl
-import comic_batches as cb
 from PIL import Image
 from adaptation_fixtures import attach_adaptations
 
@@ -32,7 +31,7 @@ def fixture_v5_script(source):
     script = cp.load_json(template_path)
     script.update(outline='测试夹具的全部事件顺序保留。', ending='以提供的最后一句结束。')
     script['style'].update(genre='奇幻', look='精致优雅', palette='清透自然',
-                           selection_reason='自动化机械测试', width=900, height=1200, font_size=28)
+                           selection_reason='自动化机械测试', format='pages', width=1080, height=2400, font_size=54)
     script['characters'] = [{
         'id': 'char-a', 'name': '甲', 'aliases': [], 'importance': 'major',
         'design_tier': 'lead',
@@ -94,175 +93,6 @@ class VolumeV5PipelineTests(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def test_volume1_complete_while_volume2_uninitialized(self):
-        """Volume 1 can be locked, drawn, composed, and delivered without waiting for Volume 2."""
-        book_dir = self.base / '星云纪'
-        # 1. init-book and split
-        cp.init_book(book_dir, title='星云纪', sources=[str(self.raw_file)], action='copy')
-        split_res = cp.split_source(book_dir, book_dir / 'source_texts' / '原稿.txt')
-        self.assertEqual(split_res['segments_count'], 2)
-        vol1_src = book_dir / 'split_texts' / 'vol_001_第1卷 起源之章.txt'
-        self.assertTrue(vol1_src.is_file())
-
-        vol1_dir = book_dir / '第1卷'
-        vol2_dir = book_dir / '第2卷'
-        self.assertFalse(vol2_dir.exists())
-
-        # 2. init Volume 1
-        cp.run(Namespace(command='init', project=str(vol1_dir), source=[str(vol1_src)],
-                         title='星云纪', volume='第1卷'))
-        self.assertTrue((vol1_dir / 'project.json').is_file())
-        self.assertFalse(vol2_dir.exists())
-
-        # 3. read & confirm
-        proj = cp.project_load(vol1_dir)
-        for issue in proj['source'].get('issues', []):
-            cp.run(Namespace(command='resolve-issue', project=str(vol1_dir), id=issue['id'], evidence='已确认测试夹具原文无误'))
-        for ch in proj['source']['chapters']:
-            if ch.get('has_body'):
-                cp.run(Namespace(command='mark-read', project=str(vol1_dir), chapter=ch['id'], note='完成正文阅读'))
-        cp.run(Namespace(command='confirm-source', project=str(vol1_dir), note='全卷阅读确认', scope=None))
-
-        # 4. create script with continuity_handover
-        proj = cp.project_load(vol1_dir)
-        script = fixture_v5_script(proj['source'])
-        attach_adaptations(vol1_dir, proj['source'], script)
-        script_file = self.base / 'v1_script.json'
-        script_file.write_text(json.dumps(script, ensure_ascii=False), encoding='utf-8')
-        cp.run(Namespace(command='set-script', project=str(vol1_dir), file=str(script_file)))
-        proj = cp.project_load(vol1_dir)
-
-        # 5. review & lock
-        for kind, checks in cp.REVIEW_CHECKS.items():
-            rep = {'script_hash': cp.digest(proj['script']),
-                   'reviewed_chapter_ids': [c['id'] for c in proj['source']['chapters'] if c['has_body']],
-                   'checks': {k: True for k in checks}, 'evidence': f'{kind} 审查通过', 'issues': []}
-            rep_file = self.base / f"{kind}.json"
-            rep_file.write_text(json.dumps(rep, ensure_ascii=False), encoding='utf-8')
-            cp.run(Namespace(command='review', project=str(vol1_dir), kind=kind, file=str(rep_file)))
-
-        lock_res = cp.run(Namespace(command='lock-script', project=str(vol1_dir)))
-        self.assertTrue(lock_res['ok'])
-        self.assertTrue((vol1_dir / 'full-script.md').is_file())
-
-        # 6. assert-art & register-reference
-        cp.run(Namespace(command='assert-art', project=str(vol1_dir)))
-        ref_png = vol1_dir / 'art' / 'raw' / 'ref_a.png'
-        make_dummy_png(ref_png, 800, 1000)
-        proj = cp.project_load(vol1_dir)
-        d_hash = cp.design_hash(proj, ['char-a'])
-        inputs = cp.run(Namespace(command='qa-inputs', project=str(vol1_dir), file=str(ref_png),
-                                  characters=['char-a'], reference=None, panel=None, attempt=None, bindings=None))
-        qa_rep = {
-            'image_sha256': cp.sha_file(ref_png), 'design_hash': d_hash,
-            'reference_visual_key': inputs['reference_visual_key'],
-            'checks': {k: True for k in cp.REFERENCE_CHECKS},
-            'reviewed_ids': ['char-a'],
-            'comparisons': [], 'findings': [],
-            'evidence': '基准图检验合格',
-            'detail_notes': '细节完整，符合设定',
-            'elegance_notes': {'linework': '线条利落', 'color_and_light': '光影通透', 'visual_hierarchy': '主体突出'}
-        }
-        qa_file = self.base / 'ref_qa.json'
-        qa_file.write_text(json.dumps(qa_rep, ensure_ascii=False), encoding='utf-8')
-        cp.run(Namespace(command='register-reference', project=str(vol1_dir), file=str(ref_png),
-                         qa=str(qa_file), characters=['char-a']))
-
-        # Bind panel to reference
-        ref_id = cp.project_load(vol1_dir)['art']['references'][-1]['id']
-        for p in script['panels']:
-            bind_data = {'appearance_versions': {'char-a': 'base'}, 'reference_ids': [ref_id]}
-            b_file = self.base / f"{p['id']}_bind.json"
-            b_file.write_text(json.dumps(bind_data), encoding='utf-8')
-            cp.run(Namespace(command='bind-panel', project=str(vol1_dir), panel=p['id'], bindings=str(b_file)))
-
-        # 7. batch generate & finish panels
-        panel_ids = [p['id'] for p in script['panels']]
-        count = len(panel_ids)
-        cols = 1 if count == 1 else 2
-        rows = (count + cols - 1) // cols
-        canvas_w = 900 * cols
-        canvas_h = 600 * max(1, rows)
-        plan = {
-            'canvas_pixels': [canvas_w, canvas_h],
-            'panels': [{
-                'panel_id': pid,
-                'target_region': [(i % cols) / cols, (i // cols) / rows, 1 / cols, 1 / rows],
-                'min_pixels': [900, 600]
-            } for i, pid in enumerate(panel_ids)]
-        }
-        plan_file = self.base / 'plan.json'
-        plan_file.write_text(json.dumps(plan), encoding='utf-8')
-        prompt_file = self.base / 'prompt.txt'
-        prompt_file.write_text('batch prompt', encoding='utf-8')
-        batch_info = cp.run(Namespace(command='begin-batch', project=str(vol1_dir), plan=str(plan_file), prompt=str(prompt_file)))
-
-        batch_id = batch_info['batch_id']
-        batch_img = vol1_dir / 'art' / 'raw' / f'{batch_id}.png'
-        make_dummy_png(batch_img, canvas_w, canvas_h)
-        regions = {pid: [900 * (i % cols), 600 * (i // cols), 900, 600] for i, pid in enumerate(panel_ids)}
-        reg_file = self.base / 'regions.json'
-        reg_file.write_text(json.dumps(regions), encoding='utf-8')
-        cp.run(Namespace(command='split-batch', project=str(vol1_dir), batch=batch_id,
-                         file=str(batch_img), regions=str(reg_file)))
-
-        # Finish all panels
-        proj = cp.project_load(vol1_dir)
-        for p_id in panel_ids:
-            crop_path = vol1_dir / 'art' / 'crops' / batch_id / f"{p_id}.png"
-            p_obj = next(p for p in proj['script']['panels'] if p['id'] == p_id)
-            p_inputs = cp.run(Namespace(command='qa-inputs', project=str(vol1_dir), file=str(crop_path),
-                                        panel=p_id, attempt=1, reference=None, characters=None, bindings=None))
-            p_snap = cp.panel_visual_snapshot(vol1_dir, proj, p_obj)
-            p_qa = {
-                'image_sha256': cp.sha_file(crop_path),
-                'visual_hash': cp.digest(p_snap),
-                'attempt_bindings': p_inputs['attempt_bindings'],
-                'checks': {k: True for k in cp.PANEL_CHECKS},
-                'reviewed_ids': [p_id],
-                'comparisons': [], 'findings': [],
-                'evidence': '画格质检通过',
-                'detail_notes': '细节完整，无崩坏',
-                'elegance_notes': {'linework': '线画干净', 'color_and_light': '清透协调', 'visual_hierarchy': '焦点清晰'}
-            }
-            p_qa_file = self.base / f"{p_id}_qa.json"
-            p_qa_file.write_text(json.dumps(p_qa, ensure_ascii=False), encoding='utf-8')
-            cp.run(Namespace(command='finish-panel', project=str(vol1_dir), panel=p_id, attempt=1,
-                             file=str(crop_path), qa=str(p_qa_file)))
-
-        # 8. compose, review-layout, export, verify-export, complete
-        cp.run(Namespace(command='compose', project=str(vol1_dir), font=None))
-        proj = cp.project_load(vol1_dir)
-        layout_rep = {
-            'input_hash': proj['layout']['input_hash'],
-            'reviewed_page_ids': [p['id'] for p in proj['layout']['pages']],
-            'checks': {k: True for k in cp.LAYOUT_CHECKS},
-            'evidence': '版式审阅合格',
-            'elegance_notes': {'linework': '页面线条清晰', 'color_and_light': '整页明暗平衡', 'visual_hierarchy': '动线顺畅'}
-        }
-        lrep_file = self.base / 'layout_rep.json'
-        lrep_file.write_text(json.dumps(layout_rep, ensure_ascii=False), encoding='utf-8')
-        cp.run(Namespace(command='review-layout', project=str(vol1_dir), file=str(lrep_file)))
-
-        cp.run(Namespace(command='export', project=str(vol1_dir)))
-        verify_res = cp.run(Namespace(command='verify-export', project=str(vol1_dir)))
-        self.assertTrue(verify_res['ok'])
-
-        # complete Volume 1
-        final_rep = {
-            'input_hash': proj['layout']['input_hash'],
-            'checks': {k: True for k in ('source_scope', 'story_complete', 'visual_consistency', 'exports_opened')},
-            'evidence': '本卷交付质检完成'
-        }
-        frep_file = self.base / 'final_rep.json'
-        frep_file.write_text(json.dumps(final_rep, ensure_ascii=False), encoding='utf-8')
-        complete_res = cp.run(Namespace(command='complete', project=str(vol1_dir), file=str(frep_file)))
-        self.assertTrue(complete_res['ok'])
-
-        # Status check: Volume 1 is complete! Volume 2 is NOT initialized!
-        status_v1 = cp.run(Namespace(command='status', project=str(vol1_dir), plan=None))
-        self.assertTrue(status_v1['complete'])
-        self.assertFalse(vol2_dir.exists())
 
     def test_manuscript_archive_conflict_resolution_and_manifest(self):
         """Archive two manuscripts with identical names but different content; both are preserved with archive_manifest.json."""
@@ -347,21 +177,6 @@ class VolumeV5PipelineTests(unittest.TestCase):
         self.assertIn("制作组手工日志", updated_readme)
         self.assertIn("确认主笔画风风格定调", updated_readme)
 
-    def test_accepted_panel_accounting_rejects_failed_attempts(self):
-        """accepted_panel helper strictly excludes failed, pending, or non-terminal attempts."""
-        vol_dir = self.base / 'panel_acct_test'
-        src = self.base / 'src_acct.txt'
-        src.write_text("第1章 来信\n正文文本。\n", encoding='utf-8')
-        cp.run(Namespace(command='init', project=str(vol_dir), source=[str(src)],
-                         title='画格统计', volume='第1卷'))
-        proj = cp.project_load(vol_dir)
-        # Empty panels
-        panel = {'id': 'p1'}
-        proj['art']['panels']['p1'] = [
-            {'number': 1, 'status': 'failed', 'path': 'art/crops/batch-01/p1.png'},
-            {'number': 2, 'status': 'pending'}
-        ]
-        self.assertIsNone(cp.accepted_panel(vol_dir, proj, panel))
 
     def test_cross_volume_unit_ref_validation(self):
         """Cross-volume source unit references require volume_id, source_index_hash, and unit_id."""

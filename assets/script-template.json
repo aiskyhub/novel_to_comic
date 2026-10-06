@@ -15,15 +15,14 @@
       "backgrounds": "用简洁形块交代空间，人物交流时适度概括；减少杂物与非叙事纹理，有组织留白，场景基准不堆放不同剧情阶段的道具。",
       "composition": "每格有主要视觉中心；动作、视线与文字空间共同组织阅读动线。",
       "effects": "速度线、粒子和光晕服务真实动作或能力，保持强度与造型一致。",
-      "lettering": "画面原生生成规范漫画对话气泡与旁白，字迹清晰工整端正；自然融入镜头，不遮挡人物主要面部。"
+      "lettering": "原生规范漫画气泡与旁白；1080宽成品图字高目标54像素、至少48像素，360 CSS像素宽预览至少16 CSS像素；工整清楚，不缩字塞对白，不遮脸，长对白拆气泡/格/页保留原意。"
     },
     "references": [],
     "format": "pages",
     "reading_direction": "ltr",
-    "width": 1536,
-    "height": 2176,
-    "font_size": 46,
-    "max_segment_height": 6000
+    "width": 1080,
+    "height": 2400,
+    "font_size": 54
   },
   "characters": [],
   "settings": [],

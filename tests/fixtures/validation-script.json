@@ -20,10 +20,9 @@
     "references": [],
     "format": "pages",
     "reading_direction": "ltr",
-    "width": 1536,
-    "height": 2176,
-    "font_size": 38,
-    "max_segment_height": 6000
+    "width": 1080,
+    "height": 2400,
+    "font_size": 54
   },
   "characters": [
     {
@@ -697,7 +696,7 @@
       "appearance_versions": {
         "zhiwei": "base"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "沈知微抱木匣迈入工作室，木匣保持关闭。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -777,7 +776,7 @@
         "zhiwei": "base",
         "luyan": "base"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "陆砚双手托木匣观察裂纹，沈知微站在旁边。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -875,7 +874,7 @@
         "zhiwei": "base",
         "luyan": "base"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "唐宁从档案架取下旧信，回身展示信封。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -953,7 +952,7 @@
         "zhou": "base",
         "tangning": "base"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "周婶停在门口，目光落在唐宁手里的旧信上。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -1012,7 +1011,7 @@
       "appearance_versions": {
         "zhiwei": "base"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "沈知微在窗旁侧身阅读展开的旧信，信纸无可辨字符。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -1090,7 +1089,7 @@
         "zhou": "base",
         "zhiwei": "base"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "周婶垂眼解释往事，沈知微聆听，握信手指放松。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -1168,7 +1167,7 @@
         "xuchuan": "base",
         "luyan": "base"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "许川在工作台前指向透镜底座的固定环缺口，陆砚查看。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -1248,7 +1247,7 @@
         "zhao": "base",
         "xuchuan": "base"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "老赵把旧铁盒搁到台边，许川看向备件。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -1348,7 +1347,7 @@
         "zhiwei": "work",
         "tangning": "work"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "沈知微与唐宁已穿同款灰工作围裙，沈知微把披肩挂在椅背。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -1437,7 +1436,7 @@
         "xuchuan": "base",
         "luyan": "work"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "许川俯身拧紧金属固定环，陆砚侧脸检查水平仪。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -1534,7 +1533,7 @@
         "luyan": "work",
         "tangning": "work"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "沈知微与陆砚把同一块透镜稳定放入金属座，唐宁观察记录。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -1613,7 +1612,7 @@
         "luyan": "work",
         "zhiwei": "work"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "陆砚刚合上电闸，暖光亮起；沈知微抬头欣喜。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -1692,7 +1691,7 @@
         "zhou": "base",
         "tangning": "work"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "周婶坐在桌边认真写回信，唐宁安静站在旁边。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -1792,7 +1791,7 @@
         "zhiwei": "base",
         "luyan": "base"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "恢复基础服装的男女主角在窗前并立，沈知微收好木匣，陆砚放下袖口。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -1943,7 +1942,7 @@
         "zhiwei": "base",
         "luyan": "base"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "众人在门口收拾离开：许川拿工具箱，老赵扶空铁盒，唐宁挥手，周婶把回信放入木匣。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -2051,7 +2050,7 @@
         "zhiwei": "base",
         "luyan": "base"
       },
-      "aspect_ratio": 1.5,
+      "aspect_ratio": 2.0,
       "visual_plan": {
         "focal_point": "男女主角并肩走下灯塔石阶，海面与塔光在身后。",
         "depth": "前景人物/道具，中景工作台，后景窗与档案架",
@@ -2072,22 +2071,16 @@
       ],
       "rows": [
         [
-          "p01",
+          "p01"
+        ],
+        [
           "p02"
         ],
         [
-          "p03",
-          "p04"
-        ]
-      ],
-      "row_weights": [
-        [
-          1,
-          1
+          "p03"
         ],
         [
-          1,
-          1
+          "p04"
         ]
       ],
       "narrative": {
@@ -2096,7 +2089,8 @@
         "emotion": "好奇与迟疑",
         "focus_panel_id": "p04",
         "page_turn": "旧信的内容是什么"
-      }
+      },
+      "columns": 1
     },
     {
       "id": "page02",
@@ -2109,22 +2103,16 @@
       ],
       "rows": [
         [
-          "p05",
+          "p05"
+        ],
+        [
           "p06"
         ],
         [
-          "p07",
-          "p08"
-        ]
-      ],
-      "row_weights": [
-        [
-          1,
-          1
+          "p07"
         ],
         [
-          1,
-          1
+          "p08"
         ]
       ],
       "narrative": {
@@ -2133,7 +2121,8 @@
         "emotion": "理解与释然",
         "focus_panel_id": "p08",
         "page_turn": "修复能否成功"
-      }
+      },
+      "columns": 1
     },
     {
       "id": "page03",
@@ -2146,22 +2135,16 @@
       ],
       "rows": [
         [
-          "p09",
+          "p09"
+        ],
+        [
           "p10"
         ],
         [
-          "p11",
-          "p12"
-        ]
-      ],
-      "row_weights": [
-        [
-          1,
-          1
+          "p11"
         ],
         [
-          1,
-          1
+          "p12"
         ]
       ],
       "narrative": {
@@ -2170,7 +2153,8 @@
         "emotion": "专注转欣喜",
         "focus_panel_id": "p12",
         "page_turn": "周婶如何回应"
-      }
+      },
+      "columns": 1
     },
     {
       "id": "page04",
@@ -2183,22 +2167,16 @@
       ],
       "rows": [
         [
-          "p13",
+          "p13"
+        ],
+        [
           "p14"
         ],
         [
-          "p15",
-          "p16"
-        ]
-      ],
-      "row_weights": [
-        [
-          1,
-          1
+          "p15"
         ],
         [
-          1,
-          1
+          "p16"
         ]
       ],
       "narrative": {
@@ -2207,7 +2185,8 @@
         "emotion": "平静和解",
         "focus_panel_id": "p16",
         "page_turn": "结束，无新增悬念"
-      }
+      },
+      "columns": 1
     }
   ],
   "source_dispositions": []

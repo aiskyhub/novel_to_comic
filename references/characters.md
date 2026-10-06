@@ -28,7 +28,7 @@ design_tier 按叙事职责选择 lead/core/background，独立于 importance：
 
 只有有效全书剧本锁才开始设定图。男女主角分别具备正面、四分之三、侧面、全身及常用表情参考；这些内容优先放入有明确分区的设定板，不按角度或表情分别调用。同框配角有各自面孔，适合的人物、场景与道具可以共用一张板，画布容量不足时拆板，不能缩小主角脸部、全身或关键细节凑数量。
 
-全体主要人物对照优先复用已通过设定图，可通过本地无损裁切与拼排组成对照板，不另外调用绘图工具；对照拼排是审查辅助，不自动成为新基准。统一线条与上色，比较同性别、同年龄和高频同框组合。合格设定图不能证明其他角度自然稳定，正文仍需逐格检查。已有通过的形态/角度不重绘，新增或失败区域另组紧凑板制作和验收。
+全体主要人物对照直接查看已通过的原生设定图，不裁图、不拼排、不另外调用绘图工具。统一线条与上色，比较同性别、同年龄和高频同框组合。合格设定图不能证明其他角度自然稳定，正文仍需逐格检查。已有通过的形态/角度不重绘，新增或失败区域另组紧凑板制作和验收。
 
 主代理亲自检查 identity、distinctiveness、angles_and_expressions、source_faithfulness、gender_readability、body_design、design_tier_fit、visual_elegance。报告列出 reviewed_ids、comparisons、findings、elegance_notes 和实际看图证据；详细格式见 [quality.md](quality.md)。撞脸、女性无依据中性化、男性造型不清晰、主角设计粗糙、比例失衡或杂乱脏污的渲染均须返修，不得只填漂亮、帅气、通过。程序只核验记录结构，不自动判断美感或性别特征。
 
@@ -36,7 +36,7 @@ design_tier 按叙事职责选择 lead/core/background，独立于 importance：
 
 每个人物的 appearance_versions 保留 base，并为持久换装、伤势、成长、年龄变化、变身和伪装增加新版本。新版本保留身份锚点，不能覆盖 base。尚未揭露的面孔不得提前展示。
 
-参考记录明确 purpose 与 subjects；合并板中的每个 subject 指定 character_id、version_id 及归一化区域，清楚排除其他人物与场景道具。正面、侧面、表情和动作参考可以组合使用。同一角色的多个形态可共用一次生成的原板，再按各自形态、区域和用途分别 register-reference；每条记录仍只列该角色一次，并分别绑定真实图像与视觉键、完成对应 QA。场景与道具通过 reference_paths/reference_hashes 指向原板或无损提取区域，提示词说明实际用途。register-reference 返回真实 ID；用 bind-panel 在 art.bindings 中绑定画格的 appearance_versions 与 reference_ids，避免资产登记反过来修改冻结剧情。
+参考记录明确 purpose 与 subjects；合并板中的每个 subject 指定 character_id、version_id 及归一化区域，清楚排除其他人物与场景道具。正面、侧面、表情和动作参考可以组合使用。同一角色的多个形态可共用一次生成的原板，再按各自形态、区域和用途分别 register-reference；每条记录仍只列该角色一次，并分别绑定真实图像与视觉键、完成对应 QA。场景与道具通过reference_paths/reference_hashes指向原生参考图，提示词说明实际用途。register-reference 返回真实 ID；完整页按本页每格appearance_versions选择有效人物/形态参考，必要时用page.reference_ids明确指定；资产登记不修改冻结剧情。
 
 新登记参考不会自动替换旧绑定。改用新参考先明确更新对应画格绑定，只复核受影响成果。出现参考错人、错形态、缺失、内容变更或 QA 不合格时停止关联绘图。提示词逐张解释参考的用途和人物区域，包含身份锚点、男女外观表达、设计层级、当前形态及必须保留项。
 

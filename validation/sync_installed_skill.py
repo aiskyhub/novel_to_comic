@@ -1,57 +1,49 @@
-"""Back up the installed skills, then copy maintained source files and verify bytes."""
+"""Mirror the current skill; remove obsolete owned files without backups or migration."""
+import argparse
+import hashlib
+import json
+import shutil
 from pathlib import Path
-from datetime import datetime
-import hashlib, json, shutil
 
-repo = Path(__file__).resolve().parents[1]
-source = repo.resolve()
-skill_dirs = {'agents', 'assets', 'references', 'scripts', 'tests'}
-skill_files = {'SKILL.md', 'VERSION.json'}
 
-targets = [
-    Path('C:/Users/xdd66/.codex/skills/novel-to-comic'),
-    Path('C:/Users/xdd66/.gemini/config/skills/novel-to-comic')
-]
+def sync(target):
+    source = Path(__file__).resolve().parents[1]
+    target = target.expanduser().resolve()
+    if target.name != 'novel-to-comic' or target == source:
+        raise ValueError('Target must be a separate, explicitly named novel-to-comic skill directory.')
+    owned_dirs = {'agents','assets','references','scripts','tests','.codex-plugin','validation','README'}
+    owned_files = {'SKILL.md','README.md','VERSION.json','.gitignore'}
+    files = [p for p in source.rglob('*') if p.is_file()
+             and '__pycache__' not in p.parts and p.suffix not in ('.pyc','.pyo')
+             and ((p.parent == source and p.name in owned_files)
+                  or p.relative_to(source).parts[0] in owned_dirs)]
+    desired = {p.relative_to(source) for p in files}
+    target.mkdir(parents=True,exist_ok=True)
+    removed = []
+    for name in owned_dirs:
+        directory = (target/name).resolve()
+        if not directory.is_relative_to(target):
+            raise ValueError('Owned directory escapes the explicit skill root.')
+        if not directory.is_dir():
+            continue
+        for old in list(directory.rglob('*')):
+            if old.is_file() and old.relative_to(target) not in desired:
+                if not old.resolve().is_relative_to(target):
+                    raise ValueError('Obsolete file escapes the explicit skill root.')
+                removed.append(old.relative_to(target).as_posix())
+                old.unlink()
+    for original in files:
+        destination = (target/original.relative_to(source)).resolve()
+        if not destination.is_relative_to(target):
+            raise ValueError('Copy target escapes the explicit skill root.')
+        destination.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copy2(original,destination)
+        if hashlib.sha256(original.read_bytes()).digest()!=hashlib.sha256(destination.read_bytes()).digest():
+            raise ValueError('Installed file differs: '+str(destination))
+    return {'installed_path':str(target),'files_verified':len(files),'obsolete_files_removed':len(removed)}
 
-files = [p for p in source.rglob('*') if p.is_file() and '__pycache__' not in p.parts
-         and '.pytest_cache' not in p.parts and '.venv' not in p.parts and p.suffix not in ('.pyc', '.pyo')
-         and (p.name in skill_files or any(part in skill_dirs for part in p.parts))]
-if not files or not (source / 'SKILL.md').is_file():
-    raise ValueError('Incomplete maintained source')
 
-reports = []
-timestamp = datetime.now().strftime('%Y%m%d-%H%M%S-%f')
-
-for installed_entry in targets:
-    installed = installed_entry.resolve()
-    backup_root = (installed.parent.parent / 'skill-backups').resolve()
-    backup = (backup_root / (f"{timestamp}-{installed.name}")).resolve()
-    
-    backup_root.mkdir(parents=True, exist_ok=True)
-    if installed.exists():
-        shutil.copytree(installed, backup)
-    installed.mkdir(parents=True, exist_ok=True)
-
-    for path in files:
-        dest = (installed / path.relative_to(source)).resolve()
-        if not dest.is_relative_to(installed):
-            raise ValueError(f'Installed target escapes skill directory: {dest}')
-        if source != installed:
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(path, dest)
-
-    for path in files:
-        if hashlib.sha256(path.read_bytes()).digest() != hashlib.sha256((installed / path.relative_to(source)).read_bytes()).digest():
-            raise ValueError(f'Installed content mismatch for {installed}: {path}')
-
-    reports.append({
-        'backup_path': str(backup),
-        'installed_path': str(installed_entry),
-        'resolved_installed_path': str(installed),
-        'update_mode': 'linked_source' if source == installed else 'copied_source',
-        'files_verified': len(files),
-        'result': 'passed'
-    })
-
-(repo / 'validation/installed-sync-report.json').write_text(json.dumps(reports, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-print(json.dumps(reports, ensure_ascii=False, indent=2))
+if __name__ == '__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--target',type=Path,default=Path('C:/Users/xdd66/.codex/skills/novel-to-comic'))
+    print(json.dumps(sync(parser.parse_args().target),ensure_ascii=False))

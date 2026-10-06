@@ -1,7 +1,7 @@
 {
   "name": "novel-to-comic",
-  "version": "1.0.0",
-  "description": "A Codex plugin for converting novels and stories into complete comics faithfully.",
+  "version": "2.0.0",
+  "description": "Faithful novel adaptation with polished whole-page prompts, one image call per page and native phone-reading pages.",
   "author": {
     "name": "xdd666t"
   },
@@ -18,7 +18,7 @@
   "interface": {
     "displayName": "Novel to Comic",
     "shortDescription": "Convert novels into complete comics faithfully.",
-    "longDescription": "Strictly faithful to original novel text, full script first, adaptive batch canvas generation, panel-by-panel review, typesetting and export.",
+    "longDescription": "Full script and source review first; polished page prompts; one call creates the entire phone-reading comic page with all panels and lettering; whole-page review and native-page export.",
     "developerName": "xdd666t",
     "category": "Creative",
     "capabilities": [

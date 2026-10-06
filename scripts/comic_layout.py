@@ -1,9 +1,7 @@
-"""Page assembly/lettering and offline exports; illustration pixels are not redrawn."""
+"""Native whole-page archive, phone previews and offline export. No page assembly."""
 from __future__ import annotations
-
 import html
 import io
-import json
 import math
 import os
 import shutil
@@ -11,399 +9,114 @@ import uuid
 import zipfile
 from pathlib import Path
 
-LAYOUT_VERSION = 5
-PAPER_COLOR = '#faf9f5'
-INK_COLOR = '#2e3035'
+LAYOUT_VERSION = 7
 MAX_RASTER_DIMENSION = 12_000
 MAX_RASTER_PIXELS = 24_000_000
+PHONE_WIDTH, PHONE_HEIGHT, PHONE_FONT_SIZE = 1080, 2400, 54
 
 
 def core():
-    # Avoid a second __main__ module when invoked through the CLI.
     import sys
     main = sys.modules.get('__main__')
-    if hasattr(main, 'GateError') and hasattr(main, 'accepted_panel'):
+    if hasattr(main, 'GateError') and hasattr(main, 'script_errors'):
         return main
     import comic_pipeline
     return comic_pipeline
 
 
-def _effective_font(root, project, explicit_font=None):
-    """Resolve the font once so fingerprinting and rendering use identical bytes."""
-    c = core()
-    style = project.get('script', {}).get('style', {})
-    style_font_path = style.get('font_path')
-    layout = project.get('layout') or {}
-
-    if explicit_font is not None:
-        return find_font(explicit_font), True
-    if (layout.get('font_override') is True and
-            layout.get('style_font_path') == style_font_path and layout.get('font_path')):
-        path = find_font(layout['font_path'])
-        expected = layout.get('font_sha256')
-        if not expected or c.sha_file(path) != expected:
-            raise c.GateError('Stored layout font is missing or changed; re-compose with a valid font.')
-        return path, True
-    if style_font_path is not None:
-        return find_font(style_font_path), False
-    try:
-        return find_font(None), False
-    except c.GateError:
-        return None, False
+def phone_style_errors(style):
+    errors = []
+    if style.get('format') != 'pages':
+        errors.append('style.format: whole-page production requires pages.')
+    width, height = style.get('width', PHONE_WIDTH), style.get('height', PHONE_HEIGHT)
+    size = style.get('font_size', PHONE_FONT_SIZE)
+    if type(width) is not int or type(height) is not int or width <= 0 or height <= 0:
+        return errors + ['style.width/style.height must be positive integers.']
+    if not 2 * width <= height <= 2.4 * width:
+        errors.append('style.height/style.width: phone pages require height/width between 2.0 and 2.4.')
+    if type(size) is not int or size * 360 < width * 16:
+        errors.append('style.font_size: body text must target at least 16 CSS px at 360 CSS px width.')
+    return errors
 
 
-def layout_fingerprint(root, project, explicit_font=None):
-    c = core()
-    font_path, _ = _effective_font(root, project, explicit_font)
-    font_sha = c.sha_file(font_path) if font_path else None
-    images = []
-    for panel in project['script']['panels']:
-        attempt = c.accepted_panel(root, project, panel)
-        if not attempt:
-            raise c.GateError('Missing, stale, or unreviewed illustration: ' + panel['id'])
-        images.append((panel['id'], attempt['sha256']))
-    return c.digest({'layout_version': LAYOUT_VERSION,
-                     'title': project['title'], 'source_scope': project['source']['scope_note'],
-                     'script': project['script'], 'images': images,
-                     'font': {'path': font_path, 'sha256': font_sha}})
+def check_phone_rows(page, rows):
+    if (page.get('columns',1) != 1 or not 1 <= len(page.get('panel_ids',[])) <= 5 or any(len(row)!=1 for row in rows)):
+        raise core().GateError('Phone pages require 1–5 narrative panels in full-width single-column rows.')
 
 
-def find_font(explicit=None):
-    if explicit is not None:
-        path = Path(explicit).expanduser()
-        if not path.is_file():
-            raise core().GateError('Selected CJK font does not exist: ' + str(explicit))
-        return str(path.resolve())
-    candidates = []
-    candidates += [os.environ.get('COMIC_FONT'), 'C:/Windows/Fonts/simhei.ttf',
-                   '/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc',
-                   '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc']
-    for candidate in candidates:
-        if candidate and Path(candidate).is_file():
-            return str(Path(candidate).resolve())
-    raise core().GateError('CJK font missing. Supply --font with a font covering the dialogue language.')
+def _check_raster_dimensions(width,height,context,field):
+    if (type(width) is not int or type(height) is not int or min(width,height)<=0 or
+        max(width,height)>MAX_RASTER_DIMENSION or width*height>MAX_RASTER_PIXELS):
+        raise core().GateError(f'{context}: {field} would require an unsafe {width}x{height} raster.')
 
 
-def wrap_text(text, font, width):
-    """Measured Unicode wrapping, keeping source characters and explicit newlines."""
-    lines = []
-    for paragraph in text.split('\n'):
-        current = ''
-        for character in paragraph:
-            if font.getlength(character) > width:
-                raise core().GateError('Lettering cell narrower than one glyph; increase page width.')
-            if current and font.getlength(current + character) > width:
-                lines.append(current)
-                current = ''
-            current += character
-        lines.append(current)
-    return lines
+def validate_phone_reading_report(project,report):
+    panels={p['id']:p for p in project['script']['panels']}
+    pages={p['id']:p for p in project['layout']['pages']}
+    for note in report['phone_reading_notes']:
+        page=pages.get(note['page_id'])
+        if page is None:
+            raise core().GateError('Unknown whole page in phone reading review.')
+        if note['min_body_css_px'] is None and any(d.get('text','').strip() for pid in page['panel_ids'] for d in panels[pid].get('dialogue',[])):
+            raise core().GateError('A page with lettering must report minimum body text size.')
 
 
-def _panel_error(panel_id, field, detail):
-    return core().GateError(f'Panel {panel_id} {field}: {detail}')
-
-
-def _check_raster_dimensions(width, height, context, style_field):
-    """Reject unreasonable raster allocations before asking Pillow to create them."""
-    if (type(width) is not int or type(height) is not int or width <= 0 or height <= 0 or
-            width > MAX_RASTER_DIMENSION or height > MAX_RASTER_DIMENSION or
-            width * height > MAX_RASTER_PIXELS):
-        raise core().GateError(
-            f'{context}: {style_field} would require an unsafe {width}x{height} raster; '
-            f'limits are {MAX_RASTER_DIMENSION}px per dimension and {MAX_RASTER_PIXELS:,} pixels.'
-        )
-
-
-def _manifest_panel(panel, names):
-    dialogue = panel.get('dialogue', [])
-    entries = []
-    for i, item in enumerate(dialogue):
-        entries.append({
-            'dialogue_index': i,
-            'kind': item.get('kind'),
-            'speaker': item.get('speaker'),
-            'text': item.get('text', '')
-        })
-    return {'panel_id': panel['id'], 'dialogue': entries}
-
-
-def _panel_target_ratio(panel):
-    value = panel.get('aspect_ratio')
-    if value is None:
-        return None
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
-        raise _panel_error(panel['id'], 'aspect_ratio', 'must be a positive finite width/height ratio.')
-    return float(value)
-
-
-def panel_tile(root, project, panel, width, font_path, font_size, *,
-               available_height, style_field, context):
-    from PIL import Image, ImageDraw, ImageOps
-    c = core()
-    attempt = c.accepted_panel(root, project, panel)
-    path = c.inside(root, attempt['path'])
-    names = {item['id']: item['name'] for item in project['script']['characters']}
-    manifest_panel = _manifest_panel(panel, names)
-    stroke = max(1, round(width / 768))
-    with Image.open(path) as source_image:
-        _check_raster_dimensions(source_image.width, source_image.height, context, style_field)
-        ratio = _panel_target_ratio(panel)
-        if ratio is None:
-            picture_height = max(1, round(source_image.height * width / source_image.width))
-        else:
-            picture_height = max(1, round(width / ratio))
-        _check_raster_dimensions(width, picture_height, context, style_field)
-        if picture_height > available_height:
-            raise c.GateError(
-                f'{context}: {style_field} allows at most {available_height}px for this panel row, '
-                f'but its composed tile needs {picture_height}px.'
-            )
-        source_image = source_image.convert('RGB')
-        picture = Image.new('RGB', (width, picture_height), PAPER_COLOR)
-        contained = ImageOps.contain(source_image, (width, picture_height), method=Image.Resampling.LANCZOS)
-        picture.paste(contained, ((width - contained.width) // 2, (picture_height - contained.height) // 2))
-    tile = picture.copy()
-    draw = ImageDraw.Draw(tile)
-    draw.rectangle((0, 0, width - 1, picture_height - 1), outline=INK_COLOR, width=stroke)
-    return tile, manifest_panel
-
-
-def _row_weights(c, page, rows):
-    page_id = page.get('id', '<unknown>')
-    provided = page.get('row_weights')
-    helper = getattr(c, 'page_row_weights', None)
-    if callable(helper):
-        values = [helper(page, row_index) for row_index in range(len(rows))]
-    elif provided is not None:
-        if not isinstance(provided, list) or len(provided) != len(rows):
-            raise c.GateError(f'Page {page_id} row_weights must parallel its rows.')
-        values = provided
-    else:
-        values = [[1] * len(ids) for ids in rows]
-    if not isinstance(values, list) or len(values) != len(rows):
-        raise c.GateError(f'Page {page_id} row_weights must parallel its rows.')
-    result = []
-    for row_index, (ids, weights) in enumerate(zip(rows, values), 1):
-        if (not isinstance(weights, list) or len(weights) != len(ids) or
-                any(isinstance(weight, bool) or not isinstance(weight, (int, float)) or
-                    not math.isfinite(weight) or weight <= 0 for weight in weights)):
-            raise c.GateError(f'Page {page_id} row {row_index} weights must be positive finite numbers parallel to its panel IDs.')
-        result.append([float(weight) for weight in weights])
-    return result
-
-
-def _allocated_widths(total, weights):
-    maximum = max(weights)
-    scaled = [weight / maximum for weight in weights]
-    exact = [total * weight / sum(scaled) for weight in scaled]
-    widths = [math.floor(value) for value in exact]
-    remainder = total - sum(widths)
-    order = sorted(range(len(weights)), key=lambda i: (-(exact[i] - widths[i]), i))
-    for index in order[:remainder]:
-        widths[index] += 1
-    return widths
-
-
-def _atomic_bytes(path, data):
-    path = Path(path)
-    temporary = path.with_name(path.name + '.' + uuid.uuid4().hex + '.tmp')
+def _atomic_bytes(path,data):
+    path=Path(path)
+    temporary=path.with_name(path.name+'.'+uuid.uuid4().hex+'.tmp')
     try:
         temporary.write_bytes(data)
-        os.replace(temporary, path)
+        os.replace(temporary,path)
     finally:
         if temporary.exists():
             temporary.unlink()
 
 
-def _manifest_bytes(value):
-    return (json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + '\n').encode('utf-8')
-
-
-def compose(root, project, explicit_font=None):
-    from PIL import Image, ImageDraw, ImageFont
-    c = core()
-    font_path, font_override = _effective_font(root, project, explicit_font)
-    font_sha = c.sha_file(font_path)
-    fingerprint = layout_fingerprint(root, project, font_path)
-    style = project['script']['style']
-    width = style.get('width', 1536)
-    size = style.get('font_size', 46)
-    if type(width) is not int or type(size) is not int:
-        raise c.GateError('Page width/font size must be integers.')
-    if width < 600 or width > 6000 or size < 16 or size > width // 8:
-        raise c.GateError('style.width/style.font_size invalid for readable layout.')
-    if style.get('format') not in ('pages', 'strip'):
-        raise c.GateError('Style format must be pages or strip.')
-    fixed_height = style.get('height', 2176)
-    max_segment_height = style.get('max_segment_height', 6000)
-    if (type(fixed_height) is not int or type(max_segment_height) is not int or
-            fixed_height <= 0 or max_segment_height <= 0):
-        raise c.GateError('style.height and style.max_segment_height must be positive integers.')
-    height_field = 'style.height' if style['format'] == 'pages' else 'style.max_segment_height'
-    configured_height = fixed_height if style['format'] == 'pages' else max_segment_height
-    # Validate the final page/segment before any panel-tile or canvas Image.new call.
-    if style['format'] == 'pages':
-        _check_raster_dimensions(width, configured_height, 'Layout canvas', height_field)
-    else:
-        # A strip's configured ceiling is not itself allocated; check its height bound
-        # here, then check each measured row/segment against the full pixel budget.
-        _check_raster_dimensions(1, configured_height, 'Strip segment limit', height_field)
-    names = {item['id']: item['name'] for item in project['script']['characters']}
-    # Check only rasterized chapter headings and text actually emitted in dialogue cells.
-    try:
-        from reportlab.pdfbase.ttfonts import TTFont
-        font = TTFont('comic-font-coverage', font_path, subfontIndex=0)
-        cmap = font.face.charToGlyph
-        chapter_titles = {chapter['id']: chapter['title'] for chapter in project['source']['chapters']}
-        texts = [chapter_titles[page['chapter_id']] for page in project['script']['pages']]
-        for panel in project['script']['panels']:
-            texts.extend(d.get('text', '') for d in panel.get('dialogue', []))
-        missing = {ch for text in texts for ch in text if not ch.isspace() and ord(ch) not in cmap}
-        if missing:
-            raise c.GateError('Chosen font lacks emitted glyphs: ' + ''.join(sorted(missing))[:80])
-    except ImportError as error:
-        raise c.GateError('Font coverage verification requires reportlab in the layout runtime.') from error
-    panels = {p['id']: p for p in project['script']['panels']}
-    chapters = {chapter['id']: chapter for chapter in project['source']['chapters']}
-    margin, gutter = max(28, width // 28), max(18, width // 55)
-    title_size = max(16, round(size * 0.85))
-    title_font = ImageFont.truetype(font_path, title_size)
-    old_layout = project.get('layout') or {}
-    cache_repairs = list(old_layout.get('cache_repairs', []))
-    rendered, order = [], 0
+def layout_fingerprint(root,project):
+    from comic_pages import accepted_page
+    c=core()
+    images=[]
     for page in project['script']['pages']:
-        page_id = page.get('id', '<unknown>')
-        source_rows = c.page_rows(page)
-        weights_by_row = _row_weights(c, page, source_rows)
-        available = width - 2 * margin
-        header = margin + title_size * 2 + gutter
-        base_height = header + margin
-        content_limit = fixed_height if style['format'] == 'pages' else max_segment_height
-        rows = []
-        for row_index, (ids, weights) in enumerate(zip(source_rows, weights_by_row), 1):
-            if len(ids) == 2:
-                available -= gutter
-            cell_widths = _allocated_widths(available, weights)
-            if len(ids) == 2:
-                available += gutter
-            tiles, manifest_panels = [], []
-            for panel_id, cell_width in zip(ids, cell_widths):
-                ratio = _panel_target_ratio(panels[panel_id])
-                if ratio is not None:
-                    target_height = cell_width / ratio
-                    if not math.isfinite(target_height) or target_height + base_height > content_limit:
-                        raise c.GateError(f'Page {page_id} row {row_index} panel {panel_id}: {height_field} is too small for its aspect ratio; re-plan the row.')
-                try:
-                    tile, manifest_panel = panel_tile(
-                        root, project, panels[panel_id], cell_width, font_path, size,
-                        available_height=content_limit - base_height,
-                        style_field=height_field,
-                        context=f'Page {page_id} row {row_index} panel {panel_id}')
-                except c.GateError as error:
-                    if str(error).startswith('Panel '):
-                        raise
-                    raise c.GateError(f'Page {page_id} row {row_index}: {error}') from error
-                tiles.append(tile)
-                manifest_panels.append(manifest_panel)
-            rows.append({'ids': ids, 'tiles': tiles, 'widths': cell_widths,
-                         'height': max(tile.height for tile in tiles), 'manifest_panels': manifest_panels})
-        if style['format'] == 'pages':
-            segments = [rows]
-            segment_height = base_height + sum(row['height'] for row in rows) + gutter * max(0, len(rows) - 1)
-            if segment_height > fixed_height:
-                overflow_row = 1
-                accumulated = base_height
-                for row_index, row in enumerate(rows, 1):
-                    accumulated += row['height'] + (gutter if row_index > 1 else 0)
-                    if accumulated > fixed_height:
-                        overflow_row = row_index
-                        break
-                raise c.GateError(f'Page {page_id} row {overflow_row} exceeds fixed height {fixed_height}px; re-plan rows or panel ratios.')
-        else:
-            segments, current, current_height = [], [], base_height
-            for row_index, row in enumerate(rows, 1):
-                if base_height + row['height'] > max_segment_height:
-                    raise c.GateError(f'Page {page_id} row {row_index}: style.max_segment_height {max_segment_height}px is too small; re-plan panel ratio or lettering.')
-                next_height = current_height + row['height'] + (gutter if current else 0)
-                if current and next_height > max_segment_height:
-                    segments.append(current)
-                    current, current_height = [], base_height
-                    next_height = current_height + row['height']
-                current_height = next_height
-                current.append(row)
-            if current:
-                segments.append(current)
-        for segment_number, segment in enumerate(segments, 1):
-            order += 1
-            content_height = base_height + sum(row['height'] for row in segment) + gutter * max(0, len(segment) - 1)
-            height = fixed_height if style['format'] == 'pages' else content_height
-            if style['format'] == 'strip' and height > max_segment_height:
-                raise c.GateError(f'Page {page_id} segment {segment_number}: style.max_segment_height {max_segment_height}px exceeded.')
-            _check_raster_dimensions(width, height, f'Page {page_id} segment {segment_number}', height_field)
-            canvas = Image.new('RGB', (width, height), PAPER_COLOR)
-            draw = ImageDraw.Draw(canvas)
-            chapter = chapters.get(page['chapter_id'])
-            if chapter is None:
-                raise c.GateError(f'Page {page_id} has unknown chapter {page.get("chapter_id")}.')
-            title_lines = wrap_text(chapter['title'], title_font, width - 2 * margin)
-            if len(title_lines) > 2:
-                raise c.GateError(f'Page {page_id} chapter title exceeds its header; use a wider page or smaller header font.')
-            for i, line in enumerate(title_lines):
-                draw.text((margin, margin + i * title_size), line, font=title_font, fill='#5b5c60', anchor='lt')
-            y, included, manifest_panels = header, [], []
-            for row in segment:
-                indexes = list(range(len(row['tiles'])))
-                if style['reading_direction'] == 'rtl':
-                    indexes.reverse()
-                x = margin
-                for index in indexes:
-                    tile = row['tiles'][index]
-                    canvas.paste(tile, (x, y))
-                    x += tile.width + gutter
-                if x - gutter != width - margin:
-                    raise c.GateError(f'Page {page_id} row width allocation does not fill its available width exactly.')
-                included.extend(row['ids'])
-                manifest_panels.extend(row['manifest_panels'])
-                y += row['height'] + gutter
-            identifier = page_id + (f'-s{segment_number:03d}' if len(segments) > 1 else '')
-            suffix = c.digest({'input': fingerprint, 'font': font_sha, 'id': identifier})[:12]
-            relative = f'pages/{order:06d}-{identifier}-{suffix}.png'
-            path = c.inside(root, relative)
-            path.parent.mkdir(parents=True, exist_ok=True)
-            output = io.BytesIO()
-            canvas.save(output, format='PNG', optimize=False, compress_level=9)
-            image_bytes = output.getvalue()
-            fresh_sha = hashlib_bytes(image_bytes)
-            old_sha = c.sha_file(path) if path.is_file() else None
-            if old_sha is not None and old_sha != fresh_sha:
-                repair_dir = c.inside(root, 'tmp/cache-repairs')
-                repair_dir.mkdir(parents=True, exist_ok=True)
-                archived = repair_dir / (f'{uuid.uuid4().hex}-{path.name}')
-                shutil.copy2(path, archived)
-                archived_sha = c.sha_file(archived)
-                if archived_sha != old_sha or c.sha_file(path) != old_sha:
-                    raise c.GateError(f'Page {page_id} cache changed while its repair copy was archived.')
-                cache_repairs.append({'page_id': identifier,
-                                      'archived_path': archived.relative_to(root).as_posix(),
-                                      'archived_sha256': archived_sha,
-                                      'fresh_sha256': fresh_sha})
-            if old_sha != fresh_sha:
-                _atomic_bytes(path, image_bytes)
-            lettering = {'manifest_version': 1, 'composition_id': identifier, 'panel_ids': included,
-                         'panels': manifest_panels}
-            manifest_relative = relative[:-4] + '.lettering.json'
-            manifest_path = c.inside(root, manifest_relative)
-            manifest_data = _manifest_bytes(lettering)
-            _atomic_bytes(manifest_path, manifest_data)
-            rendered.append({'id': identifier, 'order': order, 'chapter_id': page['chapter_id'],
-                             'panel_ids': included, 'path': relative, 'sha256': fresh_sha,
-                             'lettering_manifest_path': manifest_relative,
-                             'lettering_manifest_sha256': hashlib_bytes(manifest_data),
-                             'width': width, 'height': height})
-    return {'input_hash': fingerprint, 'font_path': font_path, 'font_sha256': font_sha,
-            'font_override': font_override, 'style_font_path': style.get('font_path'),
-            'pages': rendered, 'cache_repairs': cache_repairs, 'qa': None}
+        attempt=accepted_page(root,project,page)
+        if attempt is None:
+            raise c.GateError('Missing/stale/unreviewed whole page: '+page['id'])
+        images.append((page['id'],attempt['sha256']))
+    return c.digest({'layout_version':LAYOUT_VERSION,'title':project['title'],'script':project['script'],'images':images})
+
+
+def prepare_pages(root,project):
+    from PIL import Image
+    from comic_pages import accepted_page,check_page_image
+    c=core()
+    fingerprint=layout_fingerprint(root,project)
+    pages=[]
+    for order,page in enumerate(project['script']['pages'],1):
+        attempt=accepted_page(root,project,page)
+        source=c.inside(root,attempt['path'])
+        width,height=check_page_image(source)
+        relative=f'pages/{order:06d}-{page["id"]}-{attempt["sha256"][:12]}.png'
+        destination=c.inside(root,relative)
+        destination.parent.mkdir(parents=True,exist_ok=True)
+        if not destination.is_file() or c.sha_file(destination)!=attempt['sha256']:
+            shutil.copy2(source,destination)
+        if c.sha_file(destination)!=attempt['sha256']:
+            raise c.GateError('Whole-page bytes changed during archival.')
+        previews=[]
+        with Image.open(source) as image:
+            for preview_width in (360,390,430):
+                preview_height=round(height*preview_width/width)
+                preview=image.resize((preview_width,preview_height),Image.Resampling.LANCZOS)
+                output=io.BytesIO()
+                preview.save(output,format='PNG')
+                data=output.getvalue()
+                preview_relative=f'pages/phone-previews/{order:06d}-{page["id"]}-{attempt["sha256"][:12]}-{preview_width}.png'
+                path=c.inside(root,preview_relative)
+                path.parent.mkdir(parents=True,exist_ok=True)
+                _atomic_bytes(path,data)
+                previews.append({'width':preview_width,'height':preview_height,'path':preview_relative,'sha256':hashlib_bytes(data)})
+        pages.append({'id':page['id'],'order':order,'chapter_id':page['chapter_id'],'panel_ids':page['panel_ids'],
+                      'path':relative,'sha256':attempt['sha256'],'width':width,'height':height,'phone_previews':previews})
+    return {'input_hash':fingerprint,'pages':pages,'qa':None}
 
 
 def export(root, project):
@@ -412,6 +125,7 @@ def export(root, project):
     from reportlab.lib.utils import ImageReader
     root = Path(root)
     layout = project['layout']
+    validate_phone_reading_report(project, layout['qa'])
     fingerprint = layout['input_hash']
     destination = root / 'exports' / fingerprint[:12]
     destination.mkdir(parents=True, exist_ok=True)
@@ -462,72 +176,38 @@ def export(root, project):
     return {'input_hash': fingerprint, 'page_count': len(pages), 'files': records}
 
 
-def verify_exports(root, project):
-    c = core()
-    from pypdf import PdfReader
+def verify_exports(root,project):
     from PIL import Image
-    exports, layout = project.get('exports'), project.get('layout')
-    fingerprint = layout_fingerprint(root, project)
-    if not exports or not layout or exports['input_hash'] != fingerprint or layout['input_hash'] != fingerprint:
-        raise c.GateError('Exports missing/stale.')
-    if not layout.get('qa') or layout['qa'].get('input_hash') != fingerprint:
-        raise c.GateError('Current page review missing.')
-    c.validate_qa(layout['qa'], c.LAYOUT_CHECKS)
-    repair_records = layout.get('cache_repairs')
-    if not isinstance(repair_records, list):
-        raise c.GateError('Cache repair archive records are missing or invalid.')
-    recorded_archives = set()
-    for index, repair in enumerate(repair_records):
-        if not isinstance(repair, dict):
-            raise c.GateError(f'Cache repair archive record {index + 1} is invalid.')
-        archive_path = repair.get('archived_path')
-        archive_sha = repair.get('archived_sha256')
-        fresh_sha = repair.get('fresh_sha256')
-        if (not isinstance(archive_path, str) or not archive_path or
-                not isinstance(archive_sha, str) or len(archive_sha) != 64 or
-                not isinstance(fresh_sha, str) or len(fresh_sha) != 64 or
-                archive_sha == fresh_sha or archive_path in recorded_archives):
-            raise c.GateError(f'Cache repair archive record {index + 1} is malformed.')
-        archived = c.inside(root, archive_path)
-        if not archived.is_file() or c.sha_file(archived) != archive_sha:
-            raise c.GateError(f'Cache repair archive missing/changed: {archive_path}')
-        recorded_archives.add(archive_path)
-    repair_dir = c.inside(root, 'tmp/cache-repairs')
-    if repair_dir.exists():
-        actual_archives = {path.relative_to(root).as_posix() for path in repair_dir.iterdir() if path.is_file()}
-        if actual_archives != recorded_archives:
-            raise c.GateError('Cache repair archive records do not match the files on disk.')
-    font_path = layout.get('font_path')
-    if not font_path or not Path(font_path).is_file() or c.sha_file(font_path) != layout.get('font_sha256'):
-        raise c.GateError('Stored layout font is missing or changed.')
-    names = {item['id']: item['name'] for item in project['script']['characters']}
-    panels = {item['id']: item for item in project['script']['panels']}
-    ordered = []
+    from pypdf import PdfReader
+    from comic_pages import check_page_image
+    c=core()
+    exports,layout=project.get('exports'),project.get('layout')
+    fingerprint=layout_fingerprint(root,project)
+    if not exports or not layout or exports['input_hash']!=fingerprint or layout['input_hash']!=fingerprint:
+        raise c.GateError('Whole-page exports missing/stale.')
+    c.validate_qa(layout.get('qa'),c.LAYOUT_CHECKS)
+    if layout['qa'].get('input_hash')!=fingerprint:
+        raise c.GateError('Page review hash changed.')
+    validate_phone_reading_report(project,layout['qa'])
+    if [p['id'] for p in layout['pages']] != [p['id'] for p in project['script']['pages']]:
+        raise c.GateError('Whole-page order differs from the locked script.')
     for page in layout['pages']:
-        path = c.inside(root, page['path'])
-        if not path.is_file() or c.sha_file(path) != page['sha256']:
-            raise c.GateError('Final page missing/changed.')
-        with Image.open(path) as image:
-            if image.size != (page['width'], page['height']):
-                raise c.GateError('Final page dimensions changed.')
-            image.verify()
-        manifest_path = c.inside(root, page.get('lettering_manifest_path', ''))
-        if (not manifest_path.is_file() or
-                c.sha_file(manifest_path) != page.get('lettering_manifest_sha256')):
-            raise c.GateError('Editable lettering manifest missing/changed: ' + page['id'])
-        try:
-            manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
-        except (OSError, ValueError) as error:
-            raise c.GateError('Editable lettering manifest is invalid: ' + page['id']) from error
-        expected_manifest = {'manifest_version': 1, 'composition_id': page['id'],
-                             'panel_ids': page['panel_ids'],
-                             'panels': [_manifest_panel(panels[pid], names)
-                                        for pid in page['panel_ids']]}
-        if manifest != expected_manifest:
-            raise c.GateError('Editable lettering manifest no longer matches canonical panel/dialogue data: ' + page['id'])
-        ordered.extend(page['panel_ids'])
-    if ordered != [p['id'] for p in project['script']['panels']]:
-        raise c.GateError('Final page manifest omits/reorders/duplicates panels.')
+        path=c.inside(root,page['path'])
+        if not path.is_file() or c.sha_file(path)!=page['sha256']:
+            raise c.GateError('Final whole page missing/changed.')
+        if check_page_image(path)!=(page['width'],page['height']):
+            raise c.GateError('Whole-page dimensions changed.')
+        previews=page.get('phone_previews')
+        if not isinstance(previews,list) or [p.get('width') for p in previews]!=[360,390,430]:
+            raise c.GateError('Phone previews missing or invalid.')
+        for preview in previews:
+            path=c.inside(root,preview['path'])
+            if not path.is_file() or c.sha_file(path)!=preview['sha256']:
+                raise c.GateError('Phone preview missing/changed.')
+            with Image.open(path) as image:
+                if image.size!=(preview['width'],round(page['height']*preview['width']/page['width'])):
+                    raise c.GateError('Phone preview dimensions changed.')
+                image.verify()
     files = {f['kind']: f for f in exports['files']}
     if set(files) != {'reader', 'pdf', 'cbz'}:
         raise c.GateError('Reader/PDF/CBZ all required.')

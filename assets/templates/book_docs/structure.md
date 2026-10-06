@@ -25,12 +25,12 @@
     │   ├── structure.md        # 本卷工程目录结构说明
     │   ├── notes.md            # 关键注记与跨卷人设继承
     │   └── deliverables.md     # 导出品交付路径与说明
-    ├── project.json            # 制作状态与索引 (Schema v5)
+    ├── project.json            # 制作状态与索引 (Schema v6)
     ├── full-script.md          # 本卷锁定的分镜剧本
     ├── source/                 # 提取的章节与原稿副本
     ├── scripts/                # 工作剧本与修订稿
     ├── design/                 # 卷内角色、场景及美术档案
-    ├── art/                    # 参考图、画格、批次原图与裁切
+    ├── art/                    # 参考图、完整原生页与实际失败整页
     ├── prompts/                # 实际生成提示词
     ├── reports/                # 各阶段审查质检报告
     ├── pages/                  # 排版完成页面 PNG

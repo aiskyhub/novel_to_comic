@@ -6,6 +6,6 @@
 | **章节实际阅读** | {{read_chapters}}/{{total_chapters}} 章已读 | 笔记已存入 source.chapters |
 | **通篇分镜剧本** | {{lock_display}} | 指纹: `{{script_fingerprint}}` |
 | **角色/场景基准** | 已登记 {{registered_refs}} 项基准参考（{{valid_refs}} 项有效） | 关联 design/ 与 art/references/ |
-| **画面资产生成** | {{accepted_panels}}/{{total_panels}} 格通过 | 计划画格: {{total_panels}} 格 |
-| **页面合成排版** | {{layout_status}} | 规划页数: {{page_count}} 页 |
+| **完整页生成** | {{accepted_pages}}/{{page_count}} 页通过 | 覆盖分镜: {{accepted_panels}}/{{total_panels}} 格 |
+| **原生整页归档** | {{layout_status}} | 规划页数: {{page_count}} 页 |
 | **成品导出交付** | {{exports_status}} | HTML阅读器 / PDF / CBZ |

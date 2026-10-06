@@ -1,6 +1,6 @@
 ---
 name: novel-to-comic
-description: "将小说忠实改编为完整漫画：按原文章节逐章完成细节清单、详细剧本和逐格分镜，禁止过度概括、漏关键剧情或虚构；本卷汇总审查锁定后再制作，正文每张 3–5 格，维护人物一致性、逐格验收并导出。用于小说转漫画、续做和定向返修。"
+description: "将小说忠实改编为完整漫画：按原文章节逐章完成细节清单、详细剧本和逐格分镜，禁止过度概括、漏关键剧情或虚构；本卷汇总审查锁定后再制作，整页一次生成，手机单页1080×2400、正文3–5格纵排且字高可读，维护人物一致性、整页验收并导出。用于小说转漫画、续做和定向返修。"
 ---
 
 # 通用小说转完整漫画
@@ -16,12 +16,13 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
 | **总览流程与快速指引** | `SKILL.md` | 全流程 SOP、各阶段核心原则与执行边界 |
 | **命令行与流水线调用** | `scripts/comic_pipeline.py` & [commands.md](references/commands.md) | CLI 参数契约、环境检测、脚本命令与默认值 |
 | **改编原则与三级证据** | [adaptation.md](references/adaptation.md) & [detail-records.md](references/detail-records.md) | 原著忠实度、视觉推断边界、章节细节契约与自校验 |
-| **分镜密度与合图层级** | [narrative-density.md](references/narrative-density.md) | 整章规模（不设上限）与单张成图（3–5格）两层级规划 |
+| **手机单页尺寸与可读性** | [phone-reading.md](references/phone-reading.md) | 1080×2400竖屏单页、纵排、原生字高、占屏与实际视口验收 |
+| **分镜密度与整页规划** | [narrative-density.md](references/narrative-density.md) | 整章规模（不设上限）与单页成图（3–5格）两层级规划 |
 | **人物设定与美术基准** | [characters.md](references/characters.md) & [art-direction.md](references/art-direction.md) | 角色档案、视觉设计层级、风格定位与基准图登记 |
-| **多格出图与气泡排版** | [production.md](references/production.md) | 自适应合图批次、原生一体化对白气泡与无损分格 |
+| **整页出图与气泡排版** | [production.md](references/production.md) | 一页一次调用、完整提示词打磨与原生对白气泡 |
 | **质量关卡与双轨审查** | [quality.md](references/quality.md) | 机械门禁校验与人工语义/视觉审查双轨分离标准 |
 | **任务委派与环境自适应** | [parallel-work.md](references/parallel-work.md) | 环境自适应委派机制、模型偏好与权责边界 |
-| **数据结构与数据契约** | [schemas.md](references/schemas.md) | 全卷 `project.json` (Schema v5) 字段定义与数据契约 |
+| **数据结构与数据契约** | [schemas.md](references/schemas.md) | 全卷 `project.json` (Schema v6) 字段定义与数据契约 |
 | **异常恢复与版本变更** | [recovery.md](references/recovery.md) | 流程中断恢复、版本分叉隔离与多轮返修处理 |
 | **工程模板权威库** | `assets/templates/` (`book_docs/`, `volume_docs/`) | 项目顶层与分卷模块化 Markdown 说明文档模板 |
 
@@ -52,7 +53,11 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
 ## 两层级分镜规划原则
 
 - **层级一：整卷/整章叙事总规模（不设固定格数硬上限）**：默认完整细节改编，忠实覆盖全部有效原文，保留独立事件、人物弧线、因果、支线、伏笔、对白交锋与心理/情绪转折。**整章叙事总格数不设固定硬上限**。约 2,000 字中文章节常规参考 50–80 格（初始按约 60 格规划），交锋密集时 80–120 格或更多，事件较少时 30–50 格；绝不为了省页数过度概括，也绝不为了凑格虚构新情节。
-- **层级二：单张成图与成品页规模（3–5 格紧凑规划）**：针对手机竖屏沉浸阅读体验与 AI 画面原生像素质量，普通成品页和单次合图生成通常规划 3–5 格（通常从 4 格规划，重点页 1–3 格，手机条漫 1–2 格）。一章 60 格剧本按单张 4 格规划约为 15 张成品图/合图批次，超过 5 格拆到下一张图/批次。
+- **层级二：单张成图与成品页规模（3–5 格紧凑规划）**：针对手机竖屏沉浸阅读体验与 AI 画面原生像素质量，普通成品页规划 3–5 格，默认 3 格整宽纵排，重点页 1–3 格；禁止双列小格或 2×2 网格。一章 60 格通常约 20 张成品页；一页对应一次生成调用，完整页内原生绘制所有镜头、边框与气泡，不建立独立画格图片。
+
+## 手机单页硬约束
+
+编剧、出图、排版和验收前必须读取 [phone-reading.md](references/phone-reading.md)。默认 `format=pages, width=1080, height=2400, font_size=54`，其他单页高/宽必须为 2.0–2.4；1080宽图的正文/旁白至少48像素，在360 CSS像素宽预览中实际字高至少16 CSS像素。每行一格，整页漫画内容占可用页高约85%以上；禁止靠白边、拉伸或低像素放大填屏。原生气泡文字必须按360/390/430宽实际看图核查，页面QA含 `phone_readability` 和逐页 `phone_reading_notes`；像素大不等于文字可读。
 
 ## 不可跳过的制作顺序与独立卷原则
 
@@ -71,7 +76,7 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
 
 1. **唯一默认复制归档保护原稿**：运行 `init-book` 时，唯一默认行为是将小说文本**复制归档**到书名项目内的 `source_texts/` 统一集中管理并校验 SHA256，**完整保留外部原稿在原位置不变**。仅在用户明确指定 `--action move` 时才执行移动。切分长篇文本存入 `split_texts/`。
 2. **模块化文档体系**：书名根目录自动生成总览 `README.md` 与 `docs/` 模块文档（`overview.md`、`structure.md`、`worldview.md`、`characters.md`、`art_direction.md`、`progress.md`）；各分卷目录维护卷级精简 `README.md` 与卷级 `docs/`（`info.md`、`status.md`、`commands.md`、`structure.md`、`notes.md`、`deliverables.md`）。模板统一由 `assets/templates/` 动态渲染载入。
-3. **分卷独立初始化**：只有新卷或新作品才运行 `init`，自动归档原稿副本至卷内 `source/originals/`，仅支持单一权威版本 `schema_version=5`，其他版本明确拒绝，不迁移旧项目。已有项目先通过 `status` 续做。
+3. **分卷独立初始化**：只有新卷或新作品才运行 `init`，自动归档原稿副本至卷内 `source/originals/`，仅支持单一权威版本 `schema_version=6`，其他版本明确拒绝，不迁移旧项目。已有项目先通过 `status` 续做。
 
 ## 2. 本卷剧本与多轮审查修订
 
@@ -88,17 +93,17 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
 - 角色保持男女造型清晰，主角面部五官精细，建立多角度与多表情设定板；
 - 主代理亲自看图，记录具体比较证据，通过 `register-reference` 登记基准。续卷可直接复用前卷已通过的基准图。
 
-## 4. 自适应多格生成与原生一体化对白气泡
+## 4. 整页漫画一次生成
 
-1. **原生一体化对白气泡**：优先采用原生一体化气泡模式出图，在画面中直接生成高质量手绘对话气泡、独白框或旁白框，字迹工整端正，杜绝生硬的外部文字带。
-2. **合图批次与逐格验收**：
-   - 排除已通过和 pending 格，按每张 3–5 格（大格震撼、小格紧凑）规划画布、格区和最低原生像素；
-   - 执行 `preflight --plan` 核对容量 -> `begin-batch` 登记批次 -> 调用绘图 -> `split-batch` 无损分格；
-   - 主代理在原生尺寸及手机阅读尺寸亲自看图，核对人物一致性与对白气泡清晰度，执行 `qa-inputs` 校验，逐格 `finish-panel` 或 `fail-panel`（单格最多 3 次尝试）。
-3. **手机阅读与拼版合成**：运行 `compose` 将通过画格组装成整页竖屏漫画 PNG，完整保留手绘质感与沉浸感。
+正文唯一流程是完整页提示词→一次绘图→一张完整PNG→一份整页验收报告。禁止分格生成、裁切画格、跨页合图、后续拼版或代码补字；不保留旧生产接口与兼容操作。
+
+1. 必须读取 [production.md](references/production.md) 和 [page-prompt-template.md](assets/page-prompt-template.md)，按锁定本页全部分镜、人物状态和原样台词编写完整页提示词。主代理在调用前通读打磨画幅、格数、布局、视觉中心、连续性、气泡位置与归属，消除冲突和漏台词，不额外试画或出变体。
+2. `build-prompt --page`编译完整页内容；打磨后`begin-page --page --prompt`登记一次页调用。已验收则整页复用，pending恢复原任务；需要生成时只调用一次绘图工具请求一张包含全部画格与气泡的竖屏完整页。
+3. 主代理在整页原图及360/390/430宽预览中核对页内全部镜头、人物与文字；`qa-inputs --page --attempt --file`读取机械字段，填写一份真实整页QA，再`finish-page`。失败用`fail-page`记录并归档整页；返修仍请求完整页，每个页输入最多三次调用，不做单格文件和拼贴。
+4. `prepare-pages`按顺序复制完整原生PNG并生成缩小手机预览，不绘制、裁切、拼接或改写漫画内容。
 
 ## 5. 质检、恢复与交付
 
-1. **页面审阅与导出**：实际查看所有合成页面后执行 `review-layout`，运行 `export` 导出离线 HTML 阅读器、PDF 与 CBZ，运行 `verify-export` 校验交付完整性。
+1. **页面审阅与导出**：实际查看所有原生整页后执行 `review-layout`，运行 `export` 导出离线 HTML 阅读器、PDF 与 CBZ，运行 `verify-export` 校验交付完整性。
 2. **最终验收**：执行 `complete` 记录真实最终验收，准确报告本卷交付完成，更新本卷 `README.md` 与顶层总览看板。
 3. **中断恢复**：中断或返修时，运行 `status` 依据真实文件和指纹恢复，复用输入一致且已验收的成果，严格按 [recovery.md](references/recovery.md) 处理。

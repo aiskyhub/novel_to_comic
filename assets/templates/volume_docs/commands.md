@@ -26,14 +26,15 @@
 & $python -X utf8 $cli assert-art --project '{{root}}'
 & $python -X utf8 $cli register-reference --project '{{root}}' --file 'art/raw/ref.png' --qa 'reports/ref.json' --characters char-01
 
-# 6. 批次多格生成、裁切与逐格验收
-& $python -X utf8 $cli begin-batch --project '{{root}}' --plan 'prompts/plan.json' --prompt 'prompts/batch.txt'
-& $python -X utf8 $cli split-batch --project '{{root}}' --batch batch-01 --file 'art/raw/batch.png' --regions 'prompts/regions.json'
-& $python -X utf8 $cli qa-inputs --project '{{root}}' --panel p001 --attempt 1 --file 'art/crops/batch-01/p001.png'
-& $python -X utf8 $cli finish-panel --project '{{root}}' --panel p001 --attempt 1 --file 'art/crops/batch-01/p001.png' --qa 'reports/p001.json'
+# 6. 打磨完整页提示词，一页一次生成与验收
+& $python -X utf8 $cli build-prompt --project '{{root}}' --page page001 --notes 'prompts/page001-notes.md' --output 'prompts/page001.txt'
+# 主代理通读并打磨提示词后登记；按返回提示词和参考路径调用一次绘图工具
+& $python -X utf8 $cli begin-page --project '{{root}}' --page page001 --prompt 'prompts/page001.txt'
+& $python -X utf8 $cli qa-inputs --project '{{root}}' --page page001 --attempt 1 --file 'art/page001.png'
+& $python -X utf8 $cli finish-page --project '{{root}}' --page page001 --attempt 1 --file 'art/page001.png' --qa 'reports/page001.json'
 
-# 7. 页面排版、质检与最终导出
-& $python -X utf8 $cli compose --project '{{root}}'
+# 7. 复制完整原生页、手机阅读质检与最终导出
+& $python -X utf8 $cli prepare-pages --project '{{root}}'
 & $python -X utf8 $cli review-layout --project '{{root}}' --file 'reports/layout.json'
 & $python -X utf8 $cli export --project '{{root}}'
 & $python -X utf8 $cli verify-export --project '{{root}}'
