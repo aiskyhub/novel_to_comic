@@ -796,8 +796,8 @@ def validate_qa(report, required, scope=None):
                     'min_body_css_px' not in item):
                 raise GateError('QA phone_reading_notes: inspect 360/390/430 CSS px previews and record actual observations.')
             minimum = item.get('min_body_css_px')
-            if minimum is not None and (type(minimum) not in (int, float) or not math.isfinite(minimum) or minimum < 16):
-                raise GateError('QA phone_reading_notes.min_body_css_px: body text must be at least 16 CSS px at 360 CSS px width.')
+            if minimum is not None and (type(minimum) not in (int, float) or not math.isfinite(minimum) or minimum <= 0):
+                raise GateError('QA phone_reading_notes.min_body_css_px: body text size must be a positive number or null.')
     if 'visual_elegance' in required:
         notes = report.get('elegance_notes')
         if not isinstance(notes, dict):

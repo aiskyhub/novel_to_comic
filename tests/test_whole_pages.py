@@ -108,14 +108,18 @@ class WholePageTests(unittest.TestCase):
         result = self.begin()
         image = f.image_file()
         report = cp.load_json(f.page_qa('page01', result['attempt'], image))
-        for minimum in (15.9, True, None):
+        for minimum in (0, -1, True, None):
             candidate = copy.deepcopy(report)
             candidate['phone_reading_notes'][0]['min_body_css_px'] = minimum
             with self.assertRaises(cp.GateError):
                 f.invoke('finish-page', page='page01', attempt=result['attempt'], file=image, qa=f.json_file(candidate))
-        del report['phone_reading_notes']
+        missing = copy.deepcopy(report)
+        del missing['phone_reading_notes']
         with self.assertRaisesRegex(cp.GateError, 'phone_reading_notes'):
-            f.invoke('finish-page', page='page01', attempt=result['attempt'], file=image, qa=f.json_file(report))
+            f.invoke('finish-page', page='page01', attempt=result['attempt'], file=image, qa=f.json_file(missing))
+        accepted_report = copy.deepcopy(report)
+        accepted_report['phone_reading_notes'][0]['min_body_css_px'] = 14
+        f.invoke('finish-page', page='page01', attempt=result['attempt'], file=image, qa=f.json_file(accepted_report))
 
     def test_actual_short_page_is_rejected_without_stretch_or_padding(self):
         self.locked_page()

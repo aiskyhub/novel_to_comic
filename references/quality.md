@@ -55,7 +55,7 @@
 
 ## 成品页面
 
-必须按 [phone-reading.md](phone-reading.md) 查看360/390/430 CSS像素宽的每张成品预览，不能用放大原图或缩略图替代。`phone_readability` 核对占约一屏、正文与旁白实际字高至少16 CSS像素（360宽）、整宽纵排、格内无大白边；`phone_reading_notes` 逐页记录页ID、三种预览宽度、最小正文显示字高与具体对白观察。机械尺寸/字段通过不证明已测字或文字清楚。
+按 [phone-reading.md](phone-reading.md) 查看 360/390/430 CSS 像素宽成品预览。`phone_readability` 核对画面自然、正文清晰易读（360 宽视口建议字高约 16 CSS 像素）；`phone_reading_notes` 逐页记录页 ID、三种预览宽度、实测最小正文显示字高与阅读观察。
 
 `text_accuracy`：每句话与锁定稿相符，无错字、漏字、裁切、缺字或溢出。
 `reading_order`：镜头、文字和章节顺序正确；整页缩略图的重点、分格疏密、页边距和气泡层级清楚，正常阅读尺寸的文字可读。

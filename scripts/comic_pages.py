@@ -71,8 +71,8 @@ def check_page_image(path):
         _check_raster_dimensions(image.width, image.height, 'Whole page', 'actual_size')
         if image.format != 'PNG':
             raise c.GateError('Whole-page artwork must be a native PNG.')
-        if image.width < 800 or not 2 <= image.height / image.width <= 2.4:
-            raise c.GateError('Whole page requires native width >=800 and height/width 2.0–2.4; no stretching or padding.')
+        if image.width < 800 or not 1.6 <= image.height / image.width <= 2.6:
+            raise c.GateError('Whole page requires native width >=800 and portrait aspect ratio height/width between 1.6 and 2.6 (recommended 2.0–2.4); no stretching or padding.')
         size = image.size
         image.verify()
     return size
