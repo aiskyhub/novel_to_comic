@@ -1,8 +1,8 @@
 {
   "repository": "https://github.com/aiskyhub/aiskyhub",
-  "commit_sha": "ce0ea3c0c74a86557a8f8a4714e62fcc180e2d31",
-  "commit_date": "2026-10-06T03:29:22Z",
+  "commit_sha": "3cc2b0b8ad783d02df053f472ec59ed3ded693ef",
+  "commit_date": "2026-10-06T03:33:44Z",
   "commit_author": "小呆呆666",
-  "commit_message": "refactor!: 彻底移除图文分离机制与PIL贴字代码，全面采用画面原生手绘气泡与手机紧凑排版",
-  "installed_at": "2026-10-06T11:29:30+08:00"
+  "commit_message": "refactor!: 彻底重构移除图文分离机制，全面采用原生手绘气泡与手机紧凑排版，保持通用规范",
+  "installed_at": "2026-10-06T11:35:30+08:00"
 }
