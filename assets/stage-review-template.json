@@ -9,13 +9,15 @@
   ],
   "anti_formalism_attestation": {
     "prohibit_rubber_stamp": true,
-    "statement": "本报告拒绝形式主义自评与虚高分数。初审阶段必须对照原著进行严苛挑刺并执行阶梯扣分；初稿正常得分区间为70-85分；严禁直接出具≥90分的一把过假报告；必须包含主代理亲自修改打磨画格记录与第二轮复审核销闭环。"
+    "statement": "本报告拒绝形式主义自评与虚高分数。初审阶段必须对照原著进行严苛挑刺并执行阶梯扣分；初稿正常得分区间为70-85分；严禁直接出具≥90分的一把过假报告；必须包含编剧子代理亲自修改打磨画格记录，总导演统筹裁定与第二轮复审核销闭环。"
   },
   "round_1_initial_audit": {
     "audit_objective": "红队啄木鸟挑刺与量化扣分（严禁初审90+一把过形式主义）",
     "auditors": [
       {
         "auditor_id": "subagent_auditor_a",
+        "conversation_id": "00000000-0000-0000-0000-000000000001",
+        "subagent_role": "Script Auditor A",
         "model_used": "自主决定的模型A",
         "scores": {
           "scene_descriptions": 19,
@@ -42,7 +44,7 @@
           {
             "id": "auditor_a_issue_01",
             "chapter_id": "c003",
-            "source_quote": "原文破庙风雨交加与阴冷陈设的具体短引句",
+            "source_quote": "破庙外的暴雨如注，冷风呼啸灌入残破的窗棂，佛像前积水深达数寸，荒凉肃杀。",
             "category": "scene_description",
             "problem_description": "破庙初次登场未设置建立镜头，暴雨倾盆与泥泞细节被一句话带过，缺乏视听氛围沉浸感",
             "suggested_fix": "在分镜开头增加1格破庙外部全景建立镜头交代暴雨环境，并补充屋檐漏雨特写"
@@ -50,7 +52,7 @@
           {
             "id": "auditor_a_issue_02",
             "chapter_id": "c005",
-            "source_quote": "原文配角调侃主角、主角窘迫反差的具体短引句",
+            "source_quote": "配角笑嘻嘻地拍着主角肩膀调侃，主角嘴角抽搐、窘迫得耳根发烫，心中狂翻白眼。",
             "category": "humor_gag",
             "problem_description": "原著此处配角拆台时主角面部抽搐的反差吃瘪神态未呈现，缺少关键喜剧包袱",
             "suggested_fix": "在对白后补充主角特写反应格，刻画豆豆眼/抽搐颜艺与内心吐槽独白"
@@ -59,6 +61,8 @@
       },
       {
         "auditor_id": "subagent_auditor_b",
+        "conversation_id": "00000000-0000-0000-0000-000000000002",
+        "subagent_role": "Script Auditor B",
         "model_used": "自主决定的模型B",
         "scores": {
           "scene_descriptions": 20,
@@ -79,7 +83,7 @@
           {
             "id": "auditor_b_issue_01",
             "chapter_id": "c004",
-            "source_quote": "原文刺客突袭杀气与交锋三招的具体短引句",
+            "source_quote": "杀气骤现，刺客刀锋寒芒撕裂长夜，双方电光石火间连拆三招，剑气纵横激荡。",
             "category": "climax_plot_beat",
             "problem_description": "刺客突袭直接一格跳到倒地结果，原著中双方眼神博弈、拔剑寒光与交锋三招的紧张过程被严重压缩",
             "suggested_fix": "拆分为3格分镜：杀气突现眼神特写 → 刀光交错破空特写 → 击飞落地结果格，补齐高潮冲突链条"
@@ -90,7 +94,9 @@
     "initial_verdict": "REJECTED_FOR_REVISION"
   },
   "lead_agent_revisions": {
-    "revision_summary": "主代理全面核实子代理提出的客观扣分项，坚决认同并落实剧本分镜修改与细节增补",
+    "revision_summary": "总导演客观裁定审查扣分项并下达整改指令单，编剧改稿子代理（subagent_reviser）亲自落实剧本分镜修改与细节增补",
+    "reviser_id": "subagent_reviser",
+    "conversation_id": "00000000-0000-0000-0000-000000000003",
     "applied_fixes": [
       {
         "issue_ref": "auditor_a_issue_01",

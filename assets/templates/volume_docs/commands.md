@@ -28,7 +28,7 @@
 
 # 6. 打磨完整页提示词，一页一次生成与验收
 & $python -X utf8 $cli build-prompt --project '{{root}}' --page page001 --notes 'prompts/page001-notes.md' --output 'prompts/page001.txt'
-# 主代理通读并打磨提示词后登记；按返回提示词和参考路径调用一次绘图工具
+# 提示词子代理打磨提示词后登记；渲染子代理按返回提示词和参考路径调用一次绘图工具
 & $python -X utf8 $cli begin-page --project '{{root}}' --page page001 --prompt 'prompts/page001.txt'
 & $python -X utf8 $cli qa-inputs --project '{{root}}' --page page001 --attempt 1 --file 'art/page001.png'
 & $python -X utf8 $cli finish-page --project '{{root}}' --page page001 --attempt 1 --file 'art/page001.png' --qa 'reports/page001.json'

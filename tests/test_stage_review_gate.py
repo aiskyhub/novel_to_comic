@@ -75,5 +75,37 @@ class TestStageReviewGate(unittest.TestCase):
         self.assertIn('has unresolved issues', str(ctx.exception))
 
 
+    def test_placeholder_quote_rejected(self):
+        """Placeholder tokens like '原文具体短引句' must be rejected by anti-hallucination gate."""
+        report = copy.deepcopy(self.valid_report)
+        report['round_1_initial_audit']['auditors'][0]['issues'][0]['source_quote'] = '原文破庙风雨交加与阴冷陈设的具体短引句'
+        with self.assertRaises(cp.GateError) as ctx:
+            cp.validate_stage_review(report)
+        self.assertIn('Anti-hallucination gate', str(ctx.exception))
+        self.assertIn('contains template placeholder', str(ctx.exception))
+
+    def test_screenwriter_revisions_key_supported(self):
+        """Allow modern screenwriter_revisions key as primary representation of revisions."""
+        report = copy.deepcopy(self.valid_report)
+        report['screenwriter_revisions'] = report.pop('lead_agent_revisions')
+        self.assertTrue(cp.validate_stage_review(report))
+
+    def test_duplicate_auditor_ids_rejected(self):
+        """Auditors must have distinct identities."""
+        report = copy.deepcopy(self.valid_report)
+        report['round_1_initial_audit']['auditors'][1]['auditor_id'] = report['round_1_initial_audit']['auditors'][0]['auditor_id']
+        with self.assertRaises(cp.GateError) as ctx:
+            cp.validate_stage_review(report)
+        self.assertIn('requires distinct auditor IDs', str(ctx.exception))
+
+    def test_duplicate_subagent_conversation_ids_rejected(self):
+        """Subagents must have distinct conversation IDs."""
+        report = copy.deepcopy(self.valid_report)
+        report['round_1_initial_audit']['auditors'][1]['conversation_id'] = report['round_1_initial_audit']['auditors'][0]['conversation_id']
+        with self.assertRaises(cp.GateError) as ctx:
+            cp.validate_stage_review(report)
+        self.assertIn('requires distinct subagent conversation IDs', str(ctx.exception))
+
+
 if __name__ == '__main__':
     unittest.main()

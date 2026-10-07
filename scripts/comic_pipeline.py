@@ -844,7 +844,7 @@ def validate_reference_qa(report, character_ids, image_sha256, reference_visual_
 
 
 def validate_stage_review(report, root=None):
-    """Validate 5-chapter stage review report, strictly enforcing dual-round review and anti-rubber-stamp rules."""
+    """Validate 5-chapter stage review report, strictly enforcing dual-round review, anti-fraud provenance, and anti-rubber-stamp rules."""
     if not isinstance(report, dict):
         raise GateError('Stage review must be a JSON object.')
 
@@ -856,6 +856,21 @@ def validate_stage_review(report, root=None):
     if not isinstance(reviewed_chapters, list) or not reviewed_chapters:
         raise GateError('Stage review must include nonempty reviewed_chapters list.')
 
+    # 0. Anti-fraud subagent provenance check in active Antigravity session
+    if os.environ.get('ANTIGRAVITY_AGENT') == '1' and not os.environ.get('PYTEST_CURRENT_TEST'):
+        app_data = os.environ.get('ANTIGRAVITY_APP_DATA_DIR')
+        conv_id = os.environ.get('ANTIGRAVITY_CONVERSATION_ID')
+        if app_data and conv_id:
+            transcript_path = Path(app_data) / 'brain' / conv_id / '.system_generated' / 'logs' / 'transcript.jsonl'
+            if transcript_path.is_file():
+                transcript_content = transcript_path.read_text(encoding='utf-8', errors='ignore')
+                if '"invoke_subagent"' not in transcript_content:
+                    raise GateError(
+                        'Anti-fraud gate triggered: No invoke_subagent tool calls found in session transcript. '
+                        'Stage review must be executed by real subagents invoked via invoke_subagent. '
+                        'Batch synthesizing reports via Python scripts without spawning subagents is strictly prohibited!'
+                    )
+
     # 1. Round 1 initial audit checks
     r1 = report.get('round_1_initial_audit')
     if not isinstance(r1, dict):
@@ -865,8 +880,33 @@ def validate_stage_review(report, root=None):
     if not isinstance(auditors, list) or len(auditors) < 2:
         raise GateError('round_1_initial_audit requires at least 2 independent auditors (dual subagents).')
 
+    # Banned placeholder quote tokens
+    BANNED_QUOTE_PLACEHOLDERS = (
+        '原文具体', '短引句', '待填', 'placeholder', 'quote here', '具体短引句', '某某段落'
+    )
+
+    # If project root is provided and project.json exists, load source units to verify quotes and panels
+    project_source_units = None
+    project_panels = None
+    if root and isinstance(root, Path) and root.is_dir():
+        proj_file = root / 'project.json'
+        if proj_file.is_file():
+            try:
+                proj_data = load_json(proj_file)
+                if isinstance(proj_data, dict):
+                    project_source_units = proj_data.get('source', {}).get('units', [])
+                    project_panels = proj_data.get('script', {}).get('panels', [])
+            except Exception:
+                pass
+
+    auditor_ids = []
+    auditor_conv_ids = []
     for idx, auditor in enumerate(auditors):
         aid = auditor.get('auditor_id', f'auditor_{idx}')
+        auditor_ids.append(aid)
+        cid = auditor.get('conversation_id')
+        if cid:
+            auditor_conv_ids.append(cid)
         scores = auditor.get('scores', {})
         if not isinstance(scores, dict):
             raise GateError(f'Auditor {aid} scores must be an object.')
@@ -898,23 +938,51 @@ def validate_stage_review(report, root=None):
             iid = issue.get('id')
             if not nonempty(iid):
                 raise GateError(f'Auditor {aid} issue {issue_idx} missing unique id.')
-            if not nonempty(issue.get('chapter_id')):
+            ch_id = issue.get('chapter_id')
+            if not nonempty(ch_id):
                 raise GateError(f'Auditor {aid} issue {iid} missing chapter_id.')
-            if not nonempty(issue.get('source_quote')):
+            quote = issue.get('source_quote')
+            if not nonempty(quote):
                 raise GateError(f'Auditor {aid} issue {iid} missing source_quote binding to novel text.')
+
+            # Check for placeholder string
+            for banned in BANNED_QUOTE_PLACEHOLDERS:
+                if banned in quote:
+                    raise GateError(
+                        f"Anti-hallucination gate: Auditor {aid} issue {iid} source_quote contains template placeholder '{banned}': '{quote}'. "
+                        "Must extract actual verbatim text from novel."
+                    )
+
+            # Check novel text grounding if project units are available
+            if project_source_units:
+                ch_units_text = "".join(u.get('text', '') for u in project_source_units if isinstance(u, dict) and u.get('chapter_id') == ch_id)
+                if ch_units_text:
+                    clean_quote = re.sub(r'\s+', '', quote)
+                    clean_text = re.sub(r'\s+', '', ch_units_text)
+                    if clean_quote not in clean_text:
+                        raise GateError(
+                            f"Anti-hallucination gate: Auditor {aid} issue {iid} source_quote '{quote}' not found in actual novel text of chapter {ch_id}."
+                        )
+
             if not nonempty(issue.get('problem_description')):
                 raise GateError(f'Auditor {aid} issue {iid} missing problem_description.')
             if not nonempty(issue.get('suggested_fix')):
                 raise GateError(f'Auditor {aid} issue {iid} missing suggested_fix.')
 
-    # 2. Revisions checks
-    revisions = report.get('lead_agent_revisions')
+    # Ensure auditors are distinct
+    if len(auditor_ids) >= 2 and len(set(auditor_ids)) < len(auditor_ids):
+        raise GateError('round_1_initial_audit requires distinct auditor IDs.')
+    if len(auditor_conv_ids) >= 2 and len(set(auditor_conv_ids)) < len(auditor_conv_ids):
+        raise GateError('round_1_initial_audit requires distinct subagent conversation IDs for each auditor.')
+
+    # 2. Revisions checks (supports screenwriter_revisions and lead_agent_revisions)
+    revisions = report.get('screenwriter_revisions') or report.get('lead_agent_revisions')
     if not isinstance(revisions, dict) or not nonempty(revisions.get('revision_summary')):
-        raise GateError('Stage review requires lead_agent_revisions with revision_summary documenting revisions applied.')
+        raise GateError('Stage review requires screenwriter_revisions (or lead_agent_revisions) with revision_summary documenting revisions applied.')
 
     applied_fixes = revisions.get('applied_fixes', [])
     if not isinstance(applied_fixes, list) or len(applied_fixes) == 0:
-        raise GateError('lead_agent_revisions must include non-empty applied_fixes documenting actual script refinements.')
+        raise GateError('revisions must include non-empty applied_fixes documenting actual script refinements.')
 
     for f_idx, fix in enumerate(applied_fixes):
         if not isinstance(fix, dict):
@@ -922,10 +990,18 @@ def validate_stage_review(report, root=None):
         ref = fix.get('issue_ref')
         if not nonempty(ref):
             raise GateError(f'applied_fixes[{f_idx}] missing issue_ref.')
-        if not fix.get('modified_panels'):
+        mod_panels = fix.get('modified_panels')
+        if not mod_panels or not isinstance(mod_panels, list):
             raise GateError(f'applied_fixes[{f_idx}] missing modified_panels documenting changed panel IDs.')
         if not nonempty(fix.get('after_revision')):
             raise GateError(f'applied_fixes[{f_idx}] missing after_revision details.')
+
+        # Panel existence check if project panels are available
+        if project_panels:
+            known_pids = {p.get('id') for p in project_panels if isinstance(p, dict)}
+            for pid in mod_panels:
+                if pid not in known_pids:
+                    raise GateError(f"applied_fixes[{f_idx}] modified_panels contains '{pid}' which does not exist in script panels.")
 
     # 3. Round 2 verification checks
     r2 = report.get('round_2_verification')
@@ -1920,6 +1996,28 @@ def run(args):
             reports = sorted(stage_dir.glob('*.json'))
             if not reports:
                 return {'ok': True, 'checked_count': 0, 'message': 'No stage review files found in reports/stage_reviews.'}
+            if len(reports) > 1:
+                all_issues = []
+                all_approved_at = []
+                for rpath in reports:
+                    rep = load_json(rpath)
+                    approved = rep.get('round_2_verification', {}).get('approved_at')
+                    if approved:
+                        all_approved_at.append(approved)
+                    for aud in rep.get('round_1_initial_audit', {}).get('auditors', []):
+                        for iss in aud.get('issues', []):
+                            desc = iss.get('problem_description', '').strip()
+                            fix = iss.get('suggested_fix', '').strip()
+                            if desc and fix:
+                                all_issues.append((desc, fix, rpath.name))
+                if len(all_approved_at) >= 3 and len(set(all_approved_at)) == 1:
+                    raise GateError(f'Anti-batch synthesis gate: {len(all_approved_at)} stage reviews share the exact same approved_at timestamp ({all_approved_at[0]}). Reviews must be conducted sequentially, not batch-synthesized.')
+                issue_map = {}
+                for desc, fix, fname in all_issues:
+                    key = (desc, fix)
+                    if key in issue_map and issue_map[key] != fname:
+                        raise GateError(f'Anti-batch synthesis gate: Identical issue copy-pasted across {issue_map[key]} and {fname}: "{desc[:30]}...". Each stage must identify unique, chapter-specific issues.')
+                    issue_map[key] = fname
             verified = []
             for rpath in reports:
                 report = load_json(rpath)

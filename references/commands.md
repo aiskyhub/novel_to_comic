@@ -37,7 +37,7 @@ init-book默认复制原稿并核验SHA256；只有用户明确--action move时�
 | lock-script | — | 三轮当前审查通过后锁定 |
 | assert-art | — | 出图前检查有效锁 |
 | register-reference | --file --qa (--characters 或 --bindings) | 登记已看图的基准 |
-| build-prompt | --page [--notes] [--output] | 编译一张完整页的全部内容，主代理通读打磨 |
+| build-prompt | --page [--notes] [--output] | 编译一张完整页的全部内容，由分镜提示词工程师子代理打磨 |
 | begin-page | --page --prompt | 登记一次整页调用；返回实际提示词、参考路径与尝试号 |
 | qa-inputs | --page --attempt --file | 读取整页哈希/尝试绑定；不自动生成通过报告 |
 | finish-page | --page --attempt --file --qa | 整页验收，归档原始PNG字节 |
@@ -54,6 +54,6 @@ init-book默认复制原稿并核验SHA256；只有用户明确--action move时�
 
 基准QA还可用qa-inputs --file --characters或--bindings；已登记基准可用--reference检查。正文只使用--page。
 
-正常生产：status→build-prompt→主代理打磨→begin-page→一次绘图得到完整PNG→看整页→qa-inputs→填写一份整页报告→finish-page。失败时fail-page记录具体问题，再修订完整提示词。已经验收的页generation_required=false，不重绘；pending必须恢复，不重复调用。
+正常生产：status→build-prompt→提示词子代理打磨→begin-page→渲染子代理一次绘图得到完整PNG→品控子代理看整页→qa-inputs→填写一份整页报告→主代理finish-page。失败时fail-page记录具体问题，再修订完整提示词。已经验收的页generation_required=false，不重绘；pending必须恢复，不重复调用。
 
 整页报告字段见 [schemas.md](schemas.md)。prepare-pages输出layout.pages[].phone_previews中的360/390/430宽预览，真正阅读后填写phone_reading_notes。所有复制与预览步骤不消耗生图调用。预算按每页当前输入最多三次统计，微调提示词不重置；状态统计不是平台实际计费额度。

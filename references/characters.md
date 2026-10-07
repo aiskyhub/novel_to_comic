@@ -30,7 +30,7 @@ design_tier 按叙事职责选择 lead/core/background，独立于 importance：
 
 全体主要人物对照直接查看已通过的原生设定图，不裁图、不拼排、不另外调用绘图工具。统一线条与上色，比较同性别、同年龄和高频同框组合。合格设定图不能证明其他角度自然稳定，正文仍需逐格检查。已有通过的形态/角度不重绘，新增或失败区域另组紧凑板制作和验收。
 
-主代理亲自检查 identity、distinctiveness、angles_and_expressions、source_faithfulness、gender_readability、body_design、design_tier_fit、visual_elegance。报告列出 reviewed_ids、comparisons、findings、elegance_notes 和实际看图证据；详细格式见 [quality.md](quality.md)。撞脸、女性无依据中性化、男性造型不清晰、主角设计粗糙、比例失衡或杂乱脏污的渲染均须返修，不得只填漂亮、帅气、通过。程序只核验记录结构，不自动判断美感或性别特征。
+概念美术与人设设计师子代理负责检查 identity、distinctiveness、angles_and_expressions、source_faithfulness、gender_readability、body_design、design_tier_fit、visual_elegance 并出具参考报告，主代理审阅验收并通过 `register-reference` 登记基准。报告列出 reviewed_ids、comparisons、findings、elegance_notes 和实际看图证据；详细格式见 [quality.md](quality.md)。撞脸、女性无依据中性化、男性造型不清晰、主角设计粗糙、比例失衡或杂乱脏污的渲染均须返修，不得只填漂亮、帅气、通过。程序只核验记录结构，不自动判断美感或性别特征。
 
 ## 形态版本与明确绑定
 
