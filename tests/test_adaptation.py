@@ -63,7 +63,7 @@ class AdaptationTests(unittest.TestCase):
         detail['sources'][0]['quote'] = '原文中不存在的对白'
         self.assertTrue(any('quote must occur' in e for e in self.errors()))
         detail['sources'][0]['quote'] = detail['fact']
-        detail['presentations'][0]['panel_id'] = 'p2'
+        detail['presentations'][0]['panel_id'] = 'p4'
         self.assertTrue(any('actual panel in this chapter' in e for e in self.errors()))
         detail['presentations'][0]['panel_id'] = 'p1'
         self.script['panels'][0]['source_unit_ids'] = []

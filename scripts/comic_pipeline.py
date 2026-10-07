@@ -861,13 +861,36 @@ def stage_batches(project):
 
 
 def stage_script_fingerprint(project, chapter_ids):
-    """Compute deterministic fingerprint of the script content for specified chapters."""
+    """Compute deterministic fingerprint of the script content for specified chapters, covering panels, scenes, pages, adaptations, characters, events, and settings."""
     cids = set(chapter_ids)
-    panels = [p for p in project.get('script', {}).get('panels', [])
+    script = project.get('script', {})
+    panels = [p for p in script.get('panels', [])
               if isinstance(p, dict) and p.get('chapter_id') in cids]
-    adaptations = [a for a in project.get('script', {}).get('chapter_adaptations', [])
+    scenes = [s for s in script.get('scenes', [])
+              if isinstance(s, dict) and s.get('chapter_id') in cids]
+    pages = [pg for pg in script.get('pages', [])
+             if isinstance(pg, dict) and pg.get('chapter_id') in cids]
+    adaptations = [a for a in script.get('chapter_adaptations', [])
                    if isinstance(a, dict) and a.get('chapter_id') in cids]
-    return digest({'chapters': sorted(cids), 'panels': panels, 'adaptations': adaptations})
+    cast_ids = {cid for p in panels for cid in (p.get('cast', []) if isinstance(p.get('cast'), list) else [])
+                if nonempty(cid)}
+    characters = [c for c in script.get('characters', [])
+                  if isinstance(c, dict) and c.get('id') in cast_ids]
+    events = [e for e in script.get('events', [])
+              if isinstance(e, dict) and e.get('chapter_id') in cids]
+    setting_ids = {s.get('setting_id') for s in scenes if isinstance(s, dict) and nonempty(s.get('setting_id'))}
+    settings = [st for st in script.get('settings', [])
+                if isinstance(st, dict) and st.get('id') in setting_ids]
+    return digest({
+        'chapters': sorted(cids),
+        'panels': panels,
+        'scenes': scenes,
+        'pages': pages,
+        'adaptations': adaptations,
+        'characters': characters,
+        'events': events,
+        'settings': settings,
+    })
 
 
 def validate_stage_review(report, root=None, project=None):
@@ -890,6 +913,10 @@ def validate_stage_review(report, root=None, project=None):
     if stage_range.get('chapter_count') is not None and stage_range.get('chapter_count') != len(reviewed_chapters):
         raise GateError('stage_range chapter_count must match length of reviewed_chapters.')
 
+    rep_stage_hash = report.get('stage_script_hash') or stage_range.get('stage_script_hash')
+    if not nonempty(rep_stage_hash):
+        raise GateError("Stage review requires non-empty 'stage_script_hash' binding reviewed chapters to current script state.")
+
     if project is None and root and isinstance(root, (str, Path)):
         rpath = Path(root)
         if rpath.is_dir() and (rpath / 'project.json').is_file():
@@ -904,11 +931,9 @@ def validate_stage_review(report, root=None, project=None):
             for cid in reviewed_chapters:
                 if cid not in known_chaps:
                     raise GateError(f"Stage review reviewed_chapters contains '{cid}' which does not exist in project chapters.")
-        rep_stage_hash = report.get('stage_script_hash') or stage_range.get('stage_script_hash')
-        if rep_stage_hash:
-            exp_hash = stage_script_fingerprint(project, reviewed_chapters)
-            if rep_stage_hash != exp_hash:
-                raise GateError(f"Stage review stage_script_hash mismatch: report={rep_stage_hash}, current={exp_hash}. Script content for these chapters has changed since review was conducted.")
+        exp_hash = stage_script_fingerprint(project, reviewed_chapters)
+        if rep_stage_hash != exp_hash:
+            raise GateError(f"Stage review stage_script_hash mismatch: report={rep_stage_hash}, current={exp_hash}. Script content for these chapters has changed since review was conducted.")
 
     # 0. Subagent audit provenance: check if runtime session transcript corroborates conversation IDs.
     # When runtime calling credentials cannot be fully verified, record 'unverified' rather than falsely claiming 100% fraud blocking.
@@ -1068,10 +1093,14 @@ def validate_stage_review(report, root=None, project=None):
             raise GateError(f"applied_fixes[{f_idx}] before_revision and after_revision are identical. Real modifications must introduce actual differences.")
 
         if project_panels:
-            known_pids = {p.get('id') for p in project_panels if isinstance(p, dict)}
+            known_panels = {p.get('id'): p for p in project_panels if isinstance(p, dict)}
             for pid in mod_panels:
-                if pid not in known_pids:
+                if pid not in known_panels:
                     raise GateError(f"applied_fixes[{f_idx}] modified_panels contains '{pid}' which does not exist in script panels.")
+                panel = known_panels[pid]
+                panel_blob = json.dumps(panel, ensure_ascii=False)
+                if before and before in panel_blob:
+                    raise GateError(f"applied_fixes[{f_idx}] claims panel '{pid}' was updated from '{before}', but script panel still contains the old content.")
 
     for a_idx, adj in enumerate(adjudications):
         if not isinstance(adj, dict):
@@ -1083,6 +1112,19 @@ def validate_stage_review(report, root=None, project=None):
             raise GateError(f"adjudications[{a_idx}] references unknown issue_ref '{ref}'.")
         if not nonempty(adj.get('reason')):
             raise GateError(f"adjudications[{a_idx}] missing reason for dismissing issue '{ref}'.")
+
+    # 100% complete coverage: every round 1 issue must have an applied_fix or adjudication
+    handled_issue_refs = {f.get('issue_ref') for f in applied_fixes if isinstance(f, dict)} | {a.get('issue_ref') for a in adjudications if isinstance(a, dict)}
+    unhandled_issues = set(all_round_1_issues.keys()) - handled_issue_refs
+    if unhandled_issues:
+        raise GateError(f"Stage review incomplete: Round 1 issues {sorted(unhandled_issues)} have neither an applied_fix nor an adjudication. Every identified issue must be explicitly resolved.")
+
+    # Snapshot diff check: if round 1 recorded initial_stage_script_hash, it must differ from current/final hash when fixes are claimed
+    initial_stage_hash = r1.get('initial_stage_script_hash') or r1.get('initial_script_hash')
+    if initial_stage_hash and applied_fixes:
+        cur_hash = rep_stage_hash or (stage_script_fingerprint(project, reviewed_chapters) if project else None)
+        if cur_hash and initial_stage_hash == cur_hash:
+            raise GateError("Stage review claims applied_fixes were made, but stage_script_hash matches round_1 initial snapshot. Script content must reflect real modifications.")
 
     # 3. Round 2 verification checks
     if not isinstance(r2, dict):
@@ -2463,8 +2505,10 @@ def run(args):
                         sfile, rep = report_map[key]
                         exp_hash = stage_script_fingerprint(project, st['reviewed_chapters'])
                         rep_hash = rep.get('stage_script_hash') or rep.get('stage_range', {}).get('stage_script_hash')
-                        if rep_hash and rep_hash != exp_hash:
-                            errors.append(f"Stage review {sfile.name} is stale: script was modified after review.")
+                        if not nonempty(rep_hash):
+                            errors.append(f"Stage review {sfile.name} is missing required stage_script_hash.")
+                        elif rep_hash != exp_hash:
+                            errors.append(f"Stage review {sfile.name} is stale: script was modified after review (hash mismatch: expected {exp_hash}, got {rep_hash}).")
                         approved = rep.get('stage_approved')
                         if approved is None:
                             approved = rep.get('round_2_verification', {}).get('stage_approved')

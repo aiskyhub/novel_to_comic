@@ -14,7 +14,9 @@ def make_valid_stage_report():
             "start_chapter_id": "ch000001",
             "end_chapter_id": "ch000005",
             "chapter_count": 5,
+            "stage_script_hash": "mock_hash_valid",
         },
+        "stage_script_hash": "mock_hash_valid",
         "reviewed_chapters": [
             "ch000001",
             "ch000002",
@@ -24,6 +26,7 @@ def make_valid_stage_report():
         ],
         "stage_approved": True,
         "round_1_initial_audit": {
+            "initial_stage_script_hash": "mock_hash_initial",
             "initial_verdict": "REJECTED",
             "auditors": [
                 {
@@ -104,7 +107,9 @@ def make_clean_pass_stage_report():
             "start_chapter_id": "ch000001",
             "end_chapter_id": "ch000005",
             "chapter_count": 5,
+            "stage_script_hash": "mock_hash_clean",
         },
+        "stage_script_hash": "mock_hash_clean",
         "reviewed_chapters": [
             "ch000001", "ch000002", "ch000003", "ch000004", "ch000005"
         ],
@@ -293,6 +298,124 @@ class TestStageReviewGate(unittest.TestCase):
         with self.assertRaises(cp.GateError) as ctx:
             cp.validate_stage_review(report)
         self.assertIn('requires distinct subagent conversation IDs', str(ctx.exception))
+
+    def test_missing_stage_script_hash_rejected(self):
+        """Deleting stage_script_hash must be rejected unconditionally."""
+        report = copy.deepcopy(self.valid_report)
+        report.pop('stage_script_hash', None)
+        report['stage_range'].pop('stage_script_hash', None)
+        with self.assertRaises(cp.GateError) as ctx:
+            cp.validate_stage_review(report)
+        self.assertIn("requires non-empty 'stage_script_hash'", str(ctx.exception))
+
+    def test_unhandled_round_1_issue_rejected(self):
+        """Every identified issue in round 1 must have an applied_fix or adjudication."""
+        report = copy.deepcopy(self.valid_report)
+        # Add a third issue in round 1
+        new_issue = {
+            "id": "auditor_a_issue_02",
+            "chapter_id": "ch000001",
+            "source_quote": "主角推开房门，环顾四周寂静无声。",
+            "problem_description": "第二处缺陷未被修复",
+            "suggested_fix": "补充修改"
+        }
+        report['round_1_initial_audit']['auditors'][0]['issues'].append(new_issue)
+        # screenwriter_revisions only handles auditor_a_issue_01 and auditor_b_issue_01
+        with self.assertRaises(cp.GateError) as ctx:
+            cp.validate_stage_review(report)
+        self.assertIn('auditor_a_issue_02', str(ctx.exception))
+        self.assertIn('have neither an applied_fix nor an adjudication', str(ctx.exception))
+
+    def test_identical_snapshot_with_fixes_rejected(self):
+        """If fixes are claimed, initial snapshot hash cannot match current stage hash."""
+        report = copy.deepcopy(self.valid_report)
+        report['round_1_initial_audit']['initial_stage_script_hash'] = report['stage_script_hash']
+        with self.assertRaises(cp.GateError) as ctx:
+            cp.validate_stage_review(report)
+        self.assertIn('matches round_1 initial snapshot', str(ctx.exception))
+
+    def test_panel_still_containing_before_revision_rejected(self):
+        """If panel in project still contains the old before_revision string, gate rejects it."""
+        report = copy.deepcopy(self.valid_report)
+        # Mock project with panel still having before_revision text
+        mock_proj = {
+            'source': {
+                'chapters': [{'id': f'ch00000{i}'} for i in range(1, 6)],
+                'units': [
+                    {'id': 'u1', 'chapter_id': 'ch000001', 'text': '主角推开房门，环顾四周寂静无声。'},
+                    {'id': 'u2', 'chapter_id': 'ch000002', 'text': '信纸上的字迹已经有些模糊。'}
+                ]
+            },
+            'script': {
+                'panels': [{'id': 'p001_01', 'chapter_id': 'ch000001', 'action': '主角推开房门，中景。'}],
+                'scenes': [], 'pages': [], 'chapter_adaptations': [], 'characters': [], 'events': [], 'settings': []
+            }
+        }
+        report['stage_script_hash'] = cp.stage_script_fingerprint(mock_proj, report['reviewed_chapters'])
+        with self.assertRaises(cp.GateError) as ctx:
+            cp.validate_stage_review(report, project=mock_proj)
+        self.assertIn('still contains the old content', str(ctx.exception))
+
+    def test_fingerprint_covers_scenes_pages_and_settings(self):
+        """Fingerprint must change when scenes, settings, pages, or characters change."""
+        proj = {
+            'script': {
+                'panels': [{'id': 'p1', 'chapter_id': 'ch01', 'cast': ['c1']}],
+                'scenes': [{'id': 's1', 'chapter_id': 'ch01', 'setting_id': 'set1'}],
+                'pages': [{'id': 'pg1', 'chapter_id': 'ch01', 'panel_ids': ['p1']}],
+                'chapter_adaptations': [],
+                'characters': [{'id': 'c1', 'name': '甲'}],
+                'events': [{'id': 'ev1', 'chapter_id': 'ch01'}],
+                'settings': [{'id': 'set1', 'name': '密室'}]
+            }
+        }
+        h1 = cp.stage_script_fingerprint(proj, ['ch01'])
+        # Modify scene
+        proj2 = copy.deepcopy(proj)
+        proj2['script']['scenes'][0]['setting_id'] = 'set2'
+        h2 = cp.stage_script_fingerprint(proj2, ['ch01'])
+        self.assertNotEqual(h1, h2, "Modifying scene setting must change fingerprint")
+
+        # Modify page
+        proj3 = copy.deepcopy(proj)
+        proj3['script']['pages'][0]['panel_ids'] = ['p1', 'p2']
+        h3 = cp.stage_script_fingerprint(proj3, ['ch01'])
+        self.assertNotEqual(h1, h3, "Modifying page panels must change fingerprint")
+
+    def test_check_phone_rows_panel_count_gate(self):
+        """Phone rows gate must accept 3 and 4 panels, but reject 1, 2, or 5 panels."""
+        import comic_layout as cl
+        # 3 panels -> valid
+        cl.check_phone_rows({'panel_ids': ['p1', 'p2', 'p3'], 'columns': 1}, [['p1'], ['p2'], ['p3']])
+        # 4 panels -> valid
+        cl.check_phone_rows({'panel_ids': ['p1', 'p2', 'p3', 'p4'], 'columns': 1}, [['p1'], ['p2'], ['p3'], ['p4']])
+
+        # 1 panel -> rejected
+        with self.assertRaises(cp.GateError) as ctx1:
+            cl.check_phone_rows({'panel_ids': ['p1'], 'columns': 1}, [['p1']])
+        self.assertIn('require 3–4 narrative panels', str(ctx1.exception))
+
+        # 2 panels -> rejected
+        with self.assertRaises(cp.GateError) as ctx2:
+            cl.check_phone_rows({'panel_ids': ['p1', 'p2'], 'columns': 1}, [['p1'], ['p2']])
+        self.assertIn('require 3–4 narrative panels', str(ctx2.exception))
+
+        # 5 panels -> rejected
+        with self.assertRaises(cp.GateError) as ctx5:
+            cl.check_phone_rows({'panel_ids': [f'p{i}' for i in range(5)], 'columns': 1}, [[f'p{i}'] for i in range(5)])
+        self.assertIn('require 3–4 narrative panels', str(ctx5.exception))
+
+    def test_preview_page_path_traversal_blocked(self):
+        """preview_page must reject traversal page_ids or non-existent pages."""
+        import comic_layout as cl
+        mock_proj = {'script': {'pages': [{'id': 'page01'}]}}
+        with self.assertRaises(cp.GateError) as ctx:
+            cl.preview_page('.', mock_proj, '../../../escaped-previews')
+        self.assertIn('Invalid page_id', str(ctx.exception))
+
+        with self.assertRaises(cp.GateError) as ctx2:
+            cl.preview_page('.', mock_proj, 'nonexistent_page')
+        self.assertIn('does not exist in project pages', str(ctx2.exception))
 
 
 if __name__ == '__main__':

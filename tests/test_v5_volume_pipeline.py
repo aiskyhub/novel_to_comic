@@ -50,20 +50,37 @@ def fixture_v5_script(source):
             script['scenes'].append({'id': 'scene-' + chapter['id'], 'chapter_id': chapter['id'], 'setting_id': 'room-a'})
     state = {'form': 'base', 'costume': 'coat-a', 'injuries': [], 'items': [], 'location': 'room-a', 'knowledge': []}
     for i, unit in enumerate(body, 1):
-        event_id, panel_id = f'ev{i}', f'p{i}'
+        event_id = f'ev{i}'
+        pid = f'p{i}'
         script['events'].append({
             'id': event_id, 'description': unit['text'], 'source_unit_ids': [unit['id']],
             'narrative_role': 'critical_turning_point'
         })
         script['panels'].append({
-            'id': panel_id, 'chapter_id': unit['chapter_id'], 'scene_id': 'scene-' + unit['chapter_id'],
+            'id': pid, 'chapter_id': unit['chapter_id'], 'scene_id': 'scene-' + unit['chapter_id'],
             'source_unit_ids': [unit['id']], 'event_ids': [event_id], 'cast': ['char-a'],
             'appearance_versions': {'char-a': 'base'},
-            'action': unit['text'], 'shot': '中景', 'space': '人物位于测试房间中', 'expression': '平静',
+            'action': unit['text'] + '：' + pid, 'shot': '中景', 'space': '人物位于测试房间中', 'expression': '平静',
             'state_before': {'char-a': copy.deepcopy(state)}, 'state_after': {'char-a': copy.deepcopy(state)},
             'dialogue': [{'kind': 'caption', 'text': unit['text']}]
         })
-        script['pages'].append({'id': f'page{i}', 'chapter_id': unit['chapter_id'], 'panel_ids': [panel_id], 'columns': 1})
+    page_idx = 1
+    for chapter in source['chapters']:
+        if not chapter['has_body']:
+            continue
+        ch_units = [u for u in body if u['chapter_id'] == chapter['id']]
+        ch_pids = [f'p{body.index(u)+1}' for u in ch_units]
+        i = 0
+        while i < len(ch_pids):
+            remaining = len(ch_pids) - i
+            if remaining == 4:
+                chunk = ch_pids[i:i+4]
+                i += 4
+            else:
+                chunk = ch_pids[i:i+3]
+                i += 3
+            script['pages'].append({'id': f'page{page_idx}', 'chapter_id': chapter['id'], 'panel_ids': chunk, 'rows': [[p] for p in chunk], 'columns': 1})
+            page_idx += 1
     script['continuity_handover'] = {
         'opening_state': {'characters': {'char-a': {'location': 'room-a'}}, 'world_state': {}, 'open_mysteries': []},
         'closing_state': {'characters': {'char-a': {'location': 'room-a'}}, 'world_state': {}, 'open_mysteries': []}

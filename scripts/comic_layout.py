@@ -40,8 +40,9 @@ def phone_style_errors(style):
 
 
 def check_phone_rows(page, rows):
-    if (page.get('columns',1) != 1 or not 1 <= len(page.get('panel_ids',[])) <= 5 or any(len(row)!=1 for row in rows)):
-        raise core().GateError('Phone pages require 1–5 narrative panels in full-width single-column rows.')
+    panel_count = len(page.get('panel_ids', []))
+    if (page.get('columns', 1) != 1 or not (3 <= panel_count <= 4) or any(len(row) != 1 for row in rows)):
+        raise core().GateError(f'Phone pages require 3–4 narrative panels (standard 3, simple info 4) in full-width single-column rows, got {panel_count}.')
 
 
 def _check_raster_dimensions(width,height,context,field):
@@ -125,6 +126,15 @@ def preview_page(root, project, page_id, file=None):
     c = core()
     root = Path(root).resolve()
 
+    if not c.nonempty(page_id) or '/' in str(page_id) or '\\' in str(page_id) or '..' in str(page_id):
+        raise c.GateError(f"Invalid page_id '{page_id}'.")
+
+    script_pages = project.get('script', {}).get('pages', [])
+    layout_pages = project.get('layout', {}).get('pages', []) if project.get('layout') else []
+    known_pages = {p.get('id') for p in (script_pages or layout_pages) if isinstance(p, dict)}
+    if known_pages and page_id not in known_pages:
+        raise c.GateError(f"Page '{page_id}' does not exist in project pages.")
+
     source = None
     if file:
         fpath = Path(file)
@@ -148,7 +158,8 @@ def preview_page(root, project, page_id, file=None):
         raise c.GateError(f'No candidate image found to preview for page: {page_id}')
 
     width, height = check_page_image(source)
-    preview_dir = root / 'previews' / 'pages' / page_id
+    preview_rel_dir = Path('previews') / 'pages' / page_id
+    preview_dir = c.inside(root, preview_rel_dir)
     preview_dir.mkdir(parents=True, exist_ok=True)
 
     previews = []
@@ -159,7 +170,7 @@ def preview_page(root, project, page_id, file=None):
             output = io.BytesIO()
             preview.save(output, format='PNG')
             data = output.getvalue()
-            dest_file = preview_dir / f'{preview_width}.png'
+            dest_file = c.inside(preview_dir, f'{preview_width}.png')
             _atomic_bytes(dest_file, data)
             previews.append({
                 'width': preview_width,

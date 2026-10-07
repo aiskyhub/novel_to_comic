@@ -5,6 +5,7 @@
     "chapter_count": 0,
     "stage_script_hash": ""
   },
+  "stage_script_hash": "",
   "reviewed_chapters": [],
   "anti_formalism_attestation": {
     "prohibit_rubber_stamp": true,
@@ -12,6 +13,7 @@
   },
   "round_1_initial_audit": {
     "audit_objective": "对本批次各章分镜进行原著忠实度、场景空间、叙事节奏与对白生动度独立审查",
+    "initial_stage_script_hash": "",
     "auditors": [
       {
         "auditor_id": "auditor_a",

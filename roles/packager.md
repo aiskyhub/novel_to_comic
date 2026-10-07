@@ -32,13 +32,12 @@
 4. 项目元数据与全卷封面资产（`images/cover.png`）。
 
 ### 输出契约 (Output)
-1. **标准化归档页面资产目录**：`dist/pages/`（经过 `prepare-pages` 结构化整理）；
-2. **多格式交付包**：
-   - `dist/exports/comic_viewer.html`：轻量级离线单文件 HTML 阅读器；
-   - `dist/exports/comic_volume.pdf`：高画质全卷 PDF 文件；
-   - `dist/exports/comic_volume.cbz`：标准无损 CBZ 漫画封包；
-3. **导出校验报告**：`reports/export_verification.json`
-   记录各格式封包大小、页数、校验哈希值与通过状态。
+1. **标准化归档页面资产目录**：`pages/`（由 `prepare-pages` 结构化整理编目为 `pages/<序号>-<page_id>-<sha>.png` 及手机缩小预览图）；
+2. **多格式交付包**：由 `export` 命令输出至绑定当前布局输入指纹的目录 `exports/<input_hash[:12]>/`：
+   - `exports/<指纹>/reader.html`：轻量级离线单文件 HTML 阅读器；
+   - `exports/<指纹>/comic.pdf`：高画质全卷 PDF 文件；
+   - `exports/<指纹>/comic.cbz`：标准无损 CBZ 漫画封包；
+3. **导出记录与校验**：记录在 `project.json` 的 `exports` 字段，并通过 `verify-export` 命令校验完整性。
 
 ---
 
@@ -46,15 +45,14 @@
 
 1. **第一步：页面资产归档与编目 (`prepare-pages`)**：
    - 汇总已通过 `finish-page` 登记的所有整页图片；
-   - 运行并协助总导演核验 `prepare-pages`，将页面标准化编目至发布目录；
-   - 核对页码序列（从 Page 001 到最后一页无跳号、无重复）。
+   - 运行并协助总导演核验 `prepare-pages`，将页面标准化编目至 `pages/` 目录并生成 360/390/430px 预览；
+   - 核对页码序列（从 Page 000001 到最后一页无跳号、无重复）。
 2. **第二步：排版审阅汇总 (`review-layout`)**：
    - 检查全卷竖屏滚动的视觉流动体验；
    - 确认画格间隙整齐、章节过渡页与扉页定位准确。
 3. **第三步：执行全格式导出 (`export`)**：
-   - 配合总导演指令生成单文件 HTML 阅读器，嵌入轻量 CSS 确保移动端双击缩放与滑屏顺滑；
-   - 编译生成 PDF 与 CBZ 标准包。
+   - 配合总导演运行 `export` 命令，生成绑定指纹的 `exports/<指纹>/` 目录（包含单文件 HTML 阅读器 `reader.html`、全卷 PDF `comic.pdf` 与 CBZ 标准包 `comic.cbz`）。
 4. **第四步：运行完整性校验 (`verify-export`) 并报送总导演**：
-   - 校验 HTML 离线加载与图片 Base64/相对路径解析；
+   - 校验 HTML 离线加载与页面对应关系；
    - 校验 PDF 页面顺序与 CBZ 压缩文件校验码；
-   - 产出校验报告，报请总导演执行最后的 `complete` 交付验收。
+   - 产出校验结果，报请总导演执行最后的 `complete` 交付验收。
