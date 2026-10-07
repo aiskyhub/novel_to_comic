@@ -1,63 +1,151 @@
 {
   "stage_range": {
-    "start_chapter_id": "",
-    "end_chapter_id": "",
-    "chapter_count": 10
+    "start_chapter_id": "c001",
+    "end_chapter_id": "c005",
+    "chapter_count": 5
   },
-  "reviewed_chapters": [],
-  "subagent_reviews": [
-    {
-      "auditor_id": "subagent_auditor_a",
-      "model_used": "主代理自主决定的模型",
-      "scores": {
-        "scene_descriptions": 25,
-        "climax_plot_beats": 25,
-        "humor_and_gags": 25,
-        "character_dialogue": 25,
-        "total_score": 100
-      },
-      "issues": [
-        {
-          "chapter_id": "",
-          "source_quote": "原文对应段落短引句",
-          "category": "scene_description",
-          "problem_description": "客观合理的具体问题描述，明确指出哪里被省略、未阐述清楚或漏掉了关键剧情/笑点",
-          "suggested_fix": "具体的剧本或分镜打磨建议"
-        }
-      ]
-    },
-    {
-      "auditor_id": "subagent_auditor_b",
-      "model_used": "主代理自主决定的模型",
-      "scores": {
-        "scene_descriptions": 25,
-        "climax_plot_beats": 25,
-        "humor_and_gags": 25,
-        "character_dialogue": 25,
-        "total_score": 100
-      },
-      "issues": [
-        {
-          "chapter_id": "",
-          "source_quote": "原文对应段落短引句",
-          "category": "humor_gag",
-          "problem_description": "客观合理的具体问题描述",
-          "suggested_fix": "具体的剧本或分镜打磨建议"
-        }
-      ]
-    }
+  "reviewed_chapters": [
+    "c001", "c002", "c003", "c004", "c005"
   ],
-  "lead_agent_adjudication": {
-    "evaluation_summary": "主代理对双子代理打分及挑出问题的客观核对裁定总结",
-    "accepted_issues": [
+  "anti_formalism_attestation": {
+    "prohibit_rubber_stamp": true,
+    "statement": "本报告拒绝形式主义自评与虚高分数。初审阶段必须对照原著进行严苛挑刺并执行阶梯扣分；初稿正常得分区间为70-85分；严禁直接出具≥90分的一把过假报告；必须包含主代理亲自修改打磨画格记录与第二轮复审核销闭环。"
+  },
+  "round_1_initial_audit": {
+    "audit_objective": "红队啄木鸟挑刺与量化扣分（严禁初审90+一把过形式主义）",
+    "auditors": [
       {
-        "issue_ref": "auditor_a_issue_0",
-        "adjudication": "accepted",
-        "revisions_applied": "具体在剧本和分镜中补充的场景描写、剧情推进或笑点分镜"
+        "auditor_id": "subagent_auditor_a",
+        "model_used": "自主决定的模型A",
+        "scores": {
+          "scene_descriptions": 19,
+          "climax_plot_beats": 20,
+          "humor_and_gags": 18,
+          "character_dialogue": 21,
+          "total_score": 78
+        },
+        "deductions": [
+          {
+            "category": "scene_descriptions",
+            "points_deducted": 4,
+            "chapter_id": "c003",
+            "reason": "缺少破庙建立镜头，环境氛围一笔带过，背景沦为虚空"
+          },
+          {
+            "category": "humor_and_gags",
+            "points_deducted": 4,
+            "chapter_id": "c005",
+            "reason": "遗漏原著主角吃瘪时的颜艺反应与内心神吐槽，平铺直叙"
+          }
+        ],
+        "issues": [
+          {
+            "id": "auditor_a_issue_01",
+            "chapter_id": "c003",
+            "source_quote": "原文破庙风雨交加与阴冷陈设的具体短引句",
+            "category": "scene_description",
+            "problem_description": "破庙初次登场未设置建立镜头，暴雨倾盆与泥泞细节被一句话带过，缺乏视听氛围沉浸感",
+            "suggested_fix": "在分镜开头增加1格破庙外部全景建立镜头交代暴雨环境，并补充屋檐漏雨特写"
+          },
+          {
+            "id": "auditor_a_issue_02",
+            "chapter_id": "c005",
+            "source_quote": "原文配角调侃主角、主角窘迫反差的具体短引句",
+            "category": "humor_gag",
+            "problem_description": "原著此处配角拆台时主角面部抽搐的反差吃瘪神态未呈现，缺少关键喜剧包袱",
+            "suggested_fix": "在对白后补充主角特写反应格，刻画豆豆眼/抽搐颜艺与内心吐槽独白"
+          }
+        ]
+      },
+      {
+        "auditor_id": "subagent_auditor_b",
+        "model_used": "自主决定的模型B",
+        "scores": {
+          "scene_descriptions": 20,
+          "climax_plot_beats": 18,
+          "humor_and_gags": 20,
+          "character_dialogue": 22,
+          "total_score": 80
+        },
+        "deductions": [
+          {
+            "category": "climax_plot_beats",
+            "points_deducted": 5,
+            "chapter_id": "c004",
+            "reason": "刺客突袭高潮节奏过急，一格直接给出战斗结果，跳过了前置杀气铺垫与拔剑交锋过程"
+          }
+        ],
+        "issues": [
+          {
+            "id": "auditor_b_issue_01",
+            "chapter_id": "c004",
+            "source_quote": "原文刺客突袭杀气与交锋三招的具体短引句",
+            "category": "climax_plot_beat",
+            "problem_description": "刺客突袭直接一格跳到倒地结果，原著中双方眼神博弈、拔剑寒光与交锋三招的紧张过程被严重压缩",
+            "suggested_fix": "拆分为3格分镜：杀气突现眼神特写 → 刀光交错破空特写 → 击飞落地结果格，补齐高潮冲突链条"
+          }
+        ]
       }
     ],
-    "dismissed_issues": [],
+    "initial_verdict": "REJECTED_FOR_REVISION"
+  },
+  "lead_agent_revisions": {
+    "revision_summary": "主代理全面核实子代理提出的客观扣分项，坚决认同并落实剧本分镜修改与细节增补",
+    "applied_fixes": [
+      {
+        "issue_ref": "auditor_a_issue_01",
+        "chapter_id": "c003",
+        "modified_panels": ["c003-p01", "c003-p02"],
+        "before_revision": "原仅有1格角色进入破庙的半身镜头，无环境交代",
+        "after_revision": "增补第1格破庙外部全景Establishing Shot（破败佛像、暴雨如注、积水溅起），强化环境沉浸感"
+      },
+      {
+        "issue_ref": "auditor_a_issue_02",
+        "chapter_id": "c005",
+        "modified_panels": ["c005-p08"],
+        "before_revision": "配角说话后直接接下一剧情，无主角反应",
+        "after_revision": "修改第8格为主角反差颜艺反应格，添加嘴角抽搐表情与原著原味吐槽独白"
+      },
+      {
+        "issue_ref": "auditor_b_issue_01",
+        "chapter_id": "c004",
+        "modified_panels": ["c004-p12", "c004-p13", "c004-p14"],
+        "before_revision": "原单格带过刺客倒地",
+        "after_revision": "扩充为3格连环交锋分镜：第12格寒芒乍现、第13格兵刃对撞火星特写、第14格刺客败退，高潮完整展开"
+      }
+    ]
+  },
+  "round_2_verification": {
+    "verification_summary": "两名子代理针对主代理修改后的剧本分镜进行逐项复核核销与重新评定",
+    "auditors_recheck": [
+      {
+        "auditor_id": "subagent_auditor_a",
+        "resolved_issue_refs": ["auditor_a_issue_01", "auditor_a_issue_02"],
+        "unresolved_issue_refs": [],
+        "final_scores": {
+          "scene_descriptions": 23,
+          "climax_plot_beats": 23,
+          "humor_and_gags": 22,
+          "character_dialogue": 22,
+          "total_score": 90
+        },
+        "verdict": "PASSED"
+      },
+      {
+        "auditor_id": "subagent_auditor_b",
+        "resolved_issue_refs": ["auditor_b_issue_01"],
+        "unresolved_issue_refs": [],
+        "final_scores": {
+          "scene_descriptions": 23,
+          "climax_plot_beats": 23,
+          "humor_and_gags": 23,
+          "character_dialogue": 23,
+          "total_score": 92
+        },
+        "verdict": "PASSED"
+      }
+    ],
     "stage_approved": true,
-    "approved_at": ""
+    "approved_at": "2026-10-07T16:00:00Z"
   }
 }

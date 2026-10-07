@@ -843,6 +843,118 @@ def validate_reference_qa(report, character_ids, image_sha256, reference_visual_
         raise GateError('Reference QA reference_visual_key must match the current image, character design, purpose, and subject regions.')
 
 
+def validate_stage_review(report, root=None):
+    """Validate 5-chapter stage review report, strictly enforcing dual-round review and anti-rubber-stamp rules."""
+    if not isinstance(report, dict):
+        raise GateError('Stage review must be a JSON object.')
+
+    stage_range = report.get('stage_range')
+    if not isinstance(stage_range, dict) or not nonempty(stage_range.get('start_chapter_id')) or not nonempty(stage_range.get('end_chapter_id')):
+        raise GateError('Stage review missing valid stage_range (start_chapter_id, end_chapter_id).')
+
+    reviewed_chapters = report.get('reviewed_chapters')
+    if not isinstance(reviewed_chapters, list) or not reviewed_chapters:
+        raise GateError('Stage review must include nonempty reviewed_chapters list.')
+
+    # 1. Round 1 initial audit checks
+    r1 = report.get('round_1_initial_audit')
+    if not isinstance(r1, dict):
+        raise GateError('Stage review requires round_1_initial_audit object representing the first-round audit.')
+
+    auditors = r1.get('auditors')
+    if not isinstance(auditors, list) or len(auditors) < 2:
+        raise GateError('round_1_initial_audit requires at least 2 independent auditors (dual subagents).')
+
+    for idx, auditor in enumerate(auditors):
+        aid = auditor.get('auditor_id', f'auditor_{idx}')
+        scores = auditor.get('scores', {})
+        if not isinstance(scores, dict):
+            raise GateError(f'Auditor {aid} scores must be an object.')
+        total = scores.get('total_score')
+        if not isinstance(total, (int, float)):
+            raise GateError(f'Auditor {aid} missing numeric total_score in round 1.')
+
+        deductions = auditor.get('deductions', [])
+        issues = auditor.get('issues', [])
+        if not isinstance(deductions, list) or not isinstance(issues, list):
+            raise GateError(f'Auditor {aid} deductions and issues must be lists.')
+
+        # Anti-rubber-stamp / Anti-formalism gate:
+        if total >= 95 and (len(deductions) == 0 or len(issues) == 0):
+            raise GateError(
+                f'Anti-rubber-stamp gate triggered: Auditor {aid} initial score {total} >= 95 with empty deductions/issues '
+                'indicates review distortion. Round 1 initial audit must actively identify defects and apply deductions.'
+            )
+
+        if len(issues) == 0:
+            raise GateError(
+                f'Auditor {aid} reported 0 issues in round 1. A 5-chapter initial draft must undergo rigorous scrutiny with '
+                'at least concrete scene, pacing, or humor issues identified.'
+            )
+
+        for issue_idx, issue in enumerate(issues):
+            if not isinstance(issue, dict):
+                raise GateError(f'Auditor {aid} issue {issue_idx} must be an object.')
+            iid = issue.get('id')
+            if not nonempty(iid):
+                raise GateError(f'Auditor {aid} issue {issue_idx} missing unique id.')
+            if not nonempty(issue.get('chapter_id')):
+                raise GateError(f'Auditor {aid} issue {iid} missing chapter_id.')
+            if not nonempty(issue.get('source_quote')):
+                raise GateError(f'Auditor {aid} issue {iid} missing source_quote binding to novel text.')
+            if not nonempty(issue.get('problem_description')):
+                raise GateError(f'Auditor {aid} issue {iid} missing problem_description.')
+            if not nonempty(issue.get('suggested_fix')):
+                raise GateError(f'Auditor {aid} issue {iid} missing suggested_fix.')
+
+    # 2. Revisions checks
+    revisions = report.get('lead_agent_revisions')
+    if not isinstance(revisions, dict) or not nonempty(revisions.get('revision_summary')):
+        raise GateError('Stage review requires lead_agent_revisions with revision_summary documenting revisions applied.')
+
+    applied_fixes = revisions.get('applied_fixes', [])
+    if not isinstance(applied_fixes, list) or len(applied_fixes) == 0:
+        raise GateError('lead_agent_revisions must include non-empty applied_fixes documenting actual script refinements.')
+
+    for f_idx, fix in enumerate(applied_fixes):
+        if not isinstance(fix, dict):
+            raise GateError(f'applied_fixes[{f_idx}] must be an object.')
+        ref = fix.get('issue_ref')
+        if not nonempty(ref):
+            raise GateError(f'applied_fixes[{f_idx}] missing issue_ref.')
+        if not fix.get('modified_panels'):
+            raise GateError(f'applied_fixes[{f_idx}] missing modified_panels documenting changed panel IDs.')
+        if not nonempty(fix.get('after_revision')):
+            raise GateError(f'applied_fixes[{f_idx}] missing after_revision details.')
+
+    # 3. Round 2 verification checks
+    r2 = report.get('round_2_verification')
+    if not isinstance(r2, dict):
+        raise GateError('Stage review requires round_2_verification object.')
+
+    rechecks = r2.get('auditors_recheck')
+    if not isinstance(rechecks, list) or len(rechecks) < 2:
+        raise GateError('round_2_verification requires auditors_recheck for both auditors.')
+
+    for idx, recheck in enumerate(rechecks):
+        aid = recheck.get('auditor_id', f'auditor_{idx}')
+        final_scores = recheck.get('final_scores', {})
+        if not isinstance(final_scores, dict):
+            raise GateError(f'Auditor {aid} round 2 missing final_scores object.')
+        final_total = final_scores.get('total_score')
+        if not isinstance(final_total, (int, float)) or final_total < 85:
+            raise GateError(f'Auditor {aid} round 2 final_score ({final_total}) must be >= 85 to pass.')
+        if recheck.get('verdict') != 'PASSED':
+            raise GateError(f'Auditor {aid} round 2 verdict must be PASSED.')
+        if recheck.get('unresolved_issue_refs'):
+            raise GateError(f'Auditor {aid} round 2 has unresolved issues: {recheck.get("unresolved_issue_refs")}')
+
+    if r2.get('stage_approved') is not True:
+        raise GateError('round_2_verification stage_approved must be True to pass.')
+    if not nonempty(r2.get('approved_at')):
+        raise GateError('round_2_verification missing approved_at timestamp.')
+
+    return True
 
 
 def art_structure_errors(project):
@@ -1788,6 +1900,32 @@ def run(args):
         return {'project': str(root), 'title': project['title'], 'volume': project['volume'],
                 'chapters': len(source['chapters']), 'issues': source['issues'],
                 'readme': str(root / 'README.md')}
+    if command == 'check-stage-review':
+        if getattr(args, 'file', None):
+            report_path = Path(args.file)
+            if not report_path.is_file() and root.is_dir():
+                try:
+                    report_path = inside(root, args.file)
+                except GateError:
+                    pass
+            if not report_path.is_file():
+                raise GateError(f'Stage review file not found: {args.file}')
+            report = load_json(report_path)
+            validate_stage_review(report, root if root.is_dir() else None)
+            return {'ok': True, 'file': str(report_path), 'stage_approved': report.get('round_2_verification', {}).get('stage_approved')}
+        else:
+            stage_dir = (root / 'reports' / 'stage_reviews') if root.is_dir() else Path('reports/stage_reviews')
+            if not stage_dir.is_dir():
+                return {'ok': True, 'checked_count': 0, 'message': 'No reports/stage_reviews directory found.'}
+            reports = sorted(stage_dir.glob('*.json'))
+            if not reports:
+                return {'ok': True, 'checked_count': 0, 'message': 'No stage review files found in reports/stage_reviews.'}
+            verified = []
+            for rpath in reports:
+                report = load_json(rpath)
+                validate_stage_review(report, root if root.is_dir() else None)
+                verified.append(rpath.name)
+            return {'ok': True, 'checked_count': len(verified), 'verified_files': verified}
     project = project_load(root)
     if getattr(args, 'file', None):
         args.file = str(resolve_file_arg(args.file, project_dir=root))
@@ -1976,6 +2114,14 @@ def run(args):
         for kind in REVIEW_CHECKS:
             if not any(isinstance(r, dict) and r.get('kind') == kind and r.get('script_hash') == fingerprint for r in project.get('reviews', [])):
                 errors.append('Missing current volume review: ' + kind)
+        if root:
+            stage_dir = root / 'reports' / 'stage_reviews'
+            if stage_dir.is_dir():
+                for sfile in sorted(stage_dir.glob('*.json')):
+                    try:
+                        validate_stage_review(load_json(sfile), root)
+                    except GateError as ge:
+                        errors.append(f'Stage review {sfile.name} failed anti-rubber-stamp gate: {ge}')
         if errors:
             raise GateError('\n'.join(errors))
         project['script_lock'] = {'script_hash': fingerprint, 'source_index_hash': project['source_index_hash'],
@@ -2116,7 +2262,8 @@ def parser():
     build_prompt_p.add_argument('--output', help='Output prompt file path (default stdout)')
 
     for name in ('init', 'preflight', 'qa-inputs', 'chapter', 'script-chapter', 'resolve-issue', 'confirm-source',
-                 'mark-read', 'set-script', 'set-script-chapter', 'impact', 'check-script', 'check-adaptation', 'review',
+                 'mark-read', 'set-script', 'set-script-chapter', 'impact', 'check-script', 'check-adaptation',
+                 'check-stage-review', 'review',
                  'lock-script', 'assert-art', 'register-reference',
                  'begin-page', 'finish-page', 'fail-page', 'prepare-pages',
                  'review-layout', 'export', 'verify-export', 'complete', 'status'):
@@ -2145,6 +2292,8 @@ def parser():
         if name in ('set-script', 'set-script-chapter', 'impact', 'review', 'register-reference',
                     'finish-page', 'review-layout', 'complete'):
             sub.add_argument('--file', required=True)
+        if name == 'check-stage-review':
+            sub.add_argument('--file', help='Stage review report JSON; defaults to all reports in reports/stage_reviews/')
         if name == 'set-script-chapter':
             sub.add_argument('--chapter', required=True)
         if name == 'check-adaptation':

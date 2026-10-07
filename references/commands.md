@@ -33,6 +33,7 @@ init-book默认复制原稿并核验SHA256；只有用户明确--action move时�
 | impact | --file | 比较真实修订影响 |
 | check-script | — | 原著引用、结构和手机单页布局检查 |
 | review | --kind coverage/continuity/comic --file | 登记当前卷实际审查 |
+| check-stage-review | [--file] | 机械校验阶段审查报告：拦截虚假高分一把过、校验双轮扣分与修改闭环 |
 | lock-script | — | 三轮当前审查通过后锁定 |
 | assert-art | — | 出图前检查有效锁 |
 | register-reference | --file --qa (--characters 或 --bindings) | 登记已看图的基准 |
