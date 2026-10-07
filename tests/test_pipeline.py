@@ -89,13 +89,72 @@ class PipelineTests(unittest.TestCase):
         return script
 
 
-    def add_reviews(self):
-        project = cp.project_load(self.root)
+    def add_reviews(self, project_dir=None):
+        target = Path(project_dir or self.root)
+        project = cp.project_load(target)
         for kind, checks in cp.REVIEW_CHECKS.items():
             report = {'script_hash': cp.digest(project['script']),
                 'reviewed_chapter_ids': [c['id'] for c in project['source']['chapters'] if c['has_body']],
                 'checks': {k: True for k in checks}, 'evidence': '自动化夹具报告，只测试结构与关卡。', 'issues': []}
-            self.invoke('review', kind=kind, file=self.json_file(report))
+            from argparse import Namespace
+            cp.run(Namespace(command='review', project=str(target), kind=kind, file=self.json_file(report),
+                             scope=None, bindings=None, outcome='failed'))
+        stages = cp.stage_batches(project)
+        if stages:
+            stage_dir = target / 'reports' / 'stage_reviews'
+            stage_dir.mkdir(parents=True, exist_ok=True)
+            for st in stages:
+                st_hash = cp.stage_script_fingerprint(project, st['reviewed_chapters'])
+                stage_report = {
+                    'schema_version': cp.SCHEMA_VERSION,
+                    'stage_range': {
+                        'start_chapter_id': st['start_chapter_id'],
+                        'end_chapter_id': st['end_chapter_id'],
+                        'chapter_count': st['chapter_count'],
+                        'stage_script_hash': st_hash,
+                    },
+                    'stage_script_hash': st_hash,
+                    'reviewed_chapters': st['reviewed_chapters'],
+                    'stage_approved': True,
+                    'round_1_initial_audit': {
+                        'initial_verdict': 'PASSED',
+                        'auditors': [
+                            {
+                                'auditor_id': 'auditor_a',
+                                'conversation_id': 'conv_fixture_a',
+                                'scores': {'total_score': 95},
+                                'deductions': [],
+                                'issues': [],
+                            },
+                            {
+                                'auditor_id': 'auditor_b',
+                                'conversation_id': 'conv_fixture_b',
+                                'scores': {'total_score': 92},
+                                'deductions': [],
+                                'issues': [],
+                            },
+                        ],
+                    },
+                    'round_2_verification': {
+                        'stage_approved': True,
+                        'approved_at': cp.now(),
+                        'auditors_recheck': [
+                            {
+                                'auditor_id': 'auditor_a',
+                                'final_scores': {'total_score': 95},
+                                'verdict': 'PASSED',
+                                'unresolved_issue_refs': [],
+                            },
+                            {
+                                'auditor_id': 'auditor_b',
+                                'final_scores': {'total_score': 92},
+                                'verdict': 'PASSED',
+                                'unresolved_issue_refs': [],
+                            },
+                        ],
+                    },
+                }
+                cp.atomic_json(stage_dir / f"stage_{st['stage_index']:02d}.json", stage_report)
 
 
     def locked(self):
@@ -304,12 +363,7 @@ class PipelineTests(unittest.TestCase):
         attach_adaptations(vol1_dir, loaded['source'], script)
         script_file = self.json_file(script)
         cp.run(Namespace(command='set-script', project=str(vol1_dir), file=script_file))
-        updated = cp.project_load(vol1_dir)
-        for kind, checks in cp.REVIEW_CHECKS.items():
-            report = {'script_hash': cp.digest(updated['script']),
-                      'reviewed_chapter_ids': [c['id'] for c in updated['source']['chapters'] if c['has_body']],
-                      'checks': {k: True for k in checks}, 'evidence': '测试证据', 'issues': []}
-            cp.run(Namespace(command='review', project=str(vol1_dir), kind=kind, file=self.json_file(report)))
+        self.add_reviews(vol1_dir)
         cp.run(Namespace(command='lock-script', project=str(vol1_dir)))
         full_md = (vol1_dir / 'full-script.md').read_text(encoding='utf-8')
         self.assertIn('# 神作小说 · 第1卷 · 本卷漫画分镜剧本', full_md)
@@ -470,8 +524,131 @@ class PipelineTests(unittest.TestCase):
         self.invoke('review-layout',file=self.json_file(report))
         self.invoke('export')
 
+    def test_cli_smoke_build_prompt(self):
+        import subprocess
+        self.locked()
+        self.reference()
+        script = cp.project_load(self.root)['script']
+        page_id = script['pages'][0]['id']
+
+        # Test 1: build-prompt with --page produces JSON output with prompt
+        cmd = [sys.executable, str(Path(cp.__file__)), 'build-prompt',
+               '--project', str(self.root), '--page', page_id]
+        res = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
+        self.assertEqual(0, res.returncode, f"build-prompt failed: {res.stderr}")
+        out = json.loads(res.stdout)
+        self.assertTrue(out.get('ok'))
+        self.assertIn('prompt', out)
+        self.assertEqual(page_id, out['page_id'])
+
+        # Test 2: build-prompt with --notes and --output file
+        out_prompt_file = self.base / 'test_smoke_prompt.txt'
+        cmd_notes = [sys.executable, str(Path(cp.__file__)), 'build-prompt',
+                     '--project', str(self.root), '--page', page_id,
+                     '--notes', '重要镜头提示', '--output', str(out_prompt_file)]
+        res_notes = subprocess.run(cmd_notes, capture_output=True, text=True, encoding='utf-8')
+        self.assertEqual(0, res_notes.returncode, f"build-prompt with notes failed: {res_notes.stderr}")
+        self.assertTrue(out_prompt_file.is_file())
+        self.assertIn('重要镜头提示', out_prompt_file.read_text(encoding='utf-8'))
+
+        # Test 3: verify abbreviation --pag is rejected because allow_abbrev=False
+        cmd_abbrev = [sys.executable, str(Path(cp.__file__)), 'build-prompt',
+                      '--project', str(self.root), '--pag', page_id]
+        res_abbrev = subprocess.run(cmd_abbrev, capture_output=True, text=True, encoding='utf-8')
+        self.assertNotEqual(0, res_abbrev.returncode, "Abbreviated flag --pag must be rejected")
+
+    def test_stage_review_bypass_blocked_and_fingerprint_stale(self):
+        p_dir = self.base / '五章项目'
+        src = self.base / '五章原文.txt'
+        src_text = "".join(f"第{i}章 章节{i}\n人物甲进行第{i}段剧情动作。\n" for i in range(1, 6))
+        src.write_text(src_text, encoding='utf-8')
+        from argparse import Namespace
+        cp.run(Namespace(command='init', project=str(p_dir), source=[str(src)], title='五章工程', volume='第1卷'))
+        cp.run(Namespace(command='confirm-source', project=str(p_dir), note='来源核验', scope=None))
+        proj = cp.project_load(p_dir)
+        for ch in proj['source']['chapters']:
+            if ch['has_body']:
+                cp.run(Namespace(command='mark-read', project=str(p_dir), chapter=ch['id'], note='已读'))
+        script = fixture_script(proj['source'])
+        attach_adaptations(p_dir, proj['source'], script)
+        cp.run(Namespace(command='set-script', project=str(p_dir), file=self.json_file(script)))
+
+        # Add volume reviews but NO stage review
+        proj = cp.project_load(p_dir)
+        for kind, checks in cp.REVIEW_CHECKS.items():
+            rep = {'script_hash': cp.digest(proj['script']),
+                   'reviewed_chapter_ids': [c['id'] for c in proj['source']['chapters'] if c['has_body']],
+                   'checks': {k: True for k in checks}, 'evidence': '测试证据', 'issues': []}
+            cp.run(Namespace(command='review', project=str(p_dir), kind=kind, file=self.json_file(rep)))
+
+        # 1. check-stage-review must report missing stage review
+        with self.assertRaises(cp.GateError) as ctx_stage:
+            cp.run(Namespace(command='check-stage-review', project=str(p_dir), file=None))
+        self.assertIn('No reports/stage_reviews directory found', str(ctx_stage.exception))
+
+        # 2. lock-script must fail because stage review is missing
+        with self.assertRaises(cp.GateError) as ctx:
+            cp.run(Namespace(command='lock-script', project=str(p_dir)))
+        self.assertIn('Missing required stage reviews', str(ctx.exception))
+
+        # 3. Add valid stage review
+        self.add_reviews(p_dir)
+        check_ok = cp.run(Namespace(command='check-stage-review', project=str(p_dir), file=None))
+        self.assertTrue(check_ok['ok'])
+        lock_res = cp.run(Namespace(command='lock-script', project=str(p_dir)))
+        self.assertTrue(lock_res['ok'])
+
+        # 4. Modify chapter 1 panels in script -> stage review must become stale
+        script['panels'][0]['action'] += '（新改动动作）'
+        cp.run(Namespace(command='set-script', project=str(p_dir), file=self.json_file(script)))
+        with self.assertRaises(cp.GateError) as ctx_stale:
+            cp.run(Namespace(command='check-stage-review', project=str(p_dir), file=None))
+        self.assertTrue(any(word in str(ctx_stale.exception) for word in ('mismatch', 'changed', 'stale')))
+        with self.assertRaises(cp.GateError) as ctx2:
+            cp.run(Namespace(command='lock-script', project=str(p_dir)))
+        self.assertTrue(any(word in str(ctx2.exception) for word in ('mismatch', 'changed', 'stale')))
+
+    def test_preview_page_generation(self):
+        self.locked()
+        script = cp.project_load(self.root)['script']
+        page_id = script['pages'][0]['id']
+        img = self.image_file(color='blue')
+        prev_res = self.invoke('preview-page', page=page_id, file=img)
+        self.assertTrue(prev_res['ok'])
+        self.assertEqual(page_id, prev_res['page_id'])
+        for w in (360, 390, 430):
+            pfile = self.root / 'previews' / 'pages' / page_id / f'{w}.png'
+            self.assertTrue(pfile.is_file(), f"Preview file {pfile} should exist")
+            from PIL import Image
+            with Image.open(pfile) as pimg:
+                self.assertEqual(w, pimg.width)
+
+    def test_cost_estimation_and_typeset_preflight(self):
+        self.locked()
+        cost_res = self.invoke('estimate-cost')
+        self.assertTrue(cost_res['ok'])
+        self.assertIn('estimated_pages', cost_res)
+        self.assertIn('estimated_art_calls', cost_res)
+        self.assertIn('cost_visibility', cost_res)
+
+        typeset_ok = self.invoke('preflight-typeset')
+        self.assertTrue(typeset_ok['ok'])
+        self.assertEqual(0, len(typeset_ok['errors']))
+
+        # Catch dialogue overflow
+        script = cp.project_load(self.root)['script']
+        huge_text = '这是一段极长的测试对白，用来检验排字容量检查。' * 500
+        script['panels'][0]['dialogue'].append({'kind': 'speech', 'speaker': 'char-a', 'text': huge_text})
+        self.invoke('set-script', file=self.json_file(script))
+        typeset_fail = self.invoke('preflight-typeset')
+        self.assertFalse(typeset_fail['ok'])
+        self.assertTrue(any('exceeds' in e and 'capacity' in e for e in typeset_fail['errors']))
+
     def exported(self):
-        self.locked();self.accept_all();self.invoke('prepare-pages');self.review_and_export()
+        self.locked()
+        self.accept_all()
+        self.invoke('prepare-pages')
+        self.review_and_export()
 
 
 if __name__=='__main__':

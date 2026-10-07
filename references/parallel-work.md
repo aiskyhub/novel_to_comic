@@ -15,12 +15,12 @@
 
 1. **绝对禁止亲自写初稿分镜**：各章原文精读、细节清单提取（`docs/adaptation/`）与逐格分镜草稿编写（`scripts/chapters/`）必须全量派发给**改编编剧师子代理**执行。
 2. **绝对禁止亲自动手整改不合格剧本**：当阶段审核打回时，**主代理严禁自己动手修剧本、加镜头或改台词**！主代理仅负责客观仲裁并下达整改决议，具体画格级修改增补**必须全量交由剧本改稿整改师子代理（或编剧子代理）亲自执笔**！
-3. **绝对禁止亲自编写或打磨完整页出图提示词**：出图提示词架构、2~3 格整宽纵排布局规划、原生对白气泡与手机可读字高排版，必须全量交由**分镜提示词工程师子代理**执行。
+3. **绝对禁止亲自编写或打磨完整页出图提示词**：出图提示词架构、3~4 格整宽纵排布局规划（常规3格、简单4格）、原生对白气泡与手机可读字高排版，必须全量交由**分镜提示词工程师子代理**执行。
 4. **绝对禁止亲自调用生图工具或手工修图**：绘图生成与资产登记由**画面渲染执行员子代理**执行。
 5. **绝对禁止亲自撰写具体整页 QA 报告**：手机 360/390/430px 多视口逐格审阅、五官一致性核查、原生对白错漏核验与实测字高记录，必须全量交由**画面与排版品控员子代理**执行。
-6. **绝对禁止使用 Python 脚本批量伪造/合成审查与整改报告**：
+6. **绝对禁止伪造/合成审查与整改报告**：
    - 严禁为了“过门禁”而编写批处理脚本合成虚假的初审扣分、模板化占位符引句（如“原文具体短引句”）或捏造未发生物理变动的 `modified_panels`；
-   - 宿主系统（如 Antigravity）直接穿透底层运行时日志（`transcript.jsonl`），对每个子代理的 `conversation_id` 进行真实调用链审计；一旦发现未真实唤起子代理或小说原文不匹配，门禁将 100% 机械阻断！
+   - 流水线对审查输入指纹、真实章节引句、审阅人身份及前后修改差异进行全链条关系校验；运行时凭证可核验时予以核对，无法核验时记录为“未验证”，拒绝形式主义虚假通报。
 
 ---
 
@@ -38,12 +38,12 @@ flowchart TD
     end
 
     subgraph ScriptDept["编剧与文学部门 (Subagents)"]
-        Writer["1. 改编编剧师 (Screenwriter & Storyboarder)<br/>• 逐章精读与细节清单提取<br/>• 2-3格整宽逐格分镜草稿编写"]
+        Writer["1. 改编编剧师 (Screenwriter & Storyboarder)<br/>• 逐章精读与细节清单提取<br/>• 3-4格整宽逐格分镜草稿编写（常规3格、简单4格）"]
         Reviser["2. 剧本改稿整改师 (Script Revision Specialist)<br/>• 专职接单整改被审核打回的剧本<br/>• 画格级增补/场景Establishing/笑点强化<br/>• 输出 before vs after 修改对比"]
     end
 
     subgraph EditorialDept["编辑与审查部门 (Subagents)"]
-        AuditorAB["3. 红队剧本审评官 A & B (Script Auditors A & B)<br/>• 独立红队啄木鸟视角<br/>• 四大维度阶梯式负向扣分 (70-85分)<br/>• 挑出2-4个绑定原文真引句的缺陷<br/>• 第二轮复审核销"]
+        AuditorAB["3. 红队剧本审评官 A & B (Script Auditors A & B)<br/>• 独立红队客观核查视角<br/>• 四大维度全面核查与原著证据绑定<br/>• 发现缺陷出具整改意见，无缺陷直接放行<br/>• 第二轮复审核销"]
         ChiefEditor["4. 全卷文学终审编辑 (Lead Script Editor)<br/>• 全卷 coverage / continuity / comic 三轮拉网自校<br/>• 查杀脱离原文的虚构/魔改"]
     end
 
@@ -52,7 +52,7 @@ flowchart TD
     end
 
     subgraph ProductionDept["排版提示词与渲染部门 (Subagents)"]
-        PromptEng["6. 分镜提示词工程师 (Prompt Engineer & Layout Artist)<br/>• 手机竖屏 (1080×2400) 提示词架构<br/>• 2-3格整宽纵排/视觉焦点/字高48-60px/气泡定位"]
+        PromptEng["6. 分镜提示词工程师 (Prompt Engineer & Layout Artist)<br/>• 手机竖屏 (1080×2400) 提示词架构<br/>• 3-4格整宽纵排（常规3格、简单4格）/视觉焦点/字高48-60px/气泡定位"]
         Renderer["7. 画面渲染执行员 (Render Operator)<br/>• begin-page 任务登记<br/>• 一次调用绘图工具生成原生整页 PNG<br/>• 原始图像资产存储与尝试状态记录"]
     end
 
@@ -84,7 +84,7 @@ flowchart TD
 ### 1. 改编编剧师（Adaptive Screenwriter & Storyboarder）
 - **专属提示词**：[roles/screenwriter.md](../roles/screenwriter.md)
 - **现实对应**：主编剧 / 分镜台本师。
-- **职责范围**：按原文章节顺序，完整精读正文，提取三级证据细节清单（`docs/adaptation/<chapter_id>.md`），落实三大防遗漏铁律（关键场景氛围充分展开、核心高潮层层推进、幽默笑点原汁原味还原），编写逐场戏与 2~3 格整宽纵排逐格分镜草稿（`scripts/chapters/<chapter_id>.json`）。
+- **职责范围**：按原文章节顺序，完整精读正文，提取三级证据细节清单（`docs/adaptation/<chapter_id>.md`），落实三大防遗漏铁律（关键场景氛围充分展开、核心高潮层层推进、幽默笑点原汁原味还原），编写逐场戏与 3~4 格整宽纵排逐格分镜草稿（`scripts/chapters/<chapter_id>.json`，常规3格、信息简单可4格）。
 - **输入契约**：单章小说原文、项目人物档案（`docs/characters.md`）、美术指南（`docs/art_direction.md`）、前序章节交接状态。
 - **输出契约**：`docs/adaptation/<chapter_id>.md`、`scripts/chapters/<chapter_id>.json`。
 - **红线**：严禁过度概括跳步、严禁漏掉喜剧笑点、严禁自创新情节。
@@ -103,9 +103,9 @@ flowchart TD
 ### 3. 红队剧本审评官 A & B（Script Auditors A & B）
 - **专属提示词**：[roles/script_auditor_a.md](../roles/script_auditor_a.md) (场景与高潮) & [roles/script_auditor_b.md](../roles/script_auditor_b.md) (笑点与台词)
 - **现实对应**：责任编辑 / 文学审评组（红队啄木鸟）。
-- **职责范围**：每 5 章阶段审查时开启双子代理独立通读原著与分镜草稿，按四大维度量化扣分（场景描述 25 分、高潮推进 25 分、幽默笑点 25 分、角色台词 25 分，基准 100 分）；挑出 2–4 个明确绑定原文真实引句的具体缺陷，出具 `REJECTED_FOR_REVISION`；并在改稿子代理修改后执行第二轮复审核销。
+- **职责范围**：每 5 章阶段审查时开启双子代理独立通读原著与分镜草稿，按四大维度全面核查（场景描述 25 分、高潮推进 25 分、幽默笑点 25 分、角色台词 25 分，基准 100 分）；若发现具体缺陷则绑定原文真实引句出具 `REJECTED_FOR_REVISION`（若充分核验无缺陷可评定 `PASSED`）；若驳回则在改稿整改后执行第二轮复审核销。
 - **输入契约**：对应 5 章完整小说原文、逐章细节清单、逐格分镜草稿。
-- **输出契约**：包含初审得分（通常 70–85 分）、真实引句绑定缺陷清单、第二轮复审（≥85 分）核销记录。
+- **输出契约**：包含初审评定结果、真实引句绑定缺陷清单（若有）、第二轮复审（≥85 分）核销记录。
 
 ### 4. 全卷文学终审编辑（Lead Script Editor）
 - **专属提示词**：[roles/chief_script_editor.md](../roles/chief_script_editor.md)
@@ -124,7 +124,7 @@ flowchart TD
 ### 6. 分镜提示词工程师（Prompt Engineer & Layout Artist）
 - **专属提示词**：[roles/prompt_engineer.md](../roles/prompt_engineer.md)
 - **现实对应**：构图排版师 / AI 提示词架构师。
-- **职责范围**：依据锁定分镜与角色基准，将单页 2~3 格整宽纵排布局、视觉中心、构图机位、原生台词气泡位置与手机建议字高（48–60 像素）编译为单页完整出图提示词（遵循 `assets/page-prompt-template.md`），消除镜头冲突。
+- **职责范围**：依据锁定分镜与角色基准，将单页 3~4 格整宽纵排布局（常规模式3格，信息简单可4格）、视觉中心、构图机位、原生台词气泡位置与手机建议字高（48–60 像素）编译为单页完整出图提示词（遵循 `assets/page-prompt-template.md`），消除镜头冲突。
 - **输入契约**：锁定稿单页分镜数据、已登记角色基准图信息、手机排版规范。
 - **输出契约**：完整页出图提示词文件。
 
@@ -138,7 +138,7 @@ flowchart TD
 ### 8. 画面与排版品控员（Visual & Typography QA Inspector）
 - **专属提示词**：[roles/qa_inspector.md](../roles/qa_inspector.md)
 - **现实对应**：作画监督 / 手机端品控质检员。
-- **职责范围**：在 360/390/430px 手机等比预览中核验原生整页，逐镜头核对格数（2~3格整宽纵排）、五官结构、手肢线条、角色一致性；逐句核对锁定台词错别字、漏字、文字截断、气泡错指或遮挡脸部；实测正文显示字高；读取 `qa-inputs` 机械绑定，撰写真实整页 QA 报告，执行 `finish-page` 或 `fail-page`。
+- **职责范围**：在 360/390/430px 手机等比预览中核验原生整页，逐镜头核对格数（3~4格整宽纵排，常规3格、信息简单可4格）、五官结构、手肢线条、角色一致性；逐句核对锁定台词错别字、漏字、文字截断、气泡错指或遮挡脸部；实测正文显示字高；读取 `qa-inputs` 机械绑定，撰写真实整页 QA 报告，执行 `finish-page` 或 `fail-page`。
 - **输入契约**：原生整页 PNG、手机等比预览图、锁定稿单页分镜与台词、`qa-inputs` 数据。
 - **输出契约**：真实整页 QA 报告。
 
@@ -157,11 +157,11 @@ flowchart TD
 
 ```
 [步骤 1: 审查与驳回]
-审评子代理 A & B 审查 5 章初稿 -> 各自打出 70-85 分 -> 提出 2-4 项绑定原著真实引句的缺陷 -> 结论 REJECTED_FOR_REVISION
+审评子代理 A & B 审查 5 章初稿 -> 客观评估原著证据 -> 发现缺陷则出具清单驳回整改（充分核验无缺陷直接放行）
        │
        ▼
 [步骤 2: 裁定与派单 (总导演主代理职责边界)]
-主代理集中审阅扣分清单 -> 客观裁定合理项 -> 形成整改指令单（明确修改目标与建议） -> 【严禁主代理亲自改剧本！】
+主代理集中审阅扣分清单 -> 客观裁定合理项（支持对误报进行裁定说明） -> 形成整改指令单 -> 【严禁主代理亲自改剧本！】
        │
        ▼
 [步骤 3: 落实整改 (编剧改稿子代理执笔)]
@@ -192,13 +192,13 @@ flowchart TD
 | 角色代码 | 专属提示词文件 | 派发时角色名称 (Role) | 核心职责概述 |
 |---|---|---|---|
 | **lead_director** | [roles/lead_director.md](../roles/lead_director.md) | "Showrunner & Supervising Director" | 总导演中枢，全流程调度、工单派发与终审放行（严禁下场干活） |
-| **screenwriter** | [roles/screenwriter.md](../roles/screenwriter.md) | "Adaptive Screenwriter & Storyboarder" | 逐章精读原文、提取细节清单、编写 2~3 格整宽纵排分镜草稿 |
+| **screenwriter** | [roles/screenwriter.md](../roles/screenwriter.md) | "Adaptive Screenwriter & Storyboarder" | 逐章精读原文、提取细节清单、编写 3~4 格整宽纵排分镜草稿（常规3格、简单4格） |
 | **script_reviser** | [roles/script_reviser.md](../roles/script_reviser.md) | "Script Reviser & Polish Specialist" | **专职承接驳回剧本整改**，执笔画格物理增补并输出前后对比 |
 | **script_auditor_a** | [roles/script_auditor_a.md](../roles/script_auditor_a.md) | "Red Team Script Auditor A" | 红队啄木鸟，量化审查场景 Establishing Shot 与剧情高潮推进 |
 | **script_auditor_b** | [roles/script_auditor_b.md](../roles/script_auditor_b.md) | "Red Team Script Auditor B" | 红队啄木鸟，量化审查幽默笑点包袱与角色对白性格 |
 | **chief_script_editor** | [roles/chief_script_editor.md](../roles/chief_script_editor.md) | "Chief Script Editor" | 全卷文学终审编辑，执行 coverage / continuity / comic 三轮拉网自校验 |
 | **art_director** | [roles/art_director.md](../roles/art_director.md) | "Art Director & Character Designer" | 制定美术风格指南与角色档案，编写基准图出图提示词 |
-| **prompt_engineer** | [roles/prompt_engineer.md](../roles/prompt_engineer.md) | "Storyboard Prompt Engineer" | 编译 1080×2400 原生整页提示词，规划 2~3 格纵排与字高 48-60px |
+| **prompt_engineer** | [roles/prompt_engineer.md](../roles/prompt_engineer.md) | "Storyboard Prompt Engineer" | 编译 1080×2400 原生整页提示词，规划 3~4 格纵排（常规3格、简单4格）与字高 48-60px |
 | **render_operator** | [roles/render_operator.md](../roles/render_operator.md) | "Render Operator" | 调用绘图工具一次性生成包含所有画格与气泡的原生整页 PNG |
 | **qa_inspector** | [roles/qa_inspector.md](../roles/qa_inspector.md) | "Comic Page QA Inspector" | 手机 360/390/430px 视口核验整页，实测字高，提取 qa-inputs 填写真实 QA |
 | **packager** | [roles/packager.md](../roles/packager.md) | "Post-Production Packager & Deliverer" | 资产归档 (prepare-pages)、排版审阅、导出 HTML/PDF/CBZ 并校验 |
@@ -219,7 +219,7 @@ Prompt:
 核心要求：
 1. 完整精读，落实三大防遗漏铁律：关键场景建立镜头（Establishing Shot）必须充分展开氛围；核心高潮冲突层层推进，严禁一格跳过结果；原汁原味还原原著搞笑包袱、吃瘪颜艺与内心吐槽。
 2. 严格遵循三级证据体系：第一类原文明示事实绑定真实原著引句；第二类视觉呈现明确标注机位构图；严禁第三类虚构情节。
-3. 遵循手机单页 2~3 格整宽纵排规划，按 2000 字估算约 60 格分镜。
+3. 遵循手机单页 3~4 格整宽纵排规划（常规模式3格，信息简单可4格），按 2000 字估算约 60 格分镜。
 产出要求：输出 docs/adaptation/[章节ID].md 与 scripts/chapters/[章节ID].json。
 ```
 
@@ -265,9 +265,9 @@ Prompt:
 2. 锁定分镜稿本页台词、人物与分格；
 3. qa-inputs 输出数据。
 核查重点：
-1. 检查整页是否严格为 2~3 格整宽纵排，无额外杂格或跨格融合；
+1. 检查整页是否为 3~4 格整宽纵排（常规3格、简单4格），无额外杂格或跨格融合；
 2. 逐格核对人物五官、线条、神态与角色基准图的一致性；
-3. 在 360/390/430px 视口下核查正文文字，实测正文显示字高（必须达标 48-60 像素，清晰可读）；
+3. 在 360/390/430px 视口下核查正文文字，实测正文显示字高（清晰可读，推荐约 16 CSS 像素）；
 4. 逐句核对台词无错别字、漏字、截断，气泡不挡脸；
 5. 输出真实详细的整页 QA 报告，给出 finish-page 或 fail-page 判定。
 ```
@@ -277,10 +277,11 @@ Prompt:
 ## 六、环境自适应与回退保障
 
 1. **宿主支持子代理环境（如 Antigravity / 并发支持环境）**：
-   - 必须通过 `invoke_subagent` 真实唤起对应的独立子代理；
-   - 报告中必须包含真实的 `conversation_id` 与 `subagent_role`；
-   - 系统语言服务器的 `transcript.jsonl` 日志作为不可伪造的调用凭证，门禁自动读取对账。
-2. **纯单进程回退环境（宿主不支持并发或无子代理功能）**：
-   - 主代理必须显式分轮次切换系统角色沙箱推进；
-   - 审查阶段必须开启独立批判性提示词沙箱，严禁在同一会话中自评自改；
-   - 整改阶段必须按照编剧改稿流程真实变动分镜画格并记录前后对比，门禁的引句真伪与画格物理变动校验依然强制生效。
+   - 优先通过 `invoke_subagent` 唤起对应的独立子代理；
+   - 记录分配的 `conversation_id` 与 `subagent_role`，流水线在具备条件时自动读取凭证核对；
+   - 保持审查官独立性，确保问题出具与改稿落实分工明确。
+2. **纯单进程回退环境（宿主不支持并发或无独立子代理工具）**：
+   - 主代理按顺序分阶段推进，区分不同职责的执行与审查；
+   - 审查时恪守独立批判性标准，严禁未核验事实即假定通过；
+   - 门禁的关联链（输入指纹、引句真伪、修改前后 diff 与问题核销）强制生效；
+   - 无法核验底层调用凭证时，报告真实标记为 `unverified`，杜绝形式主义造假。

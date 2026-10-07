@@ -33,11 +33,12 @@ init-book默认复制原稿并核验SHA256；只有用户明确--action move时�
 | impact | --file | 比较真实修订影响 |
 | check-script | — | 原著引用、结构和手机单页布局检查 |
 | review | --kind coverage/continuity/comic --file | 登记当前卷实际审查 |
-| check-stage-review | [--file] | 机械校验阶段审查报告：拦截虚假高分一把过、校验双轮扣分与修改闭环 |
-| lock-script | — | 三轮当前审查通过后锁定 |
+| check-stage-review | [--file] | 机械校验阶段审查报告：核验应审批次全覆盖、章节指纹绑定与整改闭环 |
+| lock-script | — | 三轮全卷审查与各阶段审查全覆盖通过后锁定 |
 | assert-art | — | 出图前检查有效锁 |
 | register-reference | --file --qa (--characters 或 --bindings) | 登记已看图的基准 |
 | build-prompt | --page [--notes] [--output] | 编译一张完整页的全部内容，由分镜提示词工程师子代理打磨 |
+| preview-page | --page [--file] | 验收前为待审验整页生成 360/390/430px 手机预览（不改变原图） |
 | begin-page | --page --prompt | 登记一次整页调用；返回实际提示词、参考路径与尝试号 |
 | qa-inputs | --page --attempt --file | 读取整页哈希/尝试绑定；不自动生成通过报告 |
 | finish-page | --page --attempt --file --qa | 整页验收，归档原始PNG字节 |
@@ -49,7 +50,8 @@ init-book默认复制原稿并核验SHA256；只有用户明确--action move时�
 | complete | --file | 记录真实最终验收 |
 | status / preflight | — | 只读显示页数、pending、剩余整页调用与阻断 |
 | doctor | — | 检查依赖与项目状态 |
-| preflight-typeset | — | 检查锁定稿文字项是否完整 |
+| preflight-typeset | — | 预检对白气泡容量、字高排字可行性与估算调用成本 |
+| estimate-cost | — | 预先计算全卷正文页数、API 生图调用预算与分批交付清单 |
 | resolve-issue | --id --evidence | 记录原文提取问题的真实解决证据 |
 
 基准QA还可用qa-inputs --file --characters或--bindings；已登记基准可用--reference检查。正文只使用--page。

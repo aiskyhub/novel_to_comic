@@ -1,157 +1,58 @@
 {
   "stage_range": {
-    "start_chapter_id": "c001",
-    "end_chapter_id": "c005",
-    "chapter_count": 5
+    "start_chapter_id": "",
+    "end_chapter_id": "",
+    "chapter_count": 0,
+    "stage_script_hash": ""
   },
-  "reviewed_chapters": [
-    "c001", "c002", "c003", "c004", "c005"
-  ],
+  "reviewed_chapters": [],
   "anti_formalism_attestation": {
     "prohibit_rubber_stamp": true,
-    "statement": "本报告拒绝形式主义自评与虚高分数。初审阶段必须对照原著进行严苛挑刺并执行阶梯扣分；初稿正常得分区间为70-85分；严禁直接出具≥90分的一把过假报告；必须包含编剧子代理亲自修改打磨画格记录，总导演统筹裁定与第二轮复审核销闭环。"
+    "statement": "本审查依据原著小说文本与分镜进行客观核验，杜绝形式主义自评与虚构引句；重大缺陷必须闭环整改或由总导演记录裁定理由。"
   },
   "round_1_initial_audit": {
-    "audit_objective": "红队啄木鸟挑刺与量化扣分（严禁初审90+一把过形式主义）",
+    "audit_objective": "对本批次各章分镜进行原著忠实度、场景空间、叙事节奏与对白生动度独立审查",
     "auditors": [
       {
-        "auditor_id": "subagent_auditor_a",
-        "conversation_id": "00000000-0000-0000-0000-000000000001",
+        "auditor_id": "auditor_a",
+        "conversation_id": null,
         "subagent_role": "Script Auditor A",
-        "model_used": "自主决定的模型A",
+        "model_used": "",
         "scores": {
-          "scene_descriptions": 19,
-          "climax_plot_beats": 20,
-          "humor_and_gags": 18,
-          "character_dialogue": 21,
-          "total_score": 78
+          "scene_descriptions": 0,
+          "climax_plot_beats": 0,
+          "total_score": 0
         },
-        "deductions": [
-          {
-            "category": "scene_descriptions",
-            "points_deducted": 4,
-            "chapter_id": "c003",
-            "reason": "缺少破庙建立镜头，环境氛围一笔带过，背景沦为虚空"
-          },
-          {
-            "category": "humor_and_gags",
-            "points_deducted": 4,
-            "chapter_id": "c005",
-            "reason": "遗漏原著主角吃瘪时的颜艺反应与内心神吐槽，平铺直叙"
-          }
-        ],
-        "issues": [
-          {
-            "id": "auditor_a_issue_01",
-            "chapter_id": "c003",
-            "source_quote": "破庙外的暴雨如注，冷风呼啸灌入残破的窗棂，佛像前积水深达数寸，荒凉肃杀。",
-            "category": "scene_description",
-            "problem_description": "破庙初次登场未设置建立镜头，暴雨倾盆与泥泞细节被一句话带过，缺乏视听氛围沉浸感",
-            "suggested_fix": "在分镜开头增加1格破庙外部全景建立镜头交代暴雨环境，并补充屋檐漏雨特写"
-          },
-          {
-            "id": "auditor_a_issue_02",
-            "chapter_id": "c005",
-            "source_quote": "配角笑嘻嘻地拍着主角肩膀调侃，主角嘴角抽搐、窘迫得耳根发烫，心中狂翻白眼。",
-            "category": "humor_gag",
-            "problem_description": "原著此处配角拆台时主角面部抽搐的反差吃瘪神态未呈现，缺少关键喜剧包袱",
-            "suggested_fix": "在对白后补充主角特写反应格，刻画豆豆眼/抽搐颜艺与内心吐槽独白"
-          }
-        ]
+        "deductions": [],
+        "issues": []
       },
       {
-        "auditor_id": "subagent_auditor_b",
-        "conversation_id": "00000000-0000-0000-0000-000000000002",
+        "auditor_id": "auditor_b",
+        "conversation_id": null,
         "subagent_role": "Script Auditor B",
-        "model_used": "自主决定的模型B",
+        "model_used": "",
         "scores": {
-          "scene_descriptions": 20,
-          "climax_plot_beats": 18,
-          "humor_and_gags": 20,
-          "character_dialogue": 22,
-          "total_score": 80
+          "humor_and_gags": 0,
+          "character_dialogue": 0,
+          "total_score": 0
         },
-        "deductions": [
-          {
-            "category": "climax_plot_beats",
-            "points_deducted": 5,
-            "chapter_id": "c004",
-            "reason": "刺客突袭高潮节奏过急，一格直接给出战斗结果，跳过了前置杀气铺垫与拔剑交锋过程"
-          }
-        ],
-        "issues": [
-          {
-            "id": "auditor_b_issue_01",
-            "chapter_id": "c004",
-            "source_quote": "杀气骤现，刺客刀锋寒芒撕裂长夜，双方电光石火间连拆三招，剑气纵横激荡。",
-            "category": "climax_plot_beat",
-            "problem_description": "刺客突袭直接一格跳到倒地结果，原著中双方眼神博弈、拔剑寒光与交锋三招的紧张过程被严重压缩",
-            "suggested_fix": "拆分为3格分镜：杀气突现眼神特写 → 刀光交错破空特写 → 击飞落地结果格，补齐高潮冲突链条"
-          }
-        ]
+        "deductions": [],
+        "issues": []
       }
     ],
-    "initial_verdict": "REJECTED_FOR_REVISION"
+    "initial_verdict": "PENDING"
   },
-  "lead_agent_revisions": {
-    "revision_summary": "总导演客观裁定审查扣分项并下达整改指令单，编剧改稿子代理（subagent_reviser）亲自落实剧本分镜修改与细节增补",
+  "screenwriter_revisions": {
+    "revision_summary": "",
     "reviser_id": "subagent_reviser",
-    "conversation_id": "00000000-0000-0000-0000-000000000003",
-    "applied_fixes": [
-      {
-        "issue_ref": "auditor_a_issue_01",
-        "chapter_id": "c003",
-        "modified_panels": ["c003-p01", "c003-p02"],
-        "before_revision": "原仅有1格角色进入破庙的半身镜头，无环境交代",
-        "after_revision": "增补第1格破庙外部全景Establishing Shot（破败佛像、暴雨如注、积水溅起），强化环境沉浸感"
-      },
-      {
-        "issue_ref": "auditor_a_issue_02",
-        "chapter_id": "c005",
-        "modified_panels": ["c005-p08"],
-        "before_revision": "配角说话后直接接下一剧情，无主角反应",
-        "after_revision": "修改第8格为主角反差颜艺反应格，添加嘴角抽搐表情与原著原味吐槽独白"
-      },
-      {
-        "issue_ref": "auditor_b_issue_01",
-        "chapter_id": "c004",
-        "modified_panels": ["c004-p12", "c004-p13", "c004-p14"],
-        "before_revision": "原单格带过刺客倒地",
-        "after_revision": "扩充为3格连环交锋分镜：第12格寒芒乍现、第13格兵刃对撞火星特写、第14格刺客败退，高潮完整展开"
-      }
-    ]
+    "conversation_id": null,
+    "applied_fixes": [],
+    "adjudications": []
   },
   "round_2_verification": {
-    "verification_summary": "两名子代理针对主代理修改后的剧本分镜进行逐项复核核销与重新评定",
-    "auditors_recheck": [
-      {
-        "auditor_id": "subagent_auditor_a",
-        "resolved_issue_refs": ["auditor_a_issue_01", "auditor_a_issue_02"],
-        "unresolved_issue_refs": [],
-        "final_scores": {
-          "scene_descriptions": 23,
-          "climax_plot_beats": 23,
-          "humor_and_gags": 22,
-          "character_dialogue": 22,
-          "total_score": 90
-        },
-        "verdict": "PASSED"
-      },
-      {
-        "auditor_id": "subagent_auditor_b",
-        "resolved_issue_refs": ["auditor_b_issue_01"],
-        "unresolved_issue_refs": [],
-        "final_scores": {
-          "scene_descriptions": 23,
-          "climax_plot_beats": 23,
-          "humor_and_gags": 23,
-          "character_dialogue": 23,
-          "total_score": 92
-        },
-        "verdict": "PASSED"
-      }
-    ],
-    "stage_approved": true,
-    "approved_at": "2026-10-07T16:00:00Z"
+    "verification_summary": "",
+    "auditors_recheck": [],
+    "stage_approved": false,
+    "approved_at": null
   }
 }

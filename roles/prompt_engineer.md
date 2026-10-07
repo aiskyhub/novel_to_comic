@@ -13,10 +13,10 @@
 1. **原生整页一次生成铁律（严禁单格拼贴）**：
    - 必须生成完整的单页提示词，驱动模型在单次生图中直接输出包含全部画格与对白气泡的 1080×2400 完整整页；
    - 严禁把一页拆分成 3 个单格提示词分别生图再拼接，这会彻底破坏整页垂直视觉流与光影连贯性；
-2. **手机端 2~3 格整宽纵排版式**：
-   - 单页严格限定为 2 到 3 个整宽纵向堆叠画格（Top Panel, Middle Panel, Bottom Panel）；
+2. **手机端 3~4 格整宽纵排版式**：
+   - 单页限定为 3 到 4 个整宽纵向堆叠画格（常规 3 格，信息简单可 4 格）；
    - 画格之间必须有清晰的水平画格间隙（Horizontal Gutters），四周保留整洁的留白边距；
-   - 严禁单页仅 1 格（浪费竖屏空间）或超过 3 格（手机端过于拥挤无法辨识）；
+   - 严禁单页少于 3 格或超过 4 格（手机端过于拥挤无法辨识）；
 3. **字高与气泡硬指标规范**：
    - 必须在提示词中显式约束文字气泡位置与尺寸：气泡内中文对白必须清晰可辨；
    - **字高硬指标**：在 1080px 满宽画布下，主要对白文字高度必须规划在 **48~60px**（确保在 360px 宽度手机上显示为 16~20px，绝不眯眼）；
@@ -33,12 +33,12 @@
 ### 第一段：页面级全局排版与风格指令 (Page-Level Layout & Global Style)
 ```text
 A professional full-page vertical webcomic strip, mobile-friendly 9:20 aspect ratio (1080x2400 resolution). 
-The page consists of exactly [2 or 3] full-width rectangular panels stacked vertically from top to bottom, separated by clean white gutters. 
+The page consists of exactly [3 or 4] full-width rectangular panels stacked vertically from top to bottom, separated by clean white gutters. 
 Art style: [Visual style from docs/art_direction.md, e.g. polished anime webtoon, crisp lineart, soft cell shading, dynamic lighting].
 ```
 
 ### 第二段：逐格镜头与角色动作编排 (Panel-by-Panel Staging)
-针对本页规划的 2 或 3 个画格，自上而下逐格描述：
+针对本页规划的 3 或 4 个画格（常规 3 格，简单信息可 4 格），自上而下逐格描述：
 - **Panel 1 (Top Panel)**:
   - 景别与机位（如 Establishing wide shot, eye-level angle）；
   - 角色设定与动作（引用角色锚定词，精确动作与面部表情）；
@@ -47,8 +47,11 @@ Art style: [Visual style from docs/art_direction.md, e.g. polished anime webtoon
   - 景别与机位（如 Medium shot, slight low angle）；
   - 冲突动作或情绪特写；
   - 环境光影延续。
-- **Panel 3 (Bottom Panel)**:
-  - 景别与机位（如 Dramatic close-up, high tension）；
+- **Panel 3 (Panel 3 or Bottom Panel)**:
+  - 景别与机位（如 Medium close-up, dramatic action）；
+  - 动作交锋或对白反应。
+- **Panel 4 (Bottom Panel, optional if 4 panels)**:
+  - 景别与机位（如 Dramatic close-up, reaction beat）；
   - 关键反应、翻页悬念动作或收尾构图。
 
 ### 第三段：气泡排版与文字排版指令 (Speech Bubbles & Typography Guidelines)
@@ -59,6 +62,7 @@ Typography and speech bubbles:
   * Panel 1: [Character Name]: "[Exact dialogue text from script]" (placed at top-left, not covering faces)
   * Panel 2: [Character Name]: "[Exact dialogue text from script]" (placed at center-right)
   * Panel 3: [Character Name]: "[Exact dialogue text from script]" (placed at bottom-left)
+  * Panel 4 (if present): [Character Name]: "[Exact dialogue text from script]" (placed at bottom-right)
 - Text formatting: Large, bold, highly legible font, text height calibrated to 48-60px relative to the 1080px canvas width, high contrast against bubble background.
 ```
 
@@ -74,4 +78,4 @@ Typography and speech bubbles:
 
 ### 输出契约 (Output)
 1. 编译后的页面级提示词文本文件：`prompts/pages/<page_id>.txt`；
-2. 提示词元数据：包含出场角色列表、画格数（2 或 3 格）、对白字数与字高规划。
+2. 提示词元数据：包含出场角色列表、画格数（3 或 4 格）、对白字数与字高规划。

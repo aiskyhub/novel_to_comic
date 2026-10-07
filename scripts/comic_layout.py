@@ -119,6 +119,65 @@ def prepare_pages(root,project):
     return {'input_hash':fingerprint,'pages':pages,'qa':None}
 
 
+def preview_page(root, project, page_id, file=None):
+    from PIL import Image
+    from comic_pages import check_page_image
+    c = core()
+    root = Path(root).resolve()
+
+    source = None
+    if file:
+        fpath = Path(file)
+        if not fpath.is_file() and root.is_dir():
+            try:
+                fpath = c.inside(root, file)
+            except Exception:
+                pass
+        if not fpath.is_file():
+            raise c.GateError(f'Candidate image file not found: {file}')
+        source = fpath
+    else:
+        attempts = project.get('art', {}).get('pages', {}).get(page_id, [])
+        for att in reversed(attempts):
+            if att.get('path'):
+                cand = c.inside(root, att['path'])
+                if cand.is_file():
+                    source = cand
+                    break
+    if not source or not source.is_file():
+        raise c.GateError(f'No candidate image found to preview for page: {page_id}')
+
+    width, height = check_page_image(source)
+    preview_dir = root / 'previews' / 'pages' / page_id
+    preview_dir.mkdir(parents=True, exist_ok=True)
+
+    previews = []
+    with Image.open(source) as image:
+        for preview_width in (360, 390, 430):
+            preview_height = round(height * preview_width / width)
+            preview = image.resize((preview_width, preview_height), Image.Resampling.LANCZOS)
+            output = io.BytesIO()
+            preview.save(output, format='PNG')
+            data = output.getvalue()
+            dest_file = preview_dir / f'{preview_width}.png'
+            _atomic_bytes(dest_file, data)
+            previews.append({
+                'width': preview_width,
+                'height': preview_height,
+                'path': str(dest_file.relative_to(root).as_posix()),
+                'sha256': hashlib_bytes(data)
+            })
+
+    return {
+        'ok': True,
+        'page_id': page_id,
+        'source_image': str(source),
+        'width': width,
+        'height': height,
+        'previews': previews
+    }
+
+
 def export(root, project):
     c = core()
     from reportlab.pdfgen import canvas

@@ -24,7 +24,7 @@ files 记录原始输入绝对路径、项目内 archive_path、格式、编码�
 | event | id、description（严格对应原著真实事件，绝不捏造新情节）、非空 source_unit_ids；每个事件必须在画格中出现 |
 | scene | id、chapter_id、setting_id；可补时刻、读者/人物知情状态、叙事层级 |
 | panel | id、chapter_id、scene_id、source_unit_ids、event_ids、cast、action、shot、space、expression、state_before、state_after、dialogue（台词对白/旁白必须严格忠实于原著语义，严禁私自编造加戏）；可补 visual_plan 对象记录视觉中心、层次与局部色彩等 |
-| page | id、chapter_id、按阅读顺序排列的 panel_ids；默认单页columns=1，单页限定2–3格（底层容差1–5）；rows每行一格整宽纵排，直接用于完整页提示词布局 |
+| page | id、chapter_id、按阅读顺序排列的 panel_ids；默认单页columns=1，单页限定3–4格（常规模式下3格，信息简单可4格；底层容差1–5）；rows每行一格整宽纵排，直接用于完整页提示词布局 |
 | continuity_handover | opening_state 与 closing_state，记录本卷开场继承与结末状态（人物状态、世界规则、未回收伏笔），供跨卷交接审查核验 |
 | source_disposition | unit_id、kind=context/repetition/paratext、reason；context 还需真实 panel_ids |
 | chapter_adaptation | 每个正文章恰好一条：chapter_id、document_path、document_sha256、details、unit_audits；具体字段与呈现证据见 [detail-records.md](detail-records.md) |
@@ -47,7 +47,7 @@ panels 数组就是本卷镜头顺序；pages 按此顺序覆盖每格恰好一�
 
 art_direction 的字段及决策方法见 [art-direction.md](art-direction.md)；模板的默认规范需按本作调整。references 的建议记录为 `{work,url,scope,access,observations,adaptation}`，access=viewed/metadata_only/unavailable；仅在实际看过画页时填写具体观察，不要求为了锁定剧本额外上网。旧单页尺寸、字号或双列规则不保留；通过set-script更新为手机单页约束并正常重审。
 
-手机单页rows为画格ID数组的数组，例如 `[["p1"],["p2"],["p3"]]`，每行一格占满可用宽度；展平后必须与panel_ids完全一致。单页columns只能为1；每格aspect_ratio在提示词中用于整页内部的格高规划。
+手机单页rows为画格ID数组的数组，例如常规三格 `[["p1"],["p2"],["p3"]]` 或四格 `[["p1"],["p2"],["p3"],["p4"]]`，每行一格占满可用宽度；展平后必须与panel_ids完全一致。单页columns只能为1；每格aspect_ratio在提示词中用于整页内部的格高规划。
 
 状态按角色 ID 保存对象，例如 `{ "form":"base", "costume":"coat-a", "injuries":[], "items":[], "location":"room-a", "knowledge":[] }`。各 cast 都有 state_before/after。相邻出场的已记录状态发生变化时，在当前格 state_transitions 填 `{character_id,fields,reason,source_unit_ids}`，解释状态间变化；直接呈现的变化仍要在 action/events 中有依据。
 
@@ -74,6 +74,71 @@ coverage 检查项：all_source_read/events_preserved/arcs_preserved/ending_pres
 `events_preserved` 的语义检查须覆盖段内细节、事件过程、对白交锋和心理/情绪转折，不能只统计来源 ID 或事件 ID。逐章细节清单与分镜映射保存在当前状态目录的 `docs/adaptation/<chapter_id>.md`；结构化记录必须写入 script.chapter_adaptations，关卡核验来源引句、实际字段摘句、合并依据、逐段核查记录和文档指纹。coverage 的 evidence 引用清单路径、具体来源/画格、合并依据和实际复查结果；报告检查项保持原有字段，机械记录不替代语义检查。细则见 [narrative-density.md](narrative-density.md) 与 [detail-records.md](detail-records.md)。
 continuity：causality/timeline/identity/states/knowledge_and_reveals（核对因果与状态逻辑 100% 来源于原著，严禁自设因果）。
 comic：drawable_panels/dialogue_and_speakers/reading_order/pacing/text_density（核对分镜可绘制且台词/旁白忠于原著，严禁捏造台词）。
+
+阶段审查报告（每5章阶段门禁报告，存入 `reports/stage_reviews/stage_XX.json`）：
+```json
+{
+  "schema_version": 6,
+  "stage_range": {
+    "start_chapter_id": "ch000001",
+    "end_chapter_id": "ch000005",
+    "chapter_count": 5,
+    "stage_script_hash": "绑定当前批次章节内容的指纹"
+  },
+  "stage_script_hash": "绑定当前批次章节内容的指纹",
+  "reviewed_chapters": ["ch000001", "ch000002", "ch000003", "ch000004", "ch000005"],
+  "stage_approved": true,
+  "round_1_initial_audit": {
+    "initial_verdict": "PASSED 或 REJECTED",
+    "auditors": [
+      {
+        "auditor_id": "auditor_a",
+        "conversation_id": "会话凭据",
+        "scores": {"total_score": 85},
+        "deductions": [{"reason": "扣分理由", "points": 10}],
+        "issues": [
+          {
+            "id": "auditor_a_issue_01",
+            "chapter_id": "ch000001",
+            "source_quote": "小说实际引句",
+            "problem_description": "问题说明",
+            "suggested_fix": "修改建议"
+          }
+        ]
+      }
+    ]
+  },
+  "screenwriter_revisions": {
+    "revision_summary": "整改综述",
+    "applied_fixes": [
+      {
+        "issue_ref": "auditor_a_issue_01",
+        "modified_panels": ["p001_01"],
+        "before_revision": "修改前内容",
+        "after_revision": "修改后内容（必须有差异）"
+      }
+    ],
+    "adjudications": [
+      {
+        "issue_ref": "问题ID",
+        "reason": "误报裁定理由（如原著后文已有说明）"
+      }
+    ]
+  },
+  "round_2_verification": {
+    "stage_approved": true,
+    "approved_at": "ISO8601时间戳",
+    "auditors_recheck": [
+      {
+        "auditor_id": "auditor_a",
+        "final_scores": {"total_score": 90},
+        "verdict": "PASSED",
+        "unresolved_issue_refs": []
+      }
+    ]
+  }
+}
+```
 
 参考图报告检查项：identity/distinctiveness/angles_and_expressions/source_faithfulness/gender_readability/body_design/design_tier_fit/visual_elegance。
 整页正文报告：identity/continuity/composition/drawing_quality/no_unwanted_text/gender_readability/distinctiveness/body_design/design_tier_fit/visual_elegance/native_detail，加上全部页面阅读检查。reviewed_ids列出本页全部分镜，使用单一attempt_binding绑定整页；detail_notes记录整页原生与手机尺寸中的实际观察。
