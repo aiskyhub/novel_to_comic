@@ -11,8 +11,12 @@ def sync(target):
     target = target.expanduser().resolve()
     if target.name != 'novel-to-comic' or target == source:
         raise ValueError('Target must be a separate, explicitly named novel-to-comic skill directory.')
-    owned_dirs = {'agents','assets','references','scripts','tests','.codex-plugin','validation','README','roles','role'}
+    owned_dirs = {'agents','assets','references','scripts','tests','.codex-plugin','validation','README','roles'}
     owned_files = {'SKILL.md','README.md','VERSION.json','.gitignore'}
+    # 清理已废弃的兼容目录 role
+    legacy_role_dir = target / 'role'
+    if legacy_role_dir.is_dir():
+        shutil.rmtree(legacy_role_dir, ignore_errors=True)
     files = [p for p in source.rglob('*') if p.is_file()
              and '__pycache__' not in p.parts and p.suffix not in ('.pyc','.pyo')
              and ((p.parent == source and p.name in owned_files)

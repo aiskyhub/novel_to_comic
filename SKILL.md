@@ -22,7 +22,7 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
 | **整页出图与气泡排版** | [production.md](references/production.md) | 一页一次调用、完整提示词打磨与原生对白气泡 |
 | **质量关卡与双轨审查** | [quality.md](references/quality.md) | 机械门禁校验与人工语义/视觉审查双轨分离标准 |
 | **任务委派与环境自适应** | [parallel-work.md](references/parallel-work.md) | 环境自适应委派机制、自主模型决策与双子代理审批权责边界 |
-| **岗位角色与独立提示词库** | [role/README.md](role/README.md) & `role/*.md` | 各岗位专属独立提示词（总导演及9大子代理）、单一角色严格注入与上下文物理隔离规范 |
+| **岗位角色与独立提示词库** | [roles/README.md](roles/README.md) & `roles/*.md` | 各岗位专属独立提示词（总导演及9大子代理）、单一角色严格注入与上下文物理隔离规范 |
 | **数据结构与数据契约** | [schemas.md](references/schemas.md) | 全卷 `project.json` (Schema v6) 字段定义与数据契约 |
 | **异常恢复与版本变更** | [recovery.md](references/recovery.md) | 流程中断恢复、版本分叉隔离与多轮返修处理 |
 | **工程模板权威库** | `assets/templates/` (`book_docs/`, `volume_docs/`) | 项目顶层与分卷模块化 Markdown 说明文档模板 |
@@ -69,19 +69,19 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
 
 ## 主代理定位：总导演与总制片人（严禁下场干活铁律）
 
-- **总导演严格扮演与协调统筹（严禁肉身下场干活）**：主代理扮演总导演兼总制片人（Showrunner），严格遵循其专属提示词 [role/lead_director.md](role/lead_director.md)。**绝对禁止主代理下场干具体的活**（包括但不限于：严禁肉身精读写初稿分镜、**严禁亲自整改被驳回的不合格剧本**、严禁亲自编写出图提示词、严禁亲自调用绘图工具、严禁亲自填报整页 QA 报告、**严禁通过 Python 脚本批量合成伪造虚假审查报告**）。
+- **总导演严格扮演与协调统筹（严禁肉身下场干活）**：主代理扮演总导演兼总制片人（Showrunner），严格遵循其专属提示词 [roles/lead_director.md](roles/lead_director.md)。**绝对禁止主代理下场干具体的活**（包括但不限于：严禁肉身精读写初稿分镜、**严禁亲自整改被驳回的不合格剧本**、严禁亲自编写出图提示词、严禁亲自调用绘图工具、严禁亲自填报整页 QA 报告、**严禁通过 Python 脚本批量合成伪造虚假审查报告**）。
 - **指定严格扮演角色与单一提示词注入（上下文物理隔离）**：
-  主代理通过 `invoke_subagent` 派发子代理时，**必须指定其严格扮演的角色，并仅注入该子代理专属的系统提示词（位于 `role/` 目录）**。**各角色拥有完全独立的上下文，不需要也不应读取其他角色的扮演提示词**：
-  - **改编编剧师（Screenwriter）**：注入 [role/screenwriter.md](role/screenwriter.md)，逐章精读原著，提炼三级证据细节清单，编写逐格分镜草稿；
-  - **剧本改稿整改师（Script Reviser）**：注入 [role/script_reviser.md](role/script_reviser.md)，**专职承接驳回剧本的画格级整改任务**，增补 Establishing Shot、扩充高潮交锋镜头、补齐吃瘪吐槽笑点，严禁主导演代劳；
-  - **红队审评官 A（Auditor A - 场景与高潮）**：注入 [role/script_auditor_a.md](role/script_auditor_a.md)，每 5 章充当严苛啄木鸟，量化扣分场景与高潮缺陷，绑定真实引句驳回并复审核销；
-  - **红队审评官 B（Auditor B - 笑点与台词）**：注入 [role/script_auditor_b.md](role/script_auditor_b.md)，每 5 章量化扣分幽默笑点过滤与台词 AI 腔，绑定真实引句驳回并复审核销；
-  - **全卷文学终审编辑（Chief Script Editor）**：注入 [role/chief_script_editor.md](role/chief_script_editor.md)，全卷汇总后执行 `coverage`、`continuity`、`comic` 三轮拉网自校验；
-  - **概念美术与人设设计师（Art Director）**：注入 [role/art_director.md](role/art_director.md)，提炼角色档案、制定风格指南与基准图提示词；
-  - **分镜提示词工程师（Prompt Engineer）**：注入 [role/prompt_engineer.md](role/prompt_engineer.md)，将锁定分镜编译打磨为 2~3 格整宽纵排、字高 48-60px、气泡排版的完整页提示词；
-  - **画面渲染执行员（Render Operator）**：注入 [role/render_operator.md](role/render_operator.md)，调用生图工具一次性生成包含所有画格与气泡的原生 1080×2400 PNG；
-  - **画面与排版品控员（QA Inspector）**：注入 [role/qa_inspector.md](role/qa_inspector.md)，在手机 360/390/430px 视口下核验原生整页，实测字高与文字错漏，填写真实整页 QA；
-  - **后制包装与交付员（Packager）**：注入 [role/packager.md](role/packager.md)，执行页面归档（`prepare-pages`）、排版审阅汇总、多格式导出（HTML/PDF/CBZ）与完整性校验。
+  主代理通过 `invoke_subagent` 派发子代理时，**必须指定其严格扮演的角色，并仅注入该子代理专属的系统提示词（位于 `roles/` 目录）**。**各角色拥有完全独立的上下文，不需要也不应读取其他角色的扮演提示词**：
+  - **改编编剧师（Screenwriter）**：注入 [roles/screenwriter.md](roles/screenwriter.md)，逐章精读原著，提炼三级证据细节清单，编写逐格分镜草稿；
+  - **剧本改稿整改师（Script Reviser）**：注入 [roles/script_reviser.md](roles/script_reviser.md)，**专职承接驳回剧本的画格级整改任务**，增补 Establishing Shot、扩充高潮交锋镜头、补齐吃瘪吐槽笑点，严禁主导演代劳；
+  - **红队审评官 A（Auditor A - 场景与高潮）**：注入 [roles/script_auditor_a.md](roles/script_auditor_a.md)，每 5 章充当严苛啄木鸟，量化扣分场景与高潮缺陷，绑定真实引句驳回并复审核销；
+  - **红队审评官 B（Auditor B - 笑点与台词）**：注入 [roles/script_auditor_b.md](roles/script_auditor_b.md)，每 5 章量化扣分幽默笑点过滤与台词 AI 腔，绑定真实引句驳回并复审核销；
+  - **全卷文学终审编辑（Chief Script Editor）**：注入 [roles/chief_script_editor.md](roles/chief_script_editor.md)，全卷汇总后执行 `coverage`、`continuity`、`comic` 三轮拉网自校验；
+  - **概念美术与人设设计师（Art Director）**：注入 [roles/art_director.md](roles/art_director.md)，提炼角色档案、制定风格指南与基准图提示词；
+  - **分镜提示词工程师（Prompt Engineer）**：注入 [roles/prompt_engineer.md](roles/prompt_engineer.md)，将锁定分镜编译打磨为 2~3 格整宽纵排、字高 48-60px、气泡排版的完整页提示词；
+  - **画面渲染执行员（Render Operator）**：注入 [roles/render_operator.md](roles/render_operator.md)，调用生图工具一次性生成包含所有画格与气泡的原生 1080×2400 PNG；
+  - **画面与排版品控员（QA Inspector）**：注入 [roles/qa_inspector.md](roles/qa_inspector.md)，在手机 360/390/430px 视口下核验原生整页，实测字高与文字错漏，填写真实整页 QA；
+  - **后制包装与交付员（Packager）**：注入 [roles/packager.md](roles/packager.md)，执行页面归档（`prepare-pages`）、排版审阅汇总、多格式导出（HTML/PDF/CBZ）与完整性校验。
 - **主代理核心统筹权责**：主代理仅负责工单拆解派发、审查争议客观仲裁（下达整改指令单）、运行 CLI 机械门禁校验（`check-*`）、全卷剧本锁定（`lock-script`）与最终交付物验收放行（`complete`）。
 
 ## 1. 建立和读取项目
