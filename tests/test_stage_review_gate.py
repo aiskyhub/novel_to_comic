@@ -27,6 +27,24 @@ def make_valid_stage_report():
         "stage_approved": True,
         "round_1_initial_audit": {
             "initial_stage_script_hash": "mock_hash_initial",
+            "initial_panels_snapshot": [
+                {
+                    "id": "p001_01",
+                    "chapter_id": "ch000001",
+                    "action": "主角推开房门，中景。",
+                    "shot": "中景",
+                    "space": "破庙主殿内",
+                    "expression": "警惕"
+                },
+                {
+                    "id": "p002_01",
+                    "chapter_id": "ch000002",
+                    "action": "甲看信纸。",
+                    "shot": "中景",
+                    "space": "书房",
+                    "expression": "凝重"
+                }
+            ],
             "initial_verdict": "REJECTED",
             "auditors": [
                 {
@@ -332,12 +350,11 @@ class TestStageReviewGate(unittest.TestCase):
         report['round_1_initial_audit']['initial_stage_script_hash'] = report['stage_script_hash']
         with self.assertRaises(cp.GateError) as ctx:
             cp.validate_stage_review(report)
-        self.assertIn('matches round_1 initial snapshot', str(ctx.exception))
+        self.assertTrue(any(w in str(ctx.exception) for w in ('initial snapshot', 'matches current stage_script_hash', 'no actual modifications')))
 
     def test_panel_still_containing_before_revision_rejected(self):
         """If panel in project still contains the old before_revision string, gate rejects it."""
         report = copy.deepcopy(self.valid_report)
-        # Mock project with panel still having before_revision text
         mock_proj = {
             'source': {
                 'chapters': [{'id': f'ch00000{i}'} for i in range(1, 6)],
@@ -347,14 +364,105 @@ class TestStageReviewGate(unittest.TestCase):
                 ]
             },
             'script': {
-                'panels': [{'id': 'p001_01', 'chapter_id': 'ch000001', 'action': '主角推开房门，中景。'}],
+                'panels': [
+                    {'id': 'p001_01', 'chapter_id': 'ch000001', 'action': '主角推开房门，中景。'},
+                    {'id': 'p002_01', 'chapter_id': 'ch000002', 'action': '特写信纸，纸面字迹因年代久远而模糊泛黄。'}
+                ],
                 'scenes': [], 'pages': [], 'chapter_adaptations': [], 'characters': [], 'events': [], 'settings': []
             }
         }
         report['stage_script_hash'] = cp.stage_script_fingerprint(mock_proj, report['reviewed_chapters'])
+        # Setup snapshot where p001_01 was '主角推开房门，中景。' and p002_01 was '甲看信纸。'
+        report['round_1_initial_audit']['initial_panels_snapshot'] = [
+            {'id': 'p001_01', 'chapter_id': 'ch000001', 'action': '主角推开房门，中景。'},
+            {'id': 'p002_01', 'chapter_id': 'ch000002', 'action': '甲看信纸。'}
+        ]
+        init_proj = copy.deepcopy(mock_proj)
+        init_proj['script']['panels'] = copy.deepcopy(report['round_1_initial_audit']['initial_panels_snapshot'])
+        report['round_1_initial_audit']['initial_stage_script_hash'] = cp.stage_script_fingerprint(init_proj, report['reviewed_chapters'])
+
         with self.assertRaises(cp.GateError) as ctx:
             cp.validate_stage_review(report, project=mock_proj)
-        self.assertIn('still contains the old content', str(ctx.exception))
+        self.assertTrue(any(w in str(ctx.exception) for w in ('verification failed', 'still contains', 'not found', 'neither action')))
+
+    def test_normal_revision_retaining_old_words_allowed(self):
+        """Modifying shot from '中景' to '中景，低机位' (which contains '中景') must be allowed and pass verification."""
+        mock_proj = {
+            'source': {
+                'chapters': [{'id': f'ch00000{i}'} for i in range(1, 6)],
+                'units': [
+                    {'id': 'u1', 'chapter_id': 'ch000001', 'text': '主角推开房门，环顾四周寂静无声。'},
+                    {'id': 'u2', 'chapter_id': 'ch000002', 'text': '信纸上的字迹已经有些模糊。'}
+                ]
+            },
+            'script': {
+                'panels': [
+                    {'id': 'p001_01', 'chapter_id': 'ch000001', 'shot': '中景，低机位', 'action': '主角推开房门，中景。'},
+                    {'id': 'p002_01', 'chapter_id': 'ch000002', 'shot': '全景', 'action': '特写信纸，纸面字迹因年代久远而模糊泛黄。'}
+                ],
+                'scenes': [], 'pages': [], 'chapter_adaptations': [], 'characters': [], 'events': [], 'settings': []
+            }
+        }
+        report = copy.deepcopy(self.valid_report)
+        report['round_1_initial_audit']['initial_panels_snapshot'] = [
+            {'id': 'p001_01', 'chapter_id': 'ch000001', 'shot': '中景', 'action': '主角推开房门，中景。'},
+            {'id': 'p002_01', 'chapter_id': 'ch000002', 'shot': '全景', 'action': '甲看信纸。'}
+        ]
+        report['screenwriter_revisions']['applied_fixes'][0] = {
+            'issue_ref': 'auditor_a_issue_01',
+            'modified_panels': ['p001_01'],
+            'field': 'shot',
+            'before_revision': '中景',
+            'after_revision': '中景，低机位'
+        }
+        report['stage_script_hash'] = cp.stage_script_fingerprint(mock_proj, report['reviewed_chapters'])
+        # Compute real initial hash for snapshot
+        init_proj = copy.deepcopy(mock_proj)
+        init_proj['script']['panels'] = copy.deepcopy(report['round_1_initial_audit']['initial_panels_snapshot'])
+        report['round_1_initial_audit']['initial_stage_script_hash'] = cp.stage_script_fingerprint(init_proj, report['reviewed_chapters'])
+        self.assertTrue(cp.validate_stage_review(report, project=mock_proj))
+
+    def test_arbitrary_initial_hash_rejected(self):
+        """If report fills an arbitrary 64-char string for initial_stage_script_hash, gate rejects it."""
+        mock_proj = {
+            'source': {
+                'chapters': [{'id': f'ch00000{i}'} for i in range(1, 6)],
+                'units': [
+                    {'id': 'u1', 'chapter_id': 'ch000001', 'text': '主角推开房门，环顾四周寂静无声。'},
+                    {'id': 'u2', 'chapter_id': 'ch000002', 'text': '信纸上的字迹已经有些模糊。'}
+                ]
+            },
+            'script': {
+                'panels': [{'id': 'p001_01', 'chapter_id': 'ch000001', 'action': '特写门把手被推开，阴影落在门缝，随后切入室内中景。'}],
+                'scenes': [], 'pages': [], 'chapter_adaptations': [], 'characters': [], 'events': [], 'settings': []
+            }
+        }
+        report = copy.deepcopy(self.valid_report)
+        report['screenwriter_revisions']['applied_fixes'] = [report['screenwriter_revisions']['applied_fixes'][0]]
+        report['screenwriter_revisions']['adjudications'] = [
+            {'issue_ref': 'auditor_b_issue_01', 'reason': '误报维持原状'}
+        ]
+        report['stage_script_hash'] = cp.stage_script_fingerprint(mock_proj, report['reviewed_chapters'])
+        report['round_1_initial_audit']['initial_stage_script_hash'] = 'a' * 64
+        with self.assertRaises(cp.GateError) as ctx:
+            cp.validate_stage_review(report, project=mock_proj)
+        self.assertIn('initial_stage_script_hash mismatch', str(ctx.exception))
+
+    def test_event_without_chapter_id_covered_by_fingerprint(self):
+        """Events referenced by panel event_ids without explicit chapter_id must be covered by stage_script_fingerprint."""
+        proj = {
+            'script': {
+                'panels': [{'id': 'p1', 'chapter_id': 'ch01', 'event_ids': ['ev_orphan']}],
+                'scenes': [], 'pages': [], 'chapter_adaptations': [], 'characters': [],
+                'events': [{'id': 'ev_orphan', 'description': '重要原著事件'}],
+                'settings': []
+            }
+        }
+        h1 = cp.stage_script_fingerprint(proj, ['ch01'])
+        proj2 = copy.deepcopy(proj)
+        proj2['script']['events'][0]['description'] = '修改后的事件描述'
+        h2 = cp.stage_script_fingerprint(proj2, ['ch01'])
+        self.assertNotEqual(h1, h2, "Modifying event description without chapter_id must change fingerprint")
 
     def test_fingerprint_covers_scenes_pages_and_settings(self):
         """Fingerprint must change when scenes, settings, pages, or characters change."""

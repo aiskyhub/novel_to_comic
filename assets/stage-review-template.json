@@ -14,6 +14,7 @@
   "round_1_initial_audit": {
     "audit_objective": "对本批次各章分镜进行原著忠实度、场景空间、叙事节奏与对白生动度独立审查",
     "initial_stage_script_hash": "",
+    "initial_panels_snapshot": [],
     "auditors": [
       {
         "auditor_id": "auditor_a",

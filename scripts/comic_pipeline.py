@@ -876,8 +876,10 @@ def stage_script_fingerprint(project, chapter_ids):
                 if nonempty(cid)}
     characters = [c for c in script.get('characters', [])
                   if isinstance(c, dict) and c.get('id') in cast_ids]
+    event_ids = {eid for p in panels for eid in (p.get('event_ids', []) if isinstance(p.get('event_ids'), list) else [])
+                 if nonempty(eid)}
     events = [e for e in script.get('events', [])
-              if isinstance(e, dict) and e.get('chapter_id') in cids]
+              if isinstance(e, dict) and (e.get('chapter_id') in cids or e.get('id') in event_ids)]
     setting_ids = {s.get('setting_id') for s in scenes if isinstance(s, dict) and nonempty(s.get('setting_id'))}
     settings = [st for st in script.get('settings', [])
                 if isinstance(st, dict) and st.get('id') in setting_ids]
@@ -1074,6 +1076,61 @@ def validate_stage_review(report, root=None, project=None):
     if len(applied_fixes) == 0 and len(adjudications) == 0 and len(all_round_1_issues) > 0:
         raise GateError('revisions must document applied_fixes or adjudications addressing identified issues.')
 
+    snap_panels = {}
+    if applied_fixes:
+        snapshot_raw = r1.get('initial_panels_snapshot') or r1.get('initial_snapshot')
+        if not snapshot_raw:
+            raise GateError("Stage review claims applied_fixes were made, but round_1_initial_audit missing 'initial_panels_snapshot' recording panel states prior to revisions.")
+        if isinstance(snapshot_raw, list):
+            snap_panels = {p.get('id'): p for p in snapshot_raw if isinstance(p, dict) and nonempty(p.get('id'))}
+        elif isinstance(snapshot_raw, dict):
+            snap_panels = {pid: p for pid, p in snapshot_raw.items() if isinstance(p, dict)}
+        if not snap_panels:
+            raise GateError("Stage review round_1_initial_audit.initial_panels_snapshot must contain valid panel objects.")
+
+        initial_stage_hash = r1.get('initial_stage_script_hash') or r1.get('initial_script_hash')
+        if not nonempty(initial_stage_hash):
+            raise GateError("Stage review claims applied_fixes were made, but round_1_initial_audit missing non-empty 'initial_stage_script_hash'.")
+
+        if project:
+            # Deterministically calculate initial stage fingerprint from initial snapshot
+            initial_proj = copy.deepcopy(project)
+            curr_panels = list(initial_proj.get('script', {}).get('panels', []))
+            for idx, p in enumerate(curr_panels):
+                if isinstance(p, dict) and p.get('id') in snap_panels:
+                    curr_panels[idx] = copy.deepcopy(snap_panels[p['id']])
+            known_curr_ids = {p.get('id') for p in curr_panels if isinstance(p, dict)}
+            for pid, spanel in snap_panels.items():
+                if pid not in known_curr_ids and spanel.get('chapter_id') in set(reviewed_chapters):
+                    curr_panels.append(copy.deepcopy(spanel))
+            initial_proj.setdefault('script', {})['panels'] = curr_panels
+            calc_initial_hash = stage_script_fingerprint(initial_proj, reviewed_chapters)
+
+            if initial_stage_hash != calc_initial_hash:
+                raise GateError(f"round_1_initial_audit initial_stage_script_hash mismatch: expected program-calculated {calc_initial_hash}, got {initial_stage_hash}.")
+            cur_hash = stage_script_fingerprint(project, reviewed_chapters)
+            if calc_initial_hash == cur_hash:
+                raise GateError("Stage review claims applied_fixes were made, but project script content is identical to initial snapshot (no actual modifications were made).")
+        else:
+            if initial_stage_hash == rep_stage_hash:
+                raise GateError("Stage review claims applied_fixes were made, but initial_stage_script_hash matches current stage_script_hash. Script content must reflect real modifications.")
+
+    known_panels = {p.get('id'): p for p in project_panels if isinstance(p, dict)} if project_panels else {}
+
+    def _get_nested_field(obj, fpath):
+        if not isinstance(obj, dict) or not fpath:
+            return None
+        parts = fpath.split('.')
+        cur = obj
+        for part in parts:
+            if isinstance(cur, dict) and part in cur:
+                cur = cur[part]
+            elif isinstance(cur, list) and part.isdigit() and int(part) < len(cur):
+                cur = cur[int(part)]
+            else:
+                return None
+        return cur
+
     for f_idx, fix in enumerate(applied_fixes):
         if not isinstance(fix, dict):
             raise GateError(f'applied_fixes[{f_idx}] must be an object.')
@@ -1092,15 +1149,49 @@ def validate_stage_review(report, root=None, project=None):
         if before and before == after:
             raise GateError(f"applied_fixes[{f_idx}] before_revision and after_revision are identical. Real modifications must introduce actual differences.")
 
-        if project_panels:
-            known_panels = {p.get('id'): p for p in project_panels if isinstance(p, dict)}
-            for pid in mod_panels:
+        field_spec = fix.get('field') or fix.get('field_path')
+        candidate_fields = [field_spec] if field_spec else ['action', 'shot', 'space', 'expression']
+
+        for pid in mod_panels:
+            if pid not in snap_panels:
+                raise GateError(f"applied_fixes[{f_idx}] claims panel '{pid}' was modified, but '{pid}' is not found in round_1_initial_audit.initial_panels_snapshot.")
+            snap_panel = snap_panels[pid]
+
+            if known_panels:
                 if pid not in known_panels:
                     raise GateError(f"applied_fixes[{f_idx}] modified_panels contains '{pid}' which does not exist in script panels.")
-                panel = known_panels[pid]
-                panel_blob = json.dumps(panel, ensure_ascii=False)
-                if before and before in panel_blob:
-                    raise GateError(f"applied_fixes[{f_idx}] claims panel '{pid}' was updated from '{before}', but script panel still contains the old content.")
+                curr_panel = known_panels[pid]
+
+                found_verified = False
+                for f in candidate_fields:
+                    s_val = _get_nested_field(snap_panel, f)
+                    c_val = _get_nested_field(curr_panel, f)
+                    if s_val is None or c_val is None:
+                        continue
+                    s_str = str(s_val).strip()
+                    c_str = str(c_val).strip()
+                    if (not before or before == s_str or before in s_str) and (after == c_str or after in c_str) and s_str != c_str:
+                        found_verified = True
+                        break
+
+                if not found_verified:
+                    if field_spec:
+                        s_val = _get_nested_field(snap_panel, field_spec)
+                        c_val = _get_nested_field(curr_panel, field_spec)
+                        raise GateError(
+                            f"applied_fixes[{f_idx}] panel '{pid}' field '{field_spec}' modification verification failed: "
+                            f"initial snapshot has '{s_val}', current script has '{c_val}'. "
+                            f"Must verify before_revision matches snapshot, after_revision matches current script, and field actually changed."
+                        )
+                    else:
+                        raise GateError(
+                            f"applied_fixes[{f_idx}] panel '{pid}' modification verification failed: "
+                            f"neither action, shot, space, nor expression changed from '{before}' to '{after}' "
+                            f"between initial snapshot and current script."
+                        )
+            else:
+                if not any(before in str(_get_nested_field(snap_panel, f) or '') for f in candidate_fields):
+                    raise GateError(f"applied_fixes[{f_idx}] panel '{pid}' before_revision '{before}' does not match initial snapshot.")
 
     for a_idx, adj in enumerate(adjudications):
         if not isinstance(adj, dict):
@@ -1118,13 +1209,6 @@ def validate_stage_review(report, root=None, project=None):
     unhandled_issues = set(all_round_1_issues.keys()) - handled_issue_refs
     if unhandled_issues:
         raise GateError(f"Stage review incomplete: Round 1 issues {sorted(unhandled_issues)} have neither an applied_fix nor an adjudication. Every identified issue must be explicitly resolved.")
-
-    # Snapshot diff check: if round 1 recorded initial_stage_script_hash, it must differ from current/final hash when fixes are claimed
-    initial_stage_hash = r1.get('initial_stage_script_hash') or r1.get('initial_script_hash')
-    if initial_stage_hash and applied_fixes:
-        cur_hash = rep_stage_hash or (stage_script_fingerprint(project, reviewed_chapters) if project else None)
-        if cur_hash and initial_stage_hash == cur_hash:
-            raise GateError("Stage review claims applied_fixes were made, but stage_script_hash matches round_1 initial snapshot. Script content must reflect real modifications.")
 
     # 3. Round 2 verification checks
     if not isinstance(r2, dict):
