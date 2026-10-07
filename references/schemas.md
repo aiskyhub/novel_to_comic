@@ -24,7 +24,7 @@ files 记录原始输入绝对路径、项目内 archive_path、格式、编码�
 | event | id、description（严格对应原著真实事件，绝不捏造新情节）、非空 source_unit_ids；每个事件必须在画格中出现 |
 | scene | id、chapter_id、setting_id；可补时刻、读者/人物知情状态、叙事层级 |
 | panel | id、chapter_id、scene_id、source_unit_ids、event_ids、cast、action、shot、space、expression、state_before、state_after、dialogue（台词对白/旁白必须严格忠实于原著语义，严禁私自编造加戏）；可补 visual_plan 对象记录视觉中心、层次与局部色彩等 |
-| page | id、chapter_id、按阅读顺序排列的 panel_ids；默认单页columns=1，每页1–5格；rows每行一格整宽纵排，直接用于完整页提示词布局 |
+| page | id、chapter_id、按阅读顺序排列的 panel_ids；默认单页columns=1，单页限定2–3格（底层容差1–5）；rows每行一格整宽纵排，直接用于完整页提示词布局 |
 | continuity_handover | opening_state 与 closing_state，记录本卷开场继承与结末状态（人物状态、世界规则、未回收伏笔），供跨卷交接审查核验 |
 | source_disposition | unit_id、kind=context/repetition/paratext、reason；context 还需真实 panel_ids |
 | chapter_adaptation | 每个正文章恰好一条：chapter_id、document_path、document_sha256、details、unit_audits；具体字段与呈现证据见 [detail-records.md](detail-records.md) |
