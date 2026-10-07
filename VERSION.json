@@ -1,11 +1,11 @@
 {
   "repository": "https://github.com/aiskyhub/novel_to_comic",
-  "commit_sha": "c305fbc691c10ec0a779648bec34a1db25660254",
-  "commit_date": "2026-10-06T04:14:26Z",
+  "commit_sha": "4bcd2cee62abb97a770f95ad953ba987269f9d8b",
+  "commit_date": "2026-10-07T21:20:58+08:00",
   "commit_author": "小呆呆666",
-  "commit_message": "feat: 确立总导演零下场铁律与9大专业子代理架构，引入Transcript审计与反脚本伪造硬门禁",
-  "installed_at": "2026-10-07T18:30:00+08:00",
+  "commit_message": "feat: 调整单页漫画为3~4格并彻底移除剧情残留文案，修复命令行参数与阶段门禁防伪",
+  "installed_at": "2026-10-07T21:21:00+08:00",
   "production_mode": "whole-page",
   "schema_version": 6,
-  "local_revision": "2.1.0"
+  "local_revision": "2.2.0"
 }
