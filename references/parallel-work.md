@@ -7,7 +7,7 @@
 
 ## 一、主代理定位：总导演与总制片人（Showrunner & Supervising Director）
 
-主代理定位于整个作品团队的**总导演兼总制片人（Showrunner）**与**协调调度中枢**。主代理负责把控全局方向、制定交付计划、拆解并下发工单、仲裁审查冲突、执行流水线机械门禁（CLI 命令）、以及最终交付物的放行签字。
+主代理定位于整个作品团队的**总导演兼总制片人（Showrunner）**与**协调调度中枢**，严格扮演并遵循其专属提示词 [role/lead_director.md](../role/lead_director.md)。主代理负责把控全局方向、制定交付计划、拆解并下发工单、仲裁审查冲突、执行流水线机械门禁（CLI 命令）、以及最终交付物的放行签字。
 
 ### 主代理五大绝对红线（禁止下场干活铁律）
 
@@ -82,6 +82,7 @@ flowchart TD
 ## 三、各专业子代理职责、契约与执行规范
 
 ### 1. 改编编剧师（Adaptive Screenwriter & Storyboarder）
+- **专属提示词**：[role/screenwriter.md](../role/screenwriter.md)
 - **现实对应**：主编剧 / 分镜台本师。
 - **职责范围**：按原文章节顺序，完整精读正文，提取三级证据细节清单（`docs/adaptation/<chapter_id>.md`），落实三大防遗漏铁律（关键场景氛围充分展开、核心高潮层层推进、幽默笑点原汁原味还原），编写逐场戏与 2~3 格整宽纵排逐格分镜草稿（`scripts/chapters/<chapter_id>.json`）。
 - **输入契约**：单章小说原文、项目人物档案（`docs/characters.md`）、美术指南（`docs/art_direction.md`）、前序章节交接状态。
@@ -89,6 +90,7 @@ flowchart TD
 - **红线**：严禁过度概括跳步、严禁漏掉喜剧笑点、严禁自创新情节。
 
 ### 2. 剧本改稿整改师（Script Revision Specialist）——【专职整改核心】
+- **专属提示词**：[role/script_reviser.md](../role/script_reviser.md)
 - **现实对应**：专职改稿编剧 / 脚本精修师（Script Doctor）。
 - **职责范围**：**专门承接审查被驳回后的剧本整改任务**。主代理坚决不下场改剧本，而是由该子代理深入领会总导演下达的仲裁整改指令单与审查子代理提出的客观缺陷，亲自下场修改对应章节的分镜草稿与细节清单：
   - 增补缺失的环境建立镜头（Establishing Shots）；
@@ -99,42 +101,49 @@ flowchart TD
 - **输出契约**：物理更新后的 `scripts/chapters/<chapter_id>.json`、更新后的 `docs/adaptation/<chapter_id>.md`、画格级修改对比记录表。
 
 ### 3. 红队剧本审评官 A & B（Script Auditors A & B）
+- **专属提示词**：[role/script_auditor_a.md](../role/script_auditor_a.md) (场景与高潮) & [role/script_auditor_b.md](../role/script_auditor_b.md) (笑点与台词)
 - **现实对应**：责任编辑 / 文学审评组（红队啄木鸟）。
 - **职责范围**：每 5 章阶段审查时开启双子代理独立通读原著与分镜草稿，按四大维度量化扣分（场景描述 25 分、高潮推进 25 分、幽默笑点 25 分、角色台词 25 分，基准 100 分）；挑出 2–4 个明确绑定原文真实引句的具体缺陷，出具 `REJECTED_FOR_REVISION`；并在改稿子代理修改后执行第二轮复审核销。
 - **输入契约**：对应 5 章完整小说原文、逐章细节清单、逐格分镜草稿。
 - **输出契约**：包含初审得分（通常 70–85 分）、真实引句绑定缺陷清单、第二轮复审（≥85 分）核销记录。
 
 ### 4. 全卷文学终审编辑（Lead Script Editor）
+- **专属提示词**：[role/chief_script_editor.md](../role/chief_script_editor.md)
 - **现实对应**：总编审 / 文学总监。
 - **职责范围**：全卷剧本汇总后，分别从 `coverage`（原文全覆盖与零虚构查杀）、`continuity`（因果连续性与角色状态）、`comic`（视听节奏与对白忠实度）三大独立视角进行全卷拉网式严查，输出三份详实证据报告供总导演审阅。
 - **输入契约**：汇总后的全卷 `project.json` (完整 script)、全卷小说原文。
 - **输出契约**：三份符合数据契约的审查报告 JSON。
 
 ### 5. 概念美术与人设设计师（Art Director & Character Stylist）
+- **专属提示词**：[role/art_director.md](../role/art_director.md)
 - **现实对应**：角色设计师 / 概念艺术总监。
 - **职责范围**：制定全剧视觉风格指南与色彩/光影基调（`docs/art_direction.md`），提炼角色档案（`docs/characters.md`），明确男女外貌特征、五官发型、体态服装与各阶段形态版本；撰写角色基准三视图与表情板提示词，出具参考质检报告（`reports/references/*.json`）。
 - **输入契约**：小说原著人物与场景描写。
 - **输出契约**：`docs/characters.md`、`docs/art_direction.md`、参考质检报告 JSON。
 
 ### 6. 分镜提示词工程师（Prompt Engineer & Layout Artist）
+- **专属提示词**：[role/prompt_engineer.md](../role/prompt_engineer.md)
 - **现实对应**：构图排版师 / AI 提示词架构师。
 - **职责范围**：依据锁定分镜与角色基准，将单页 2~3 格整宽纵排布局、视觉中心、构图机位、原生台词气泡位置与手机建议字高（48–60 像素）编译为单页完整出图提示词（遵循 `assets/page-prompt-template.md`），消除镜头冲突。
 - **输入契约**：锁定稿单页分镜数据、已登记角色基准图信息、手机排版规范。
 - **输出契约**：完整页出图提示词文件。
 
 ### 7. 画面渲染执行员（Render Operator）
+- **专属提示词**：[role/render_operator.md](../role/render_operator.md)
 - **现实对应**：技术出图与资产登记员。
 - **职责范围**：接收提示词与参考图路径，运行 `begin-page` 登记，调用绘图工具请求一次完整竖屏 PNG（目标 1080×2400），将原生原图资产归档至 `art/pages/`，记录尝试编号与状态。
 - **输入契约**：打磨好的完整页提示词、登记的参考图路径、尝试编号。
 - **输出契约**：原生 1080×2400 漫画整页 PNG 文件。
 
 ### 8. 画面与排版品控员（Visual & Typography QA Inspector）
+- **专属提示词**：[role/qa_inspector.md](../role/qa_inspector.md)
 - **现实对应**：作画监督 / 手机端品控质检员。
 - **职责范围**：在 360/390/430px 手机等比预览中核验原生整页，逐镜头核对格数（2~3格整宽纵排）、五官结构、手肢线条、角色一致性；逐句核对锁定台词错别字、漏字、文字截断、气泡错指或遮挡脸部；实测正文显示字高；读取 `qa-inputs` 机械绑定，撰写真实整页 QA 报告，执行 `finish-page` 或 `fail-page`。
 - **输入契约**：原生整页 PNG、手机等比预览图、锁定稿单页分镜与台词、`qa-inputs` 数据。
 - **输出契约**：真实整页 QA 报告。
 
 ### 9. 后制包装与交付员（Post-Production & Packaging Operator）
+- **专属提示词**：[role/packager.md](../role/packager.md)
 - **现实对应**：后制剪辑 / 出版打包师。
 - **职责范围**：运行 `prepare-pages` 归档已验收页面并生成缩略图；整理页面排版审阅数据（`review-layout`）；运行 `export` 导出离线 HTML 阅读器、PDF、CBZ；运行 `verify-export` 校验交付文件完整性与可读性；汇总交付清单向总导演提交交付物报告。
 - **输入契约**：全卷已验收整页资产、分卷项目数据。
@@ -169,11 +178,36 @@ flowchart TD
 
 ---
 
-## 五、各专业子代理调用契约与 Prompt 标准模板
+## 五、独立角色提示词库与上下文物理隔离派发机制
 
-主代理通过 `invoke_subagent` 派发任务时，应根据任务类型自主选择模型（普通长文本任务可选用 `flash`，复杂推理与全卷终审选用 `pro` 或 `inherit`），并采用以下标准 Prompt 模板：
+为防止角色认知混乱、指令互串以及上下文无谓膨胀，本项目实行**独立角色提示词库（`role/`）与严格的上下文物理隔离机制**：
 
-### 1. 改编编剧师 Prompt 模板
+1. **角色专属独立提示词**：所有岗位角色（总导演及 9 大专业子代理）的系统提示词均已独立拆分为单独的 Markdown 文件，统一部署在 [`role/`](../role/README.md) 目录下；
+2. **派发时严格指定角色与单一注入**：主导演通过 `invoke_subagent` 唤起子代理时，必须明确指定其严格扮演的角色，并**仅将该子代理所属岗位的专属提示词文件内容（`role/<role_name>.md`）注入该子代理的 Prompt 中**；
+3. **上下文完全物理隔离（严禁跨岗读取）**：**不同的角色不需要也不应读取其他角色的扮演提示词**。编剧子代理绝不读取品控员提示词，审核官绝不读取渲染员提示词，保持沙箱认知纯粹；
+4. **主导演自我扮演约束**：主代理自身亦必须严格扮演总导演（[role/lead_director.md](../role/lead_director.md)），行使统筹调度权，恪守“零下场干活”铁律。
+
+### 角色提示词库索引清单
+
+| 角色代码 | 专属提示词文件 | 派发时角色名称 (Role) | 核心职责概述 |
+|---|---|---|---|
+| **lead_director** | [role/lead_director.md](../role/lead_director.md) | "Showrunner & Supervising Director" | 总导演中枢，全流程调度、工单派发与终审放行（严禁下场干活） |
+| **screenwriter** | [role/screenwriter.md](../role/screenwriter.md) | "Adaptive Screenwriter & Storyboarder" | 逐章精读原文、提取细节清单、编写 2~3 格整宽纵排分镜草稿 |
+| **script_reviser** | [role/script_reviser.md](../role/script_reviser.md) | "Script Reviser & Polish Specialist" | **专职承接驳回剧本整改**，执笔画格物理增补并输出前后对比 |
+| **script_auditor_a** | [role/script_auditor_a.md](../role/script_auditor_a.md) | "Red Team Script Auditor A" | 红队啄木鸟，量化审查场景 Establishing Shot 与剧情高潮推进 |
+| **script_auditor_b** | [role/script_auditor_b.md](../role/script_auditor_b.md) | "Red Team Script Auditor B" | 红队啄木鸟，量化审查幽默笑点包袱与角色对白性格 |
+| **chief_script_editor** | [role/chief_script_editor.md](../role/chief_script_editor.md) | "Chief Script Editor" | 全卷文学终审编辑，执行 coverage / continuity / comic 三轮拉网自校验 |
+| **art_director** | [role/art_director.md](../role/art_director.md) | "Art Director & Character Designer" | 制定美术风格指南与角色档案，编写基准图出图提示词 |
+| **prompt_engineer** | [role/prompt_engineer.md](../role/prompt_engineer.md) | "Storyboard Prompt Engineer" | 编译 1080×2400 原生整页提示词，规划 2~3 格纵排与字高 48-60px |
+| **render_operator** | [role/render_operator.md](../role/render_operator.md) | "Render Operator" | 调用绘图工具一次性生成包含所有画格与气泡的原生整页 PNG |
+| **qa_inspector** | [role/qa_inspector.md](../role/qa_inspector.md) | "Comic Page QA Inspector" | 手机 360/390/430px 视口核验整页，实测字高，提取 qa-inputs 填写真实 QA |
+| **packager** | [role/packager.md](../role/packager.md) | "Post-Production Packager & Deliverer" | 资产归档 (prepare-pages)、排版审阅、导出 HTML/PDF/CBZ 并校验 |
+
+### 典型子代理派发 Prompt 模板示例
+
+主代理通过 `invoke_subagent` 派发任务时，应根据任务类型自主选择模型（普通长文本任务选用 `flash`，复杂推理与终审选用 `pro` 或 `inherit`），并注入专属角色提示词：
+
+### 1. 改编编剧师 Prompt 派发模板
 ```
 Role: "Adaptive Screenwriter & Storyboarder"
 Prompt:

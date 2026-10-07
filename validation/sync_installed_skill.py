@@ -11,7 +11,7 @@ def sync(target):
     target = target.expanduser().resolve()
     if target.name != 'novel-to-comic' or target == source:
         raise ValueError('Target must be a separate, explicitly named novel-to-comic skill directory.')
-    owned_dirs = {'agents','assets','references','scripts','tests','.codex-plugin','validation','README'}
+    owned_dirs = {'agents','assets','references','scripts','tests','.codex-plugin','validation','README','roles','role'}
     owned_files = {'SKILL.md','README.md','VERSION.json','.gitignore'}
     files = [p for p in source.rglob('*') if p.is_file()
              and '__pycache__' not in p.parts and p.suffix not in ('.pyc','.pyo')
