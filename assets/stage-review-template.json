@@ -1,0 +1,63 @@
+{
+  "stage_range": {
+    "start_chapter_id": "",
+    "end_chapter_id": "",
+    "chapter_count": 10
+  },
+  "reviewed_chapters": [],
+  "subagent_reviews": [
+    {
+      "auditor_id": "subagent_auditor_a",
+      "model_used": "主代理自主决定的模型",
+      "scores": {
+        "scene_descriptions": 25,
+        "climax_plot_beats": 25,
+        "humor_and_gags": 25,
+        "character_dialogue": 25,
+        "total_score": 100
+      },
+      "issues": [
+        {
+          "chapter_id": "",
+          "source_quote": "原文对应段落短引句",
+          "category": "scene_description",
+          "problem_description": "客观合理的具体问题描述，明确指出哪里被省略、未阐述清楚或漏掉了关键剧情/笑点",
+          "suggested_fix": "具体的剧本或分镜打磨建议"
+        }
+      ]
+    },
+    {
+      "auditor_id": "subagent_auditor_b",
+      "model_used": "主代理自主决定的模型",
+      "scores": {
+        "scene_descriptions": 25,
+        "climax_plot_beats": 25,
+        "humor_and_gags": 25,
+        "character_dialogue": 25,
+        "total_score": 100
+      },
+      "issues": [
+        {
+          "chapter_id": "",
+          "source_quote": "原文对应段落短引句",
+          "category": "humor_gag",
+          "problem_description": "客观合理的具体问题描述",
+          "suggested_fix": "具体的剧本或分镜打磨建议"
+        }
+      ]
+    }
+  ],
+  "lead_agent_adjudication": {
+    "evaluation_summary": "主代理对双子代理打分及挑出问题的客观核对裁定总结",
+    "accepted_issues": [
+      {
+        "issue_ref": "auditor_a_issue_0",
+        "adjudication": "accepted",
+        "revisions_applied": "具体在剧本和分镜中补充的场景描写、剧情推进或笑点分镜"
+      }
+    ],
+    "dismissed_issues": [],
+    "stage_approved": true,
+    "approved_at": ""
+  }
+}

@@ -61,7 +61,7 @@
 
 每个 unit_audit 包含 `unit_id`、`detail_ids`、`evidence`。`detail_ids` 非空且恰好列出从该 unit 提取的全部细节；`evidence` 说明实际重新阅读发现、补项或具体合并/保留依据。原文段落里未提取的独立信息必须补入 details，不能靠写一条审查记录掩盖。
 
-`context` 信息用 shown/merged 细节指向真实画格，不能免除段内提取。只有无新增叙事作用的重复内容用 repetition；出版/格式文字用 paratext，且 kind 必须也是 paratext。有叙事作用的序言、书信、回忆、环境说明不能归为 paratext。
+`context` 信息用 shown/merged 细节指向真实画格，不能免除段内提取。只有无新增叙事作用的重复内容用 repetition；出版/格式文字用 paratext，且 kind 必须也是 paratext。有叙事作用的序言、书信、回忆、关键环境与场景氛围说明绝对不能归为 paratext。**特别注意：原著中的关键场景描写（environment）、核心剧情冲突与高潮推进（action/reveal）以及所有喜剧幽默笑点/吐槽梗（dialogue/action/thought）均具备重大叙事价值，绝不得作为无用信息省略或标为 repetition**。每 10 章阶段剧本审批时，双子代理将重点排查这些关键要素是否被完整提取并如实呈现。
 
 ## 双轨验收：机械门禁与人工语义审查
 
