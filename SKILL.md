@@ -79,8 +79,8 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
   - **全卷文学终审编辑（Chief Script Editor）**：注入 [roles/chief_script_editor.md](roles/chief_script_editor.md)，全卷汇总后执行 `coverage`、`continuity`、`comic` 三轮拉网自校验；
   - **概念美术与人设设计师（Art Director）**：注入 [roles/art_director.md](roles/art_director.md)，提炼角色档案、制定风格指南与基准图提示词；
   - **分镜提示词工程师（Prompt Engineer）**：注入 [roles/prompt_engineer.md](roles/prompt_engineer.md)，将锁定分镜编译打磨为 3~4 格整宽纵排（常规 3 格，信息简单可 4 格）、建议字高 48-60px（作为参考建议）、气泡排版的完整页提示词；
-  - **画面渲染执行员（Render Operator）**：注入 [roles/render_operator.md](roles/render_operator.md)，调用生图工具一次性生成包含所有画格与气泡的原生 1080×2400 PNG；
-  - **画面与排版品控员（QA Inspector）**：注入 [roles/qa_inspector.md](roles/qa_inspector.md)，在手机 360/390/430px 视口下核验原生整页，实测字高与文字错漏，填写真实整页 QA；字体验收放宽，字体大小仅为建议，不作为卡点；
+  - **画面渲染执行员（Render Operator）**：注入 [roles/render_operator.md](roles/render_operator.md)，调用生图工具一次性生成包含所有画格与气泡的原生 1080×2400 PNG；生图失败可重试六次；
+  - **画面与排版品控员（QA Inspector）**：注入 [roles/qa_inspector.md](roles/qa_inspector.md)，在手机 360/390/430px 视口下核验原生整页，实测字高与文字错漏，填写真实整页 QA；字体验收放宽，字体大小仅为建议不作为卡点；三次审图不符合标准时兜底选择一张最符合的图片并解释缺陷处；
   - **后制包装与交付员（Packager）**：注入 [roles/packager.md](roles/packager.md)，执行页面归档（`prepare-pages`）、排版审阅汇总、多格式导出（HTML/PDF/CBZ）与完整性校验。
 - **主代理核心统筹权责**：主代理仅负责工单拆解派发、审查争议客观仲裁（下达整改指令单）、运行 CLI 机械门禁校验（`check-*`）、全卷剧本锁定（`lock-script`）与最终交付物验收放行（`complete`）。
 
@@ -116,8 +116,8 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
 正文唯一流程是完整页提示词→一次绘图→一张完整PNG→一份整页验收报告。禁止分格生成、裁切画格、跨页合图、后续拼版或代码补字；不保留旧生产接口与兼容操作。
 
 1. **分镜提示词工程师子代理编写打磨**：必须读取 [production.md](references/production.md) 和 [page-prompt-template.md](assets/page-prompt-template.md)，按锁定本页全部分镜、人物状态和原样台词编写完整页提示词。提示词子代理打磨画幅、格数（3~4格纵排，常规模式3格，信息简单可4格）、布局、视觉中心、连续性、气泡位置与归属，消除冲突和漏台词。
-2. **渲染执行员子代理调用出图**：主代理运行 `build-prompt --page <page_id>` 编译完整页内容，打磨后 `begin-page --page <page_id> --prompt <file>` 登记调用。渲染子代理调用一次绘图工具，只请求一张包含全部画格与气泡的 1080×2400 原生竖屏完整页。
-3. **画面与排版品控员子代理多视口质检**：品控子代理可运行 `preview-page --page <page_id> --file <image>` 预先生成 360/390/430 手机预览，核对页内全部镜头、人物、气泡位置与实测字高（放宽字体验收，字体大小仅为建议，不作为卡点）；运行 `qa-inputs --page <page_id> --attempt <num> --file <image>` 读取机械字段，填写一份真实整页 QA。主代理执行 `finish-page` 或 `fail-page`。失败返修仍请求完整页，每个页输入最多三次调用。
+2. **渲染执行员子代理调用出图**：主代理运行 `build-prompt --page <page_id>` 编译完整页内容，打磨后 `begin-page --page <page_id> --prompt <file>` 登记调用。渲染子代理调用一次绘图工具，只请求一张包含全部画格与气泡的 1080×2400 原生竖屏完整页。若生图失败（工具报错、网络超时、API异常等），允许重试最多六次。
+3. **画面与排版品控员子代理多视口质检**：品控子代理可运行 `preview-page --page <page_id> --file <image>` 预先生成 360/390/430 手机预览，核对页内全部镜头、人物、气泡位置与实测字高（放宽字体验收，字体大小仅为建议，不作为卡点）；运行 `qa-inputs --page <page_id> --attempt <num> --file <image>` 读取机械字段，填写一份真实整页 QA。主代理执行 `finish-page` 或 `fail-page`。失败返修仍请求完整页，每个页输入最多三次调用。如果累计三次审图均不符合标准，启动兜底择优机制：选择一张最符合标准的图片，并在 QA 报告中详细解释该图片的缺陷处（写入 defect_explanation），出具带缺陷说明的放行验收报告并执行 `finish-page` 验收入库，避免流程阻塞。
 4. **后制包装子代理归档**：运行 `prepare-pages` 按顺序复制完整原生 PNG 并生成缩小手机预览。
 
 ## 5. 质检、恢复与交付

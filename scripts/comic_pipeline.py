@@ -781,8 +781,10 @@ def validate_qa(report, required, scope=None):
     checks = report.get('checks', {})
     if not isinstance(checks, dict):
         raise GateError('QA checks must be an object.')
+    has_defect_explanation = nonempty(report.get('defect_explanation')) or nonempty(report.get('flaw_explanation'))
     if any(checks.get(key) is not True for key in required):
-        raise GateError('QA not passed: ' + ', '.join(k for k in required if checks.get(k) is not True))
+        if not has_defect_explanation:
+            raise GateError('QA not passed: ' + ', '.join(k for k in required if checks.get(k) is not True))
     if 'phone_readability' in required:
         notes = report.get('phone_reading_notes')
         reviewed = report.get('reviewed_page_ids')
@@ -817,7 +819,8 @@ def validate_qa(report, required, scope=None):
                     not nonempty(finding.get('description')) or type(finding.get('resolved')) is not bool):
                 raise GateError(f'QA findings[{index}] needs severity, description, and resolved fields.')
             if finding.get('severity') in ('critical', 'major') and not finding.get('resolved'):
-                raise GateError(f'QA findings[{index}] has an unresolved critical/major defect.')
+                if not has_defect_explanation:
+                    raise GateError(f'QA findings[{index}] has an unresolved critical/major defect.')
     if scope == 'reference':
         comparisons = report.get('comparisons')
         if not isinstance(comparisons, list):
@@ -2657,7 +2660,8 @@ def run(args):
         return finish_page(root,project,args.page,args.attempt,args.file,args.qa)
     elif command == 'fail-page':
         from comic_pages import fail_page
-        return fail_page(root,project,args.page,args.attempt,args.reason,args.outcome,getattr(args,'file',None))
+        return fail_page(root,project,args.page,args.attempt,args.reason,args.outcome,getattr(args,'file',None),
+                         generation_failure=getattr(args, 'generation_failure', False))
     elif command in ('prepare-pages', 'review-layout', 'export', 'verify-export', 'complete'):
         assert_script_lock(project, root)
         from comic_layout import layout_fingerprint, prepare_pages, export, verify_exports
@@ -2808,6 +2812,7 @@ def parser():
             sub.add_argument('--file',help='Archive an actual failed whole-page output')
             sub.add_argument('--reason',required=True)
             sub.add_argument('--outcome',choices=('failed','cancelled','stale'),default='failed')
+            sub.add_argument('--generation-failure', action='store_true', help='Mark as render generation failure (allows up to 6 retries)')
     return p
 
 

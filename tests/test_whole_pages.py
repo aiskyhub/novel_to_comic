@@ -208,5 +208,43 @@ class WholePageTests(unittest.TestCase):
             self.assertTrue(any(needle in e for e in self.f.invoke('check-script')['errors']))
 
 
+    def test_six_generation_retries_allowed_on_render_failure(self):
+        self.locked_page()
+        for number in range(1, 7):
+            result = self.begin()
+            self.assertEqual(number, result['attempt'])
+            self.f.invoke('fail-page', page='page01', attempt=number, reason='生图失败：API调用超时')
+        with self.assertRaisesRegex(cp.GateError, 'Six image generation retries exhausted'):
+            self.begin()
+        self.assertEqual(6, self.f.invoke('status')['preflight_counts']['attempts_recorded'])
+
+    def test_three_reviews_exhausted_fallback_selects_best_candidate_with_defect_explanation(self):
+        self.locked_page()
+        f = self.f
+        images = [f.image_file('#112233'), f.image_file('#445566'), f.image_file('#778899')]
+        r1 = self.begin()
+        f.invoke('fail-page', page='page01', attempt=r1['attempt'], reason='人物发色不符', file=images[0])
+        r2 = self.begin()
+        f.invoke('fail-page', page='page01', attempt=r2['attempt'], reason='背景细节偏差', file=images[1])
+        r3 = self.begin()
+        f.invoke('fail-page', page='page01', attempt=r3['attempt'], reason='文字略微紧凑', file=images[2])
+
+        with self.assertRaisesRegex(cp.GateError, 'Three whole-page attempts'):
+            self.begin()
+
+        raw_qa = cp.load_json(f.page_qa('page01', 2, images[1]))
+        raw_qa['checks']['drawing_quality'] = False
+        with self.assertRaisesRegex(cp.GateError, 'QA not passed'):
+            f.invoke('finish-page', page='page01', attempt=2, file=images[1], qa=f.json_file(raw_qa))
+
+        fallback_qa = copy.deepcopy(raw_qa)
+        fallback_qa['defect_explanation'] = '经三次审图均未达完全标准，择优选择第2次尝试图片。缺陷说明：背景细节微小偏差，但人物与对白完全准确，予以兜底放行。'
+        f.invoke('finish-page', page='page01', attempt=2, file=images[1], qa=f.json_file(fallback_qa))
+
+        self.assertEqual(1, f.invoke('status')['pages_accepted'])
+        f.invoke('prepare-pages')
+        self.assertEqual(1, len(cp.project_load(f.root)['layout']['pages']))
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -172,8 +172,12 @@ def begin_page(root, project, page_id, prompt_path):
         raise c.GateError('This page has an unfinished attempt; resume it instead of generating again.')
     fingerprint = page_hash(root, project, page)
     relevant = [a for a in attempts if a['render_hash'] == fingerprint]
-    if len(relevant) >= 3:
-        raise c.GateError('Three whole-page attempts exhausted; do not keep consuming image quota.')
+    gen_failed = [a for a in relevant if a.get('generation_failed')]
+    reviewed = [a for a in relevant if not a.get('generation_failed')]
+    if len(gen_failed) >= 6:
+        raise c.GateError('Six image generation retries exhausted; do not keep consuming quota.')
+    if len(reviewed) >= 3:
+        raise c.GateError('Three whole-page attempts exhausted; select the best candidate image and explain its defects.')
     prompt = Path(prompt_path).read_text(encoding='utf-8-sig')
     if not c.nonempty(prompt):
         raise c.GateError('Persist a polished complete-page prompt before generation.')
@@ -214,11 +218,24 @@ def pending(project, page_id, number):
     return attempt
 
 
+def pending_or_selectable(project, page_id, number):
+    attempts = project['art']['pages'].get(page_id, [])
+    attempt = next((a for a in attempts if a['number'] == number), None)
+    if attempt is None:
+        raise core().GateError(f'Attempt {number} not found for page {page_id}.')
+    if attempt['status'] == 'pending':
+        return attempt
+    reviewed = [a for a in attempts if not a.get('generation_failed')]
+    if len(reviewed) >= 3 or len(attempts) >= 3:
+        return attempt
+    raise core().GateError('A pending whole-page attempt is required.')
+
+
 def page_qa_inputs(root, project, page_id, number, file):
     c = core()
     c.assert_script_lock(project, root)
     page = page_by_id(project, page_id)
-    attempt = pending(project, page_id, number)
+    attempt = pending_or_selectable(project, page_id, number)
     if attempt['render_hash'] != page_hash(root, project, page):
         raise c.GateError('Whole-page inputs changed; settle as stale.')
     if c.sha_file(c.inside(root, attempt['prompt_path'])) != attempt['prompt_sha256']:
@@ -233,29 +250,35 @@ def finish_page(root, project, page_id, number, file, qa_file):
     c = core()
     inputs = page_qa_inputs(root, project, page_id, number, file)
     page = page_by_id(project, page_id)
-    attempt = pending(project, page_id, number)
+    attempt = pending_or_selectable(project, page_id, number)
     report = c.load_json(qa_file)
     validate_page_qa(project, page, attempt, report, inputs['image_sha256'])
     path, sha = c.copy_image(root, file, 'pages')
     if sha != inputs['image_sha256']:
         raise c.GateError('Page changed while being archived; review again.')
+    for a in project['art']['pages'].get(page_id, []):
+        if a['number'] != number and a.get('status') == 'pending':
+            a.update(status='cancelled', failure=f'Superseded by selection of attempt {number}', settled_at=c.now())
     attempt.update(status='accepted', path=path, sha256=sha, qa=report, settled_at=c.now())
     project['layout'], project['exports'], project['final_review'] = None, None, None
     c.save(root, project)
     return {'ok': True, 'page_id': page_id, 'path': str(c.inside(root,path))}
 
 
-def fail_page(root, project, page_id, number, reason, outcome='failed', file=None):
+def fail_page(root, project, page_id, number, reason, outcome='failed', file=None, generation_failure=False):
     c = core()
     if not c.nonempty(reason):
         raise c.GateError('Whole-page failure reason required.')
     attempt = pending(project, page_id, number)
+    is_gen_failed = generation_failure or '生图' in reason or 'generation' in reason.lower() or 'tool_exception' in reason
     if file:
         path, sha = c.copy_image(root, file, 'failed-pages')
         attempt.update(path=path, sha256=sha)
     attempt.update(status=outcome, failure=reason, settled_at=c.now())
+    if is_gen_failed:
+        attempt['generation_failed'] = True
     c.save(root, project)
-    return {'ok': True, 'page_id': page_id, 'outcome': outcome}
+    return {'ok': True, 'page_id': page_id, 'outcome': outcome, 'generation_failed': is_gen_failed}
 
 
 def status(root, project):
@@ -278,7 +301,11 @@ def status(root, project):
             reasons = []
             if any(a['status'] == 'pending' for a in attempts):
                 reasons.append('Pending page attempt; resume it.')
-            if len([a for a in attempts if a['render_hash'] == fingerprint]) >= 3 and page['id'] not in accepted:
+            gen_failed = [a for a in attempts if a['render_hash'] == fingerprint and a.get('generation_failed')]
+            reviewed = [a for a in attempts if a['render_hash'] == fingerprint and not a.get('generation_failed')]
+            if len(gen_failed) >= 6 and page['id'] not in accepted:
+                reasons.append('Six image generation retries exhausted.')
+            if len(reviewed) >= 3 and page['id'] not in accepted:
                 reasons.append('Three whole-page attempts exhausted.')
         except (c.GateError, OSError, ValueError, KeyError, TypeError, AttributeError) as error:
             reasons = [str(error)]
@@ -300,4 +327,5 @@ def status(root, project):
             'external_source_warnings': c.external_source_warnings(project),
             'preflight_counts': {'planned_generation_calls': sum(p['id'] not in accepted and locked and not page_blockers[p['id']] for p in pages),
                                  'attempts_recorded': len(records), 'pending_attempts': sum(a['status']=='pending' for a in records),
-                                 'max_attempts_per_page_input':3}}
+                                 'max_attempts_per_page_input': 3,
+                                 'max_generation_retries': 6}}

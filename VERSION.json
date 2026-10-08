@@ -1,11 +1,11 @@
 {
   "repository": "https://github.com/aiskyhub/novel_to_comic",
   "commit_sha": "864acbe9f575f5a66c5d24511de26b3f7c8c0ed2",
-  "commit_date": "2026-10-07T23:29:52+08:00",
+  "commit_date": "2026-10-08T23:20:00+08:00",
   "commit_author": "小呆呆666",
-  "commit_message": "fix: 放宽字体验收标准，字高改为建议参考，字体大小不作为卡点",
-  "installed_at": "2026-10-08T16:20:00+08:00",
+  "commit_message": "feat: 生图失败允许重试六次，三次审图不达标兜底择优并解释缺陷",
+  "installed_at": "2026-10-08T23:20:00+08:00",
   "production_mode": "whole-page",
   "schema_version": 6,
-  "local_revision": "2.3.1"
+  "local_revision": "2.4.0"
 }
