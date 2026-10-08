@@ -34,8 +34,8 @@ def phone_style_errors(style):
         return errors + ['style.width/style.height must be positive integers.']
     if not 1.6 * width <= height <= 2.6 * width:
         errors.append('style.height/style.width: phone pages require portrait aspect ratio height/width between 1.6 and 2.6 (recommended 2.0–2.4).')
-    if type(size) is not int or size * 360 < width * 16:
-        errors.append('style.font_size: body text must target at least 16 CSS px at 360 CSS px width.')
+    if type(size) is not int or size <= 0:
+        errors.append('style.font_size: expected a positive integer.')
     return errors
 
 

@@ -15,9 +15,9 @@
 
 1. **绝对禁止亲自写初稿分镜**：各章原文精读、细节清单提取（`docs/adaptation/`）与逐格分镜草稿编写（`scripts/chapters/`）必须全量派发给**改编编剧师子代理**执行。
 2. **绝对禁止亲自动手整改不合格剧本**：当阶段审核打回时，**主代理严禁自己动手修剧本、加镜头或改台词**！主代理仅负责客观仲裁并下达整改决议，具体画格级修改增补**必须全量交由剧本改稿整改师子代理（或编剧子代理）亲自执笔**！
-3. **绝对禁止亲自编写或打磨完整页出图提示词**：出图提示词架构、3~4 格整宽纵排布局规划（常规3格、简单4格）、原生对白气泡与手机可读字高排版，必须全量交由**分镜提示词工程师子代理**执行。
+3. **绝对禁止亲自编写或打磨完整页出图提示词**：出图提示词架构、3~4 格整宽纵排布局规划（常规3格、简单4格）、原生对白气泡与手机建议字高排版（字体验收放宽，字体大小仅为建议不作为卡点），必须全量交由**分镜提示词工程师子代理**执行。
 4. **绝对禁止亲自调用生图工具或手工修图**：绘图生成与资产登记由**画面渲染执行员子代理**执行。
-5. **绝对禁止亲自撰写具体整页 QA 报告**：手机 360/390/430px 多视口逐格审阅、五官一致性核查、原生对白错漏核验与实测字高记录，必须全量交由**画面与排版品控员子代理**执行。
+5. **绝对禁止亲自撰写具体整页 QA 报告**：手机 360/390/430px 多视口逐格审阅、五官一致性核查、原生对白错漏核验与实测字高记录（字体验收放宽，字体大小仅为建议不作为卡点），必须全量交由**画面与排版品控员子代理**执行。
 6. **绝对禁止伪造/合成审查与整改报告**：
    - 严禁为了“过门禁”而编写批处理脚本合成虚假的初审扣分、模板化占位符引句（如“原文具体短引句”）或捏造未发生物理变动的 `modified_panels`；
    - 流水线对审查输入指纹、真实章节引句、审阅人身份及前后修改差异进行全链条关系校验；运行时凭证可核验时予以核对，无法核验时记录为“未验证”，拒绝形式主义虚假通报。
@@ -52,12 +52,12 @@ flowchart TD
     end
 
     subgraph ProductionDept["排版提示词与渲染部门 (Subagents)"]
-        PromptEng["6. 分镜提示词工程师 (Prompt Engineer & Layout Artist)<br/>• 手机竖屏 (1080×2400) 提示词架构<br/>• 3-4格整宽纵排（常规3格、简单4格）/视觉焦点/字高48-60px/气泡定位"]
+        PromptEng["6. 分镜提示词工程师 (Prompt Engineer & Layout Artist)<br/>• 手机竖屏 (1080×2400) 提示词架构<br/>• 3-4格整宽纵排（常规3格、简单4格）/视觉焦点/建议字高48-60px/气泡定位"]
         Renderer["7. 画面渲染执行员 (Render Operator)<br/>• begin-page 任务登记<br/>• 一次调用绘图工具生成原生整页 PNG<br/>• 原始图像资产存储与尝试状态记录"]
     end
 
     subgraph QADept["品控与交付部门 (Subagents)"]
-        Inspector["8. 画面与排版品控员 (Visual & Typography QA Inspector)<br/>• 手机 360/390/430px 多视口实测<br/>• 逐格核对五官/台词错漏/实测字高<br/>• qa-inputs 机械绑定与整页 QA 报告"]
+        Inspector["8. 画面与排版品控员 (Visual & Typography QA Inspector)<br/>• 手机 360/390/430px 多视口实测<br/>• 逐格核对五官/台词错漏/实测字高（放宽字体验收，字号不作为卡点）<br/>• qa-inputs 机械绑定与整页 QA 报告"]
         Packager["9. 后制包装与交付员 (Post-Production & Packaging Operator)<br/>• prepare-pages 归档与缩略图生成<br/>• 汇总 review-layout 排版审阅<br/>• export 导出 HTML/PDF/CBZ 并运行 verify-export"]
     end
 
@@ -124,7 +124,7 @@ flowchart TD
 ### 6. 分镜提示词工程师（Prompt Engineer & Layout Artist）
 - **专属提示词**：[roles/prompt_engineer.md](../roles/prompt_engineer.md)
 - **现实对应**：构图排版师 / AI 提示词架构师。
-- **职责范围**：依据锁定分镜与角色基准，将单页 3~4 格整宽纵排布局（常规模式3格，信息简单可4格）、视觉中心、构图机位、原生台词气泡位置与手机建议字高（48–60 像素）编译为单页完整出图提示词（遵循 `assets/page-prompt-template.md`），消除镜头冲突。
+- **职责范围**：依据锁定分镜与角色基准，将单页 3~4 格整宽纵排布局（常规模式3格，信息简单可4格）、视觉中心、构图机位、原生台词气泡位置与手机建议字高（48–60 像素，仅作为设计参考，字体验收放宽不作为卡点）编译为单页完整出图提示词（遵循 `assets/page-prompt-template.md`），消除镜头冲突。
 - **输入契约**：锁定稿单页分镜数据、已登记角色基准图信息、手机排版规范。
 - **输出契约**：完整页出图提示词文件。
 
@@ -138,7 +138,7 @@ flowchart TD
 ### 8. 画面与排版品控员（Visual & Typography QA Inspector）
 - **专属提示词**：[roles/qa_inspector.md](../roles/qa_inspector.md)
 - **现实对应**：作画监督 / 手机端品控质检员。
-- **职责范围**：在 360/390/430px 手机等比预览中核验原生整页，逐镜头核对格数（3~4格整宽纵排，常规3格、信息简单可4格）、五官结构、手肢线条、角色一致性；逐句核对锁定台词错别字、漏字、文字截断、气泡错指或遮挡脸部；实测正文显示字高；读取 `qa-inputs` 机械绑定，撰写真实整页 QA 报告，执行 `finish-page` 或 `fail-page`。
+- **职责范围**：在 360/390/430px 手机等比预览中核验原生整页，逐镜头核对格数（3~4格整宽纵排，常规3格、信息简单可4格）、五官结构、手肢线条、角色一致性；逐句核对锁定台词错别字、漏字、文字截断、气泡错指或遮挡脸部；实测正文显示字高（字体验收放宽，字号仅作为排版建议，字体大小不作为卡点）；读取 `qa-inputs` 机械绑定，撰写真实整页 QA 报告，执行 `finish-page` 或 `fail-page`。
 - **输入契约**：原生整页 PNG、手机等比预览图、锁定稿单页分镜与台词、`qa-inputs` 数据。
 - **输出契约**：真实整页 QA 报告。
 
@@ -198,9 +198,9 @@ flowchart TD
 | **script_auditor_b** | [roles/script_auditor_b.md](../roles/script_auditor_b.md) | "Red Team Script Auditor B" | 红队啄木鸟，量化审查幽默笑点包袱与角色对白性格 |
 | **chief_script_editor** | [roles/chief_script_editor.md](../roles/chief_script_editor.md) | "Chief Script Editor" | 全卷文学终审编辑，执行 coverage / continuity / comic 三轮拉网自校验 |
 | **art_director** | [roles/art_director.md](../roles/art_director.md) | "Art Director & Character Designer" | 制定美术风格指南与角色档案，编写基准图出图提示词 |
-| **prompt_engineer** | [roles/prompt_engineer.md](../roles/prompt_engineer.md) | "Storyboard Prompt Engineer" | 编译 1080×2400 原生整页提示词，规划 3~4 格纵排（常规3格、简单4格）与字高 48-60px |
+| **prompt_engineer** | [roles/prompt_engineer.md](../roles/prompt_engineer.md) | "Storyboard Prompt Engineer" | 编译 1080×2400 原生整页提示词，规划 3~4 格纵排（常规3格、简单4格）与建议字高 48-60px |
 | **render_operator** | [roles/render_operator.md](../roles/render_operator.md) | "Render Operator" | 调用绘图工具一次性生成包含所有画格与气泡的原生整页 PNG |
-| **qa_inspector** | [roles/qa_inspector.md](../roles/qa_inspector.md) | "Comic Page QA Inspector" | 手机 360/390/430px 视口核验整页，实测字高，提取 qa-inputs 填写真实 QA |
+| **qa_inspector** | [roles/qa_inspector.md](../roles/qa_inspector.md) | "Comic Page QA Inspector" | 手机 360/390/430px 视口核验整页，实测字高（字体验收放宽，字号不作为卡点），提取 qa-inputs 填写真实 QA |
 | **packager** | [roles/packager.md](../roles/packager.md) | "Post-Production Packager & Deliverer" | 资产归档 (prepare-pages)、排版审阅、导出 HTML/PDF/CBZ 并校验 |
 
 ### 典型子代理派发 Prompt 模板示例
@@ -257,7 +257,7 @@ Prompt:
 核查重点：
 1. 检查整页是否为 3~4 格整宽纵排（常规3格、简单4格），无额外杂格或跨格融合；
 2. 逐格核对人物五官、线条、神态与角色基准图的一致性；
-3. 在 360/390/430px 视口下核查正文文字，实测正文显示字高（清晰可读，推荐约 16 CSS 像素）；
+3. 在 360/390/430px 视口下核查正文文字，实测正文显示字高（字体验收放宽，清晰易读即可，推荐约 16 CSS 像素，字体大小不作为卡点）；
 4. 逐句核对台词无错别字、漏字、截断，气泡不挡脸；
 5. 输出真实详细的整页 QA 报告，给出 finish-page 或 fail-page 判定。
 ```

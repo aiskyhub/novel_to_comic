@@ -193,10 +193,14 @@ class WholePageTests(unittest.TestCase):
         with self.assertRaisesRegex(cp.GateError,'only schema v6'):
             self.f.invoke('status')
 
-    def test_script_gate_rejects_tiny_font_short_canvas_and_grid_layout(self):
+    def test_script_gate_relaxed_font_size_and_rejects_invalid_canvas_and_grid(self):
         self.locked_page()
         baseline = cp.project_load(self.f.root)['script']
-        for change,needle in ((lambda s:s['style'].update(font_size=47),'16 CSS px'),
+        script_relaxed = copy.deepcopy(baseline)
+        script_relaxed['style']['font_size'] = 47
+        self.f.invoke('set-script', file=self.f.json_file(script_relaxed))
+        self.assertEqual([], self.f.invoke('check-script')['errors'])
+        for change,needle in ((lambda s:s['style'].update(font_size=-1),'positive integer'),
                               (lambda s:s['style'].update(height=1440),'height/width'),
                               (lambda s:s['pages'][0].update(columns=2),'columns must be 1')):
             script=copy.deepcopy(baseline);change(script)

@@ -17,7 +17,7 @@ files 记录原始输入绝对路径、项目内 archive_path、格式、编码�
 | 对象 | 字段与要求 |
 |---|---|
 | 本卷 | outline：本卷结构与核心故事梗概（必须 100% 严格提炼自已确认正文，绝对禁止脑补编造）；ending：本卷实际原文真实收尾 |
-| style | genre、look、palette、selection_reason；format=pages；reading_direction=ltr/rtl；width/height/font_size默认1080/2400/54；单页高/宽2.0–2.4、360宽正文目标至少16 CSS像素；不需要max_segment_height或font_path，须读 [phone-reading.md](phone-reading.md)；新项目使用 art_direction 记录具体美术规范，references 保存实际参考记录 |
+| style | genre、look、palette、selection_reason；format=pages；reading_direction=ltr/rtl；width/height/font_size默认1080/2400/54；单页高/宽2.0–2.4、360宽正文建议约16 CSS像素（字体验收放宽，字体大小为建议参考，不作为卡点）；不需要max_segment_height或font_path，须读 [phone-reading.md](phone-reading.md)；新项目使用 art_direction 记录具体美术规范，references 保存实际参考记录 |
 | character | id、name、aliases 数组、importance=major/supporting/minor；narrative 含 goal/motivation/voice/arc（必须忠实于原著人设事实）；visual 含 face_shape/eyes/brows/nose_mouth/body/posture/hair/age；source_facts、design_notes 数组 |
 | source_fact | text 与非空 source_unit_ids；必须为原文真实事实，设计注记不能写成原作事实 |
 | setting | id、description；可补空间布局、道具、参考路径/指纹与设计注记 |
@@ -165,6 +165,6 @@ render_hash绑定本页全部分镜、对白、人物状态、页布局、字号
 
 layout保存prepare-pages按顺序复制的完整原生PNG，path、sha256、真实width/height、panel_ids与phone_previews（360/390/430宽预览路径、尺寸与哈希）。复制成品PNG必须与art/pages已验收文件的字节完全一致；图片本身包含页边框、格间距与全部原生气泡，程序不添加漫画内容。
 
-页面报告绑定layout.input_hash与所有reviewed_page_ids，包含LAYOUT_CHECKS和逐页phone_reading_notes；纯画面无字页min_body_css_px可为null，含字页必须提供360宽下实际最小字高，至少16 CSS像素。exports与final_review继续绑定当前输入和实际文件；每卷独立完成，不等待尚未提供的其他卷。
+页面报告绑定layout.input_hash与所有reviewed_page_ids，包含LAYOUT_CHECKS和逐页phone_reading_notes；纯画面无字页min_body_css_px可为null，含字页必须提供360宽下实际最小字高数值（字体验收放宽，建议约16 CSS像素，字体大小为软性建议不作为阻断卡点）。exports与final_review继续绑定当前输入和实际文件；每卷独立完成，不等待尚未提供的其他卷。
 
 只支持Schema v6。旧数据明确拒绝，无迁移、别名或兼容操作。

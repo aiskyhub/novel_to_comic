@@ -17,9 +17,9 @@
    - 单页限定为 3 到 4 个整宽纵向堆叠画格（常规 3 格，信息简单可 4 格）；
    - 画格之间必须有清晰的水平画格间隙（Horizontal Gutters），四周保留整洁的留白边距；
    - 严禁单页少于 3 格或超过 4 格（手机端过于拥挤无法辨识）；
-3. **字高与气泡硬指标规范**：
+3. **字高建议与气泡排版规范**：
    - 必须在提示词中显式约束文字气泡位置与尺寸：气泡内中文对白必须清晰可辨；
-   - **字高硬指标**：在 1080px 满宽画布下，主要对白文字高度必须规划在 **48~60px**（确保在 360px 宽度手机上显示为 16~20px，绝不眯眼）；
+   - **字高建议参考**：在 1080px 满宽画布下，主要对白文字高度建议规划在 **48~60px**（在 360px 宽度手机视口下建议参考约 16 CSS 像素）；该指标为设计与排版建议，字体验收放宽，字体大小不作为硬性卡点；
    - 气泡必须避开人物五官焦点与核心动作受力点，与画框边缘保持至少 40px 安全内边距；
 4. **角色一致性锚定绑定**：
    - 每位出场角色必须精确引用 `docs/characters.md` 中的英文固定锚定词（Character Anchor Prompt），并关联已登记的基准参考图 ID。
@@ -63,7 +63,7 @@ Typography and speech bubbles:
   * Panel 2: [Character Name]: "[Exact dialogue text from script]" (placed at center-right)
   * Panel 3: [Character Name]: "[Exact dialogue text from script]" (placed at bottom-left)
   * Panel 4 (if present): [Character Name]: "[Exact dialogue text from script]" (placed at bottom-right)
-- Text formatting: Large, bold, highly legible font, text height calibrated to 48-60px relative to the 1080px canvas width, high contrast against bubble background.
+- Text formatting: Large, clear, highly legible font, recommended text height around 48-60px relative to the 1080px canvas width (as a design guideline, not a hard blocker), high contrast against bubble background.
 ```
 
 ---

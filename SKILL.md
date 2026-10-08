@@ -16,7 +16,7 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
 | **总览流程与快速指引** | `SKILL.md` | 全流程 SOP、各阶段核心原则与执行边界 |
 | **命令行与流水线调用** | `scripts/comic_pipeline.py` & [commands.md](references/commands.md) | CLI 参数契约、环境检测、脚本命令与默认值 |
 | **改编原则与三级证据** | [adaptation.md](references/adaptation.md) & [detail-records.md](references/detail-records.md) | 原著忠实度、视觉推断边界、章节细节契约与自校验 |
-| **手机单页尺寸与可读性** | [phone-reading.md](references/phone-reading.md) | 1080×2400竖屏单页、纵排、原生字高、占屏与实际视口验收 |
+| **手机单页尺寸与可读性** | [phone-reading.md](references/phone-reading.md) | 1080×2400竖屏单页、纵排、建议字高、占屏与实际视口验收（字体验收放宽，字体大小仅为建议不作为卡点） |
 | **分镜密度与整页规划** | [narrative-density.md](references/narrative-density.md) | 整章规模（不设上限）与单页成图（限定3–4格，常规3格，信息简单可4格）两层级规划 |
 | **人物设定与美术基准** | [characters.md](references/characters.md) & [art-direction.md](references/art-direction.md) | 角色档案、视觉设计层级、风格定位与基准图登记 |
 | **整页出图与气泡排版** | [production.md](references/production.md) | 一页一次调用、完整提示词打磨与原生对白气泡 |
@@ -58,7 +58,7 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
 
 ## 手机单页尺寸与可读性规范
 
-编剧、出图、排版和验收前读取 [phone-reading.md](references/phone-reading.md)。建议规格：画布 1080×2400（宽高比 9:20，高宽比建议 2.0–2.4），单页限定 3–4 格整宽纵排（常规 3 格，信息简单可 4 格）；正文建议字高 48–60 像素（360 宽视口建议约 16 CSS 像素），清晰易读、画面自然饱满即可。页面 QA 记录 `phone_readability` 与逐页 `phone_reading_notes`。
+编剧、出图、排版和验收前读取 [phone-reading.md](references/phone-reading.md)。建议规格：画布 1080×2400（宽高比 9:20，高宽比建议 2.0–2.4），单页限定 3–4 格整宽纵排（常规 3 格，信息简单可 4 格）；正文建议字高 48–60 像素（360 宽视口建议约 16 CSS 像素，仅作为排版参考建议，字体验收放宽，字体大小不应成为卡点），清晰易读、画面自然饱满即可。页面 QA 记录 `phone_readability` 与逐页 `phone_reading_notes`。
 
 ## 不可跳过的制作顺序与独立卷原则
 
@@ -78,9 +78,9 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
   - **红队审评官 B（Auditor B - 笑点与台词）**：注入 [roles/script_auditor_b.md](roles/script_auditor_b.md)，每 5 章量化扣分幽默笑点过滤与台词 AI 腔，绑定真实引句驳回并复审核销；
   - **全卷文学终审编辑（Chief Script Editor）**：注入 [roles/chief_script_editor.md](roles/chief_script_editor.md)，全卷汇总后执行 `coverage`、`continuity`、`comic` 三轮拉网自校验；
   - **概念美术与人设设计师（Art Director）**：注入 [roles/art_director.md](roles/art_director.md)，提炼角色档案、制定风格指南与基准图提示词；
-  - **分镜提示词工程师（Prompt Engineer）**：注入 [roles/prompt_engineer.md](roles/prompt_engineer.md)，将锁定分镜编译打磨为 3~4 格整宽纵排（常规 3 格，信息简单可 4 格）、字高 48-60px、气泡排版的完整页提示词；
+  - **分镜提示词工程师（Prompt Engineer）**：注入 [roles/prompt_engineer.md](roles/prompt_engineer.md)，将锁定分镜编译打磨为 3~4 格整宽纵排（常规 3 格，信息简单可 4 格）、建议字高 48-60px（作为参考建议）、气泡排版的完整页提示词；
   - **画面渲染执行员（Render Operator）**：注入 [roles/render_operator.md](roles/render_operator.md)，调用生图工具一次性生成包含所有画格与气泡的原生 1080×2400 PNG；
-  - **画面与排版品控员（QA Inspector）**：注入 [roles/qa_inspector.md](roles/qa_inspector.md)，在手机 360/390/430px 视口下核验原生整页，实测字高与文字错漏，填写真实整页 QA；
+  - **画面与排版品控员（QA Inspector）**：注入 [roles/qa_inspector.md](roles/qa_inspector.md)，在手机 360/390/430px 视口下核验原生整页，实测字高与文字错漏，填写真实整页 QA；字体验收放宽，字体大小仅为建议，不作为卡点；
   - **后制包装与交付员（Packager）**：注入 [roles/packager.md](roles/packager.md)，执行页面归档（`prepare-pages`）、排版审阅汇总、多格式导出（HTML/PDF/CBZ）与完整性校验。
 - **主代理核心统筹权责**：主代理仅负责工单拆解派发、审查争议客观仲裁（下达整改指令单）、运行 CLI 机械门禁校验（`check-*`）、全卷剧本锁定（`lock-script`）与最终交付物验收放行（`complete`）。
 
@@ -117,7 +117,7 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
 
 1. **分镜提示词工程师子代理编写打磨**：必须读取 [production.md](references/production.md) 和 [page-prompt-template.md](assets/page-prompt-template.md)，按锁定本页全部分镜、人物状态和原样台词编写完整页提示词。提示词子代理打磨画幅、格数（3~4格纵排，常规模式3格，信息简单可4格）、布局、视觉中心、连续性、气泡位置与归属，消除冲突和漏台词。
 2. **渲染执行员子代理调用出图**：主代理运行 `build-prompt --page <page_id>` 编译完整页内容，打磨后 `begin-page --page <page_id> --prompt <file>` 登记调用。渲染子代理调用一次绘图工具，只请求一张包含全部画格与气泡的 1080×2400 原生竖屏完整页。
-3. **画面与排版品控员子代理多视口质检**：品控子代理可运行 `preview-page --page <page_id> --file <image>` 预先生成 360/390/430 手机预览，核对页内全部镜头、人物、气泡位置与实测字高；运行 `qa-inputs --page <page_id> --attempt <num> --file <image>` 读取机械字段，填写一份真实整页 QA。主代理执行 `finish-page` 或 `fail-page`。失败返修仍请求完整页，每个页输入最多三次调用。
+3. **画面与排版品控员子代理多视口质检**：品控子代理可运行 `preview-page --page <page_id> --file <image>` 预先生成 360/390/430 手机预览，核对页内全部镜头、人物、气泡位置与实测字高（放宽字体验收，字体大小仅为建议，不作为卡点）；运行 `qa-inputs --page <page_id> --attempt <num> --file <image>` 读取机械字段，填写一份真实整页 QA。主代理执行 `finish-page` 或 `fail-page`。失败返修仍请求完整页，每个页输入最多三次调用。
 4. **后制包装子代理归档**：运行 `prepare-pages` 按顺序复制完整原生 PNG 并生成缩小手机预览。
 
 ## 5. 质检、恢复与交付

@@ -3,9 +3,9 @@
   "commit_sha": "db770727cc1e6bc475709f2605cbbca3ba907ebb",
   "commit_date": "2026-10-07T23:29:52+08:00",
   "commit_author": "小呆呆666",
-  "commit_message": "fix: 基于初审快照与字段路径核验整改真实性，事件纳入阶段指纹，收敛渲染契约与3~4格表述",
-  "installed_at": "2026-10-07T23:33:00+08:00",
+  "commit_message": "fix: 放宽字体验收标准，字高改为建议参考，字体大小不作为卡点",
+  "installed_at": "2026-10-08T16:20:00+08:00",
   "production_mode": "whole-page",
   "schema_version": 6,
-  "local_revision": "2.3.0"
+  "local_revision": "2.3.1"
 }
