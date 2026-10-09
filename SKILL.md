@@ -21,7 +21,7 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
 | **人物设定与美术基准** | [characters.md](references/characters.md) & [art-direction.md](references/art-direction.md) | 角色档案、视觉设计层级、风格定位与基准图登记 |
 | **整页出图与气泡排版** | [production.md](references/production.md) | 一页一次调用、完整提示词打磨与原生对白气泡 |
 | **质量关卡与双轨审查** | [quality.md](references/quality.md) | 机械门禁校验与人工语义/视觉审查双轨分离标准 |
-| **任务委派与环境自适应** | [parallel-work.md](references/parallel-work.md) | 环境自适应委派机制、自主模型决策与双子代理审批权责边界 |
+| **任务委派与环境自适应** | [parallel-work.md](references/parallel-work.md) | 环境自适应委派机制、子代理模型继承（Model: inherit）与双子代理审批权责边界 |
 | **岗位角色与独立提示词库** | [roles/README.md](roles/README.md) & `roles/*.md` | 各岗位专属独立提示词（总导演及9大子代理）、单一角色严格注入与上下文物理隔离规范 |
 | **数据结构与数据契约** | [schemas.md](references/schemas.md) | 全卷 `project.json` (Schema v6) 字段定义与数据契约 |
 | **异常恢复与版本变更** | [recovery.md](references/recovery.md) | 流程中断恢复、版本分叉隔离与多轮返修处理 |
@@ -82,6 +82,7 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
   - **画面渲染执行员（Render Operator）**：注入 [roles/render_operator.md](roles/render_operator.md)，调用生图工具一次性生成包含所有画格与气泡的原生 1080×2400 PNG；生图失败可重试六次；
   - **画面与排版品控员（QA Inspector）**：注入 [roles/qa_inspector.md](roles/qa_inspector.md)，在手机 360/390/430px 视口下核验原生整页，实测字高与文字错漏，填写真实整页 QA；字体验收放宽，字体大小仅为建议不作为卡点；三次审图不符合标准时兜底选择一张最符合的图片并解释缺陷处；
   - **后制包装与交付员（Packager）**：注入 [roles/packager.md](roles/packager.md)，执行页面归档（`prepare-pages`）、排版审阅汇总、多格式导出（HTML/PDF/CBZ）与完整性校验。
+- **子代理模型完全继承铁律（Model: inherit）**：主代理通过 `invoke_subagent` 派发任何子代理时，**必须统一显式配置 `Model: "inherit"`**，强制子代理使用与主代理自身完全相同的模型，严禁私自降级选用 `flash` 等弱模型，确保编剧精读、改稿增补、红队双审、提示词打磨及品控质检等全流程子代理具备与总导演同等的理解力与审查深度。
 - **主代理核心统筹权责**：主代理仅负责工单拆解派发、审查争议客观仲裁（下达整改指令单）、运行 CLI 机械门禁校验（`check-*`）、全卷剧本锁定（`lock-script`）与最终交付物验收放行（`complete`）。
 
 ## 1. 建立和读取项目

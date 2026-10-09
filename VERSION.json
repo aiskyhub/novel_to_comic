@@ -3,9 +3,9 @@
   "commit_sha": "99631d1be7972b658edd3b0dd6f49b0f7254137e",
   "commit_date": "2026-10-08T23:24:00+08:00",
   "commit_author": "小呆呆666",
-  "commit_message": "feat: 生图失败允许重试六次，三次审图不达标兜底择优并解释缺陷",
-  "installed_at": "2026-10-08T23:24:00+08:00",
+  "commit_message": "feat: 规范子代理模型继承铁律，主代理开启子代理必须使用同等模型 (Model: inherit)",
+  "installed_at": "2026-10-09T09:59:00+08:00",
   "production_mode": "whole-page",
   "schema_version": 6,
-  "local_revision": "2.4.0"
+  "local_revision": "2.4.1"
 }
