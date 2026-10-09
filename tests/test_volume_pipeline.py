@@ -26,7 +26,7 @@ def make_dummy_png(path: Path, width: int = 100, height: int = 100, color=(200, 
     return path
 
 
-def fixture_v5_script(source):
+def fixture_volume_script(source):
     template_path = Path(cp.__file__).resolve().parents[1] / 'assets' / 'script-template.json'
     script = cp.load_json(template_path)
     script.update(outline='测试夹具的全部事件顺序保留。', ending='以提供的最后一句结束。')
@@ -88,7 +88,7 @@ def fixture_v5_script(source):
     return script
 
 
-class VolumeV5PipelineTests(unittest.TestCase):
+class VolumePipelineTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.base = Path(self.tmp.name)

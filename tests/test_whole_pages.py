@@ -245,6 +245,31 @@ class WholePageTests(unittest.TestCase):
         f.invoke('prepare-pages')
         self.assertEqual(1, len(cp.project_load(f.root)['layout']['pages']))
 
+    def test_six_generation_failures_allow_placeholder_page_creation_and_finish(self):
+        self.locked_page()
+        for number in range(1, 7):
+            self.begin()
+            self.f.invoke('fail-page', page='page01', attempt=number, reason='生图接口报错：504 Gateway Timeout')
+        with self.assertRaisesRegex(cp.GateError, 'Six image generation retries exhausted'):
+            self.begin()
+
+        res = self.f.invoke('placeholder-page', page='page01', reason='生图服务器持续无响应，6次重试耗尽', finish=True)
+        self.assertTrue(res['ok'])
+        self.assertTrue(res['finished'])
+        self.assertTrue(Path(res['image']).is_file())
+        self.assertTrue(Path(res['qa']).is_file())
+
+        from PIL import Image
+        with Image.open(res['image']) as img:
+            self.assertEqual((1080, 2400), img.size)
+            self.assertEqual('PNG', img.format)
+
+        st = self.f.invoke('status')
+        self.assertEqual(1, st['pages_accepted'])
+        self.assertIsNone(st['next_page'])
+        self.f.invoke('prepare-pages')
+        self.assertEqual(1, len(cp.project_load(self.f.root)['layout']['pages']))
+
 
 if __name__ == '__main__':
     unittest.main()

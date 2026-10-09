@@ -13,7 +13,7 @@ def sync(target):
         raise ValueError('Target must be a separate, explicitly named novel-to-comic skill directory.')
     owned_dirs = {'agents','assets','references','scripts','tests','.codex-plugin','validation','README','roles'}
     owned_files = {'SKILL.md','README.md','VERSION.json','.gitignore'}
-    # 清理已废弃的兼容目录 role
+    # 清理已废弃的 role 目录
     legacy_role_dir = target / 'role'
     if legacy_role_dir.is_dir():
         shutil.rmtree(legacy_role_dir, ignore_errors=True)

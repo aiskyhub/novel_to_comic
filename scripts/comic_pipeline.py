@@ -2662,6 +2662,12 @@ def run(args):
         from comic_pages import fail_page
         return fail_page(root,project,args.page,args.attempt,args.reason,args.outcome,getattr(args,'file',None),
                          generation_failure=getattr(args, 'generation_failure', False))
+    elif command == 'placeholder-page':
+        from comic_pages import create_placeholder_page
+        return create_placeholder_page(root, project, args.page, args.reason,
+                                       output=getattr(args, 'output', None),
+                                       qa_output=getattr(args, 'qa_output', None),
+                                       finish=getattr(args, 'finish', False))
     elif command in ('prepare-pages', 'review-layout', 'export', 'verify-export', 'complete'):
         assert_script_lock(project, root)
         from comic_layout import layout_fingerprint, prepare_pages, export, verify_exports
@@ -2755,6 +2761,14 @@ def parser():
 
     cost_p = subs.add_parser('estimate-cost')
     cost_p.add_argument('--project', required=True, help='Volume project directory')
+
+    placeholder_p = subs.add_parser('placeholder-page')
+    placeholder_p.add_argument('--project', required=True, help='Volume project directory')
+    placeholder_p.add_argument('--page', required=True, help='Page ID to generate placeholder for')
+    placeholder_p.add_argument('--reason', required=True, help='Failure diagnostic reason')
+    placeholder_p.add_argument('--output', help='Output PNG file path (defaults to renders/<page>_failed_placeholder.png)')
+    placeholder_p.add_argument('--qa-output', help='Output QA report path (defaults to renders/<page>_failed_placeholder_qa.json)')
+    placeholder_p.add_argument('--finish', action='store_true', help='Automatically finish and accept the placeholder page to avoid pipeline stalls')
 
     for name in ('init', 'preflight', 'qa-inputs', 'chapter', 'script-chapter', 'resolve-issue', 'confirm-source',
                  'mark-read', 'set-script', 'set-script-chapter', 'impact', 'check-script', 'check-adaptation',

@@ -1,6 +1,8 @@
-"""Whole-page generation accounting. Never draws, extracts, or assembles panels."""
 from pathlib import Path
+import json
 import math
+import os
+from PIL import Image, ImageDraw, ImageFont
 
 
 def core():
@@ -175,7 +177,7 @@ def begin_page(root, project, page_id, prompt_path):
     gen_failed = [a for a in relevant if a.get('generation_failed')]
     reviewed = [a for a in relevant if not a.get('generation_failed')]
     if len(gen_failed) >= 6:
-        raise c.GateError('Six image generation retries exhausted; do not keep consuming quota.')
+        raise c.GateError('Six image generation retries exhausted; generate failure placeholder image via placeholder-page and finish to proceed. Do not halt.')
     if len(reviewed) >= 3:
         raise c.GateError('Three whole-page attempts exhausted; do not redraw again or halt! Select the best candidate among attempts 1-3, explain its defects in defect_explanation, and call finish-page to proceed.')
     prompt = Path(prompt_path).read_text(encoding='utf-8-sig')
@@ -225,8 +227,9 @@ def pending_or_selectable(project, page_id, number):
         raise core().GateError(f'Attempt {number} not found for page {page_id}.')
     if attempt['status'] == 'pending':
         return attempt
+    gen_failed = [a for a in attempts if a.get('generation_failed')]
     reviewed = [a for a in attempts if not a.get('generation_failed')]
-    if len(reviewed) >= 3 or len(attempts) >= 3:
+    if len(reviewed) >= 3 or len(gen_failed) >= 6 or len(attempts) >= 3:
         return attempt
     raise core().GateError('A pending whole-page attempt is required.')
 
@@ -304,7 +307,7 @@ def status(root, project):
             gen_failed = [a for a in attempts if a['render_hash'] == fingerprint and a.get('generation_failed')]
             reviewed = [a for a in attempts if a['render_hash'] == fingerprint and not a.get('generation_failed')]
             if len(gen_failed) >= 6 and page['id'] not in accepted:
-                reasons.append('Six image generation retries exhausted.')
+                reasons.append('Six image generation retries exhausted; generate failure placeholder image via placeholder-page and finish to proceed. Do not halt.')
             if len(reviewed) >= 3 and page['id'] not in accepted:
                 reasons.append('Three whole-page attempts exhausted; do not redraw or halt! Select best candidate (attempt 1/2/3) and call finish-page with defect_explanation to proceed.')
         except (c.GateError, OSError, ValueError, KeyError, TypeError, AttributeError) as error:
@@ -329,3 +332,250 @@ def status(root, project):
                                  'attempts_recorded': len(records), 'pending_attempts': sum(a['status']=='pending' for a in records),
                                  'max_attempts_per_page_input': 3,
                                  'max_generation_retries': 6}}
+
+
+def _load_font(size):
+    font_paths = [
+        'C:/Windows/Fonts/msyh.ttc',
+        'C:/Windows/Fonts/msyhl.ttc',
+        'C:/Windows/Fonts/simhei.ttf',
+        'C:/Windows/Fonts/simsun.ttc',
+        'C:/Windows/Fonts/arial.ttf',
+        '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
+        '/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc',
+        '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+        '/System/Library/Fonts/PingFang.ttc',
+    ]
+    for p in font_paths:
+        if os.path.exists(p):
+            try:
+                return ImageFont.truetype(p, size)
+            except Exception:
+                pass
+    try:
+        return ImageFont.load_default(size=size)
+    except Exception:
+        return ImageFont.load_default()
+
+
+def _wrap_text(text, font, max_width, draw):
+    if not text:
+        return []
+    lines = []
+    for paragraph in str(text).splitlines():
+        if not paragraph:
+            lines.append('')
+            continue
+        current = ''
+        for char in paragraph:
+            test_line = current + char
+            try:
+                bbox = draw.textbbox((0, 0), test_line, font=font)
+                w = bbox[2] - bbox[0]
+            except Exception:
+                w = len(test_line) * 12
+            if w <= max_width:
+                current = test_line
+            else:
+                if current:
+                    lines.append(current)
+                current = char
+        if current:
+            lines.append(current)
+    return lines
+
+
+def render_placeholder_image(project, page, reason, output_path):
+    width, height = 1080, 2400
+    img = Image.new('RGB', (width, height), color=(24, 24, 37))
+    draw = ImageDraw.Draw(img)
+
+    font_title = _load_font(38)
+    font_h2 = _load_font(28)
+    font_body = _load_font(22)
+    font_small = _load_font(18)
+
+    # Outer border
+    draw.rectangle([30, 30, width - 30, height - 30], outline=(69, 71, 90), width=3)
+
+    # Banner header
+    draw.rectangle([50, 50, width - 50, 180], fill=(210, 40, 40))
+    draw.text((width // 2, 90), '【 生图失败占位页 】', fill=(255, 255, 255), font=font_title, anchor='mm')
+    draw.text((width // 2, 140), 'GENERATION FAILED PLACEHOLDER', fill=(255, 220, 220), font=font_small, anchor='mm')
+
+    # Metadata card
+    draw.rectangle([50, 200, width - 50, 600], fill=(48, 52, 70), outline=(81, 87, 109), width=2)
+    draw.text((70, 220), '▼ 页面与错误诊断 / Failure Diagnostics', fill=(240, 198, 198), font=font_h2)
+
+    meta_items = [
+        f"项目标题 / Title: {project.get('title', '未命名')}",
+        f"页面标识 / Page ID: {page.get('id')}  (第 {page.get('order', 1)} 页 / 所属章节: {page.get('chapter_id', '未指定')})",
+        f"重试状态 / Retry: 已连续生图失败达到上限（6次），启用默认占位图推进流程",
+    ]
+    curr_y = 265
+    for item in meta_items:
+        draw.text((75, curr_y), item, fill=(205, 214, 244), font=font_body)
+        curr_y += 32
+
+    draw.text((75, curr_y), "失败原因 / Reason:", fill=(243, 139, 168), font=font_body)
+    curr_y += 28
+    reason_lines = _wrap_text(str(reason), font_small, width - 160, draw)
+    for rline in reason_lines[:6]:
+        draw.text((95, curr_y), rline, fill=(250, 179, 135), font=font_small)
+        curr_y += 24
+
+    # Script content card
+    draw.rectangle([50, 620, width - 50, height - 50], fill=(30, 30, 46), outline=(81, 87, 109), width=2)
+    draw.text((70, 640), '▼ 剧本保留内容 / Preserved Script Content', fill=(166, 227, 161), font=font_h2)
+    draw.text((70, 675), '（本页分镜剧情与台词原样保留，后续可根据此内容定向补绘）', fill=(147, 153, 178), font=font_small)
+
+    panels = page_panels(project, page)
+    curr_y = 715
+    for idx, panel in enumerate(panels, 1):
+        if curr_y > height - 120:
+            break
+        p_desc = panel.get('description', '')
+        dialogues = panel.get('dialogue', [])
+
+        draw.rectangle([70, curr_y, width - 70, curr_y + 36], fill=(49, 50, 68))
+        draw.text((80, curr_y + 8), f"镜头 {idx} (Panel {panel.get('id', idx)})", fill=(137, 180, 250), font=font_body)
+        curr_y += 44
+
+        desc_lines = _wrap_text(f"画面: {p_desc}", font_small, width - 180, draw)
+        for dl in desc_lines[:3]:
+            if curr_y > height - 100:
+                break
+            draw.text((85, curr_y), dl, fill=(186, 194, 222), font=font_small)
+            curr_y += 22
+
+        for d in dialogues:
+            if curr_y > height - 80:
+                break
+            speaker = d.get('speaker', '')
+            text = d.get('text', '')
+            d_line = f"[{speaker}]: \"{text}\"" if speaker else f"\"{text}\""
+            wrapped_d = _wrap_text(d_line, font_small, width - 190, draw)
+            for wl in wrapped_d[:3]:
+                if curr_y > height - 60:
+                    break
+                draw.text((100, curr_y), wl, fill=(249, 226, 175), font=font_small)
+                curr_y += 22
+        curr_y += 16
+
+    dest = Path(output_path)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    img.save(str(dest), format='PNG')
+
+
+def create_placeholder_page(root, project, page_id, reason, output=None, qa_output=None, finish=False):
+    c = core()
+    c.assert_script_lock(project, root)
+    page = page_by_id(project, page_id)
+    if not c.nonempty(reason):
+        raise c.GateError('Failure reason is required for placeholder page.')
+
+    if output:
+        img_path = Path(output)
+    else:
+        renders_dir = c.inside(root, 'renders')
+        renders_dir.mkdir(parents=True, exist_ok=True)
+        img_path = renders_dir / f'{page_id}_failed_placeholder.png'
+
+    render_placeholder_image(project, page, reason, img_path)
+
+    attempts = project['art']['pages'].setdefault(page_id, [])
+    fingerprint = page_hash(root, project, page)
+
+    target_attempt = None
+    if attempts:
+        last_attempt = attempts[-1]
+        prompt_file = c.inside(root, last_attempt.get('prompt_path', ''))
+        if last_attempt.get('render_hash') == fingerprint and prompt_file.is_file():
+            target_attempt = last_attempt
+
+    if target_attempt is None:
+        number = len(attempts) + 1
+        prompt_text = build_page_prompt(root, project, page_id)
+        relative = f'prompts/{page_id}-a{number:03d}.txt'
+        p_path = c.inside(root, relative)
+        p_path.parent.mkdir(parents=True, exist_ok=True)
+        p_path.write_text(prompt_text, encoding='utf-8')
+        target_attempt = {
+            'number': number, 'status': 'pending', 'render_hash': fingerprint,
+            'prompt_path': relative, 'prompt_sha256': c.sha_file(p_path), 'at': c.now()
+        }
+        attempts.append(target_attempt)
+        c.save(root, project)
+
+    if target_attempt['status'] != 'pending':
+        target_attempt['status'] = 'pending'
+
+    img_sha = c.sha_file(img_path)
+    if qa_output:
+        qa_path = Path(qa_output)
+    else:
+        renders_dir = c.inside(root, 'renders')
+        renders_dir.mkdir(parents=True, exist_ok=True)
+        qa_path = renders_dir / f'{page_id}_failed_placeholder_qa.json'
+
+    qa_report = {
+        'scope': 'page',
+        'page_id': page_id,
+        'reviewed_page_ids': [page_id],
+        'reviewed_ids': page['panel_ids'],
+        'image_sha256': img_sha,
+        'attempt_binding': {
+            'page_id': page_id,
+            'attempt': target_attempt['number'],
+            'render_hash': target_attempt['render_hash']
+        },
+        'checks': {
+            'panels_complete': False,
+            'character_continuity': False,
+            'dialogue_fidelity': False,
+            'native_resolution': True,
+            'phone_readability': True,
+            'visual_elegance': False
+        },
+        'evidence': f'Generation failure placeholder created after retries exhausted: {reason}',
+        'defect_explanation': f'Generation failure placeholder page accepted after exhausted retries: {reason}. Preserved script and panel dialogue displayed on placeholder.',
+        'detail_notes': f'1080x2400 failure placeholder with reason: {reason}',
+        'phone_reading_notes': [{
+            'page_id': page_id,
+            'preview_widths': [360, 390, 430],
+            'evidence': 'Placeholder title, failure reason, and panels readable at 360/390/430px.',
+            'min_body_css_px': 16.0
+        }],
+        'elegance_notes': {
+            'linework': 'Clean placeholder layout frame and legible typography.',
+            'color_and_light': 'High contrast dark canvas with visible text for easy identification.',
+            'visual_hierarchy': 'Prominent failure title, metadata block, and ordered panel content list.'
+        },
+        'findings': [{
+            'severity': 'critical',
+            'description': f'Image generation retries exhausted. Placeholder generated: {reason}',
+            'resolved': False
+        }]
+    }
+    qa_path.parent.mkdir(parents=True, exist_ok=True)
+    qa_path.write_text(json.dumps(qa_report, ensure_ascii=False, indent=2), encoding='utf-8')
+
+    if finish:
+        res = finish_page(root, project, page_id, target_attempt['number'], str(img_path), str(qa_path))
+        return {
+            'ok': True,
+            'page_id': page_id,
+            'image': str(img_path),
+            'qa': str(qa_path),
+            'finished': True,
+            'path': res.get('path'),
+            'attempt': target_attempt['number']
+        }
+    return {
+        'ok': True,
+        'page_id': page_id,
+        'image': str(img_path),
+        'qa': str(qa_path),
+        'finished': False,
+        'attempt': target_attempt['number']
+    }

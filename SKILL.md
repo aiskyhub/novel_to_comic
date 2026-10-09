@@ -79,8 +79,8 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
   - **全卷文学终审编辑（Chief Script Editor）**：注入 [roles/chief_script_editor.md](roles/chief_script_editor.md)，全卷汇总后执行 `coverage`、`continuity`、`comic` 三轮拉网自校验；
   - **概念美术与人设设计师（Art Director）**：注入 [roles/art_director.md](roles/art_director.md)，提炼角色档案、制定风格指南与基准图提示词；
   - **分镜提示词工程师（Prompt Engineer）**：注入 [roles/prompt_engineer.md](roles/prompt_engineer.md)，将锁定分镜编译打磨为 3~4 格整宽纵排（常规 3 格，信息简单可 4 格）、建议字高 48-60px（作为参考建议）、气泡排版的完整页提示词；
-  - **画面渲染执行员（Render Operator）**：注入 [roles/render_operator.md](roles/render_operator.md)，调用生图工具一次性生成包含所有画格与气泡的原生 1080×2400 PNG；生图失败可重试六次；
-  - **画面与排版品控员（QA Inspector）**：注入 [roles/qa_inspector.md](roles/qa_inspector.md)，在手机 360/390/430px 视口下核验原生整页，实测字高与文字错漏，填写真实整页 QA；字体验收放宽，字体大小仅为建议不作为卡点；三次审图不符合标准时兜底选择一张最符合的图片并解释缺陷处；
+  - **画面渲染执行员（Render Operator）**：注入 [roles/render_operator.md](roles/render_operator.md)，调用生图工具一次性生成包含所有画格与气泡的原生 1080×2400 PNG；生图遇到工具报错/API异常时允许重试最多六次，六次均失败生成默认失败占位图推进流程；
+  - **画面与排版品控员（QA Inspector）**：注入 [roles/qa_inspector.md](roles/qa_inspector.md)，在手机 360/390/430px 视口下核验原生整页，实测字高与文字错漏，填写真实整页 QA；字体验收放宽，字体大小仅为建议不作为卡点；三次审图不符合标准时兜底选择一张最符合的图片并解释缺陷处；支持六次失败默认占位图验收入库；
   - **后制包装与交付员（Packager）**：注入 [roles/packager.md](roles/packager.md)，执行页面归档（`prepare-pages`）、排版审阅汇总、多格式导出（HTML/PDF/CBZ）与完整性校验。
 - **子代理模型选用建议（建议与主代理保持一致）**：调度各专业子代理时，建议使用与主代理同等水平或一致的模型（在支持继承或指定模型的宿主中优先对齐主代理模型），以保证编剧精读、改稿增补、红队双审、提示词打磨及品控质检等全流程子代理具备充分且一致的理解力与审查深度。
 - **主代理核心统筹权责**：主代理仅负责工单拆解派发、审查争议客观仲裁（下达整改指令单）、运行 CLI 机械门禁校验（`check-*`）、全卷剧本锁定（`lock-script`）与最终交付物验收放行（`complete`）。
@@ -89,7 +89,7 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
 
 1. **唯一默认复制归档保护原稿**：运行 `init-book` 时，唯一默认行为是将小说文本**复制归档**到书名项目内的 `source_texts/` 统一集中管理并校验 SHA256，**完整保留外部原稿在原位置不变**。仅在用户明确指定 `--action move` 时才执行移动。切分长篇文本存入 `split_texts/`。
 2. **模块化文档体系**：书名根目录自动生成总览 `README.md` 与 `docs/` 模块文档（`overview.md`、`structure.md`、`worldview.md`、`characters.md`、`art_direction.md`、`progress.md`）；各分卷目录维护卷级精简 `README.md` 与卷级 `docs/`（`info.md`、`status.md`、`commands.md`、`structure.md`、`notes.md`、`deliverables.md`）。模板统一由 `assets/templates/` 动态渲染载入。
-3. **分卷独立初始化**：只有新卷或新作品才运行 `init`，自动归档原稿副本至卷内 `source/originals/`，仅支持单一权威版本 `schema_version=6`，其他版本明确拒绝，不迁移旧项目。已有项目先通过 `status` 续做。
+3. **分卷独立初始化**：只有新卷或新作品才运行 `init`，自动归档原稿副本至卷内 `source/originals/`，统一采用单一权威版本 `schema_version=6`。已有项目先通过 `status` 续做。
 
 ## 2. 本卷剧本与多轮审查修订
 
@@ -114,14 +114,15 @@ description: "将小说忠实改编为完整漫画：按原文章节逐章完成
 
 ## 4. 整页漫画一次生成
 
-正文唯一流程是完整页提示词→一次绘图→一张完整PNG→一份整页验收报告。禁止分格生成、裁切画格、跨页合图、后续拼版或代码补字；不保留旧生产接口与兼容操作。
+正文唯一流程是完整页提示词→一次绘图→一张完整PNG→一份整页验收报告。严格要求整页一次成型，严禁分格生成、裁切画格、跨页合图、后续拼版或代码补字。
 
 1. **分镜提示词工程师子代理编写打磨**：必须读取 [production.md](references/production.md) 和 [page-prompt-template.md](assets/page-prompt-template.md)，按锁定本页全部分镜、人物状态和原样台词编写完整页提示词。提示词子代理打磨画幅、格数（3~4格纵排，常规模式3格，信息简单可4格）、布局、视觉中心、连续性、气泡位置与归属，消除冲突和漏台词。
 2. **渲染执行员子代理调用出图**：主代理运行 `build-prompt --page <page_id>` 编译完整页内容，打磨后 `begin-page --page <page_id> --prompt <file>` 登记调用。渲染子代理调用一次绘图工具，只请求一张包含全部画格与气泡的 1080×2400 原生竖屏完整页。若生图失败（工具报错、网络超时、API异常等），允许重试最多六次。
-3. **画面与排版品控员子代理多视口质检与三绘即决机制**：
+3. **画面与排版品控员子代理多视口质检与双重兜底保障**：
    - 品控子代理运行 `preview-page --page <page_id> --file <image>` 预先生成 360/390/430 手机预览，核对镜头、人物、气泡位置与实测字高（放宽字体验收，字号仅为建议不作为卡点）；运行 `qa-inputs --page <page_id> --attempt <num> --file <image>` 读取机械字段，填写一份真实整页 QA。
    - 若前 1、2 次审图合格执行 `finish-page`，不合格执行 `fail-page` 派单返修完整页。
    - **【三绘即决铁律：严禁无限重绘，严禁中途停工】**：单页审图尝试严格以 3 次为上限（初画 1 次 + 最多 2 次返修）。**重绘达 3 次后，即使画面仍不完美，绝对禁止发起第 4 次重绘（绝对禁止再次调用 begin-page），也绝对禁止中断流水线或停下来等待用户！** 品控员必须立刻在 3 次历史尝试中**横向对比并挑选一张最合适的候选图**，在 QA 报告中详细说明缺陷处（写入 `defect_explanation`），主代理立即执行 `finish-page` 兜底放行验收入库，并**直接无缝推进下一页生产**。
+   - **【六次生图报错兜底铁律：默认失败占位图，严禁中断死锁】**：若遇生图接口报错、网络异常或无法出图，允许重试最多 6 次（通过 `fail-page ... --generation-failure` 记录）。**若 6 次重试全部失败无法出图，绝对禁止死锁或停滞！** 立即执行 `placeholder-page --project <dir> --page <page_id> --reason "<failure_reason>" --finish` 自动生成标明失败诊断、保留剧本分镜与对白的 1080×2400 原生失败占位图，自动出具放行 QA 报告验收入库，并**直接无缝推进下一页生产**！
 4. **后制包装子代理归档**：运行 `prepare-pages` 按顺序复制完整原生 PNG 并生成缩小手机预览。
 
 ## 5. 质检、恢复与交付

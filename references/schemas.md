@@ -1,6 +1,6 @@
 # 项目与数据契约（版本 6）
 
-`project.json` 由 helper 创建和更新，位于各分卷制作子目录中，包含 schema_version（6）、title（书名）、volume（卷名，如“第1卷”）、source、script、reviews、script_lock、art、layout、exports、final_review。书名顶层目录维护全书 `README.md`、`docs/` 模块化介绍文档、集中归档的 `source_texts/` 与切分后的 `split_texts/`。以当前卷为独立制作与锁定单位；其他卷尚未编剧、审查或完成，不阻塞当前卷制作与交付。不要直接更改 source、锁、尝试号或完成记录来放行。编剧时在当前卷状态目录的 `scripts/` 中写完整 script JSON，通过 set-script 导入；报告保存到 `reports/`。统一项目分卷布局见 [commands.md](commands.md)，原文新版本的内部状态目录见 [recovery.md](recovery.md)。仅支持 schema_version=6；其他版本明确拒绝，不提供迁移，也不修改已有旧项目或补历史通过结论。
+`project.json` 由 helper 创建和更新，位于各分卷制作子目录中，包含 schema_version（6）、title（书名）、volume（卷名，如“第1卷”）、source、script、reviews、script_lock、art、layout、exports、final_review。书名顶层目录维护全书 `README.md`、`docs/` 模块化介绍文档、集中归档的 `source_texts/` 与切分后的 `split_texts/`。以当前卷为独立制作与锁定单位；其他卷尚未编剧、审查或完成，不阻塞当前卷制作与交付。不要直接更改 source、锁、尝试号或完成记录来放行。编剧时在当前卷状态目录的 `scripts/` 中写完整 script JSON，通过 set-script 导入；报告保存到 `reports/`。统一项目分卷布局见 [commands.md](commands.md)，原文新版本的内部状态目录见 [recovery.md](recovery.md)。统一采用单一权威标准 schema_version=6。
 
 ## Source
 
@@ -45,7 +45,7 @@ panels 数组就是本卷镜头顺序；pages 按此顺序覆盖每格恰好一�
 ```
 跨卷继承事实与设定时必须使用带命名空间的对象，严禁直接使用前卷短 ID 混入本卷。流水线会校验跨卷项目的 `source_index_hash` 与单元存在性，避免编号碰撞或静默失效。
 
-art_direction 的字段及决策方法见 [art-direction.md](art-direction.md)；模板的默认规范需按本作调整。references 的建议记录为 `{work,url,scope,access,observations,adaptation}`，access=viewed/metadata_only/unavailable；仅在实际看过画页时填写具体观察，不要求为了锁定剧本额外上网。旧单页尺寸、字号或双列规则不保留；通过set-script更新为手机单页约束并正常重审。
+art_direction 的字段及决策方法见 [art-direction.md](art-direction.md)；模板的默认规范需按本作调整。references 的建议记录为 `{work,url,scope,access,observations,adaptation}`，access=viewed/metadata_only/unavailable；仅在实际看过画页时填写具体观察，不要求为了锁定剧本额外上网。严格遵循手机单页约束（1080×2400、单页限定 3–4 格纵排）。
 
 手机单页rows为画格ID数组的数组，例如常规三格 `[["p1"],["p2"],["p3"]]` 或四格 `[["p1"],["p2"],["p3"],["p4"]]`，每行一格占满可用宽度；展平后必须与panel_ids完全一致。单页columns只能为1；每格aspect_ratio在提示词中用于整页内部的格高规划。
 
@@ -151,7 +151,7 @@ comic：drawable_panels/dialogue_and_speakers/reading_order/pacing/text_density�
 
 art仅包含references数组与pages对象，不接受其他生产账本字段。references继续记录真实文件SHA256、角色/形态subjects、用途purpose、设计指纹与基准QA。
 
-art.pages按真实page ID索引尝试数组。每次整页调用记录number、status、render_hash、实际prompt_path/prompt_sha256与at；通过后保存原生完整页path/sha256、qa与settled_at。失败记录真实failure（生图失败可标记generation_failed=true，最多重试六次），可附整页文件。一个页输入最多三次审图调用；同图参考的新登记ID或提示词微调不刷新预算。若累计三次审图未达完全标准，允许兜底择优选择最符合的一张图片并在QA报告中写入defect_explanation解释缺陷后验收放行。pending必须先恢复或结算。
+art.pages按真实page ID索引尝试数组。每次整页调用记录number、status、render_hash、实际prompt_path/prompt_sha256与at；通过后保存原生完整页path/sha256、qa与settled_at。失败记录真实failure（生图失败可标记generation_failed=true，最多重试六次；六次均失败通过placeholder-page自动生成标明失败诊断、保留剧本分镜与对白的1080×2400原生失败占位图并放行），可附整页文件。一个页输入最多三次审图调用；同图参考的新登记ID或提示词微调不刷新预算。若累计三次审图未达完全标准，允许兜底择优选择最符合的一张图片并在QA报告中写入defect_explanation解释缺陷后验收放行。pending必须先恢复或结算。
 
 render_hash绑定本页全部分镜、对白、人物状态、页布局、字号、画风与实际参考语义。只改变一页的内容不会使另一页输入相同的完整PNG失效。页面可指定reference_ids选择已登记基准；缺省按本页角色/形态选择最近的有效参考，不新增独立绑定任务。
 
@@ -166,5 +166,3 @@ render_hash绑定本页全部分镜、对白、人物状态、页布局、字号
 layout保存prepare-pages按顺序复制的完整原生PNG，path、sha256、真实width/height、panel_ids与phone_previews（360/390/430宽预览路径、尺寸与哈希）。复制成品PNG必须与art/pages已验收文件的字节完全一致；图片本身包含页边框、格间距与全部原生气泡，程序不添加漫画内容。
 
 页面报告绑定layout.input_hash与所有reviewed_page_ids，包含LAYOUT_CHECKS和逐页phone_reading_notes；纯画面无字页min_body_css_px可为null，含字页必须提供360宽下实际最小字高数值（字体验收放宽，建议约16 CSS像素，字体大小为软性建议不作为阻断卡点）。exports与final_review继续绑定当前输入和实际文件；每卷独立完成，不等待尚未提供的其他卷。
-
-只支持Schema v6。旧数据明确拒绝，无迁移、别名或兼容操作。
