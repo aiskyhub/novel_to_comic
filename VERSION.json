@@ -3,9 +3,9 @@
   "commit_sha": "91c1409c53233206e123292b122fcc2b5c4350fa",
   "commit_date": "2026-10-08T23:24:00+08:00",
   "commit_author": "小呆呆666",
-  "commit_message": "feat: 放宽子代理模型限制为通用规范，建议选用与主代理一致的模型",
-  "installed_at": "2026-10-09T10:53:00+08:00",
+  "commit_message": "feat: 严令三绘即决铁律，重绘达三次严禁无限重绘或停工，必须择优放行推进下一页",
+  "installed_at": "2026-10-09T13:48:00+08:00",
   "production_mode": "whole-page",
   "schema_version": 6,
-  "local_revision": "2.4.2"
+  "local_revision": "2.4.3"
 }

@@ -177,7 +177,7 @@ def begin_page(root, project, page_id, prompt_path):
     if len(gen_failed) >= 6:
         raise c.GateError('Six image generation retries exhausted; do not keep consuming quota.')
     if len(reviewed) >= 3:
-        raise c.GateError('Three whole-page attempts exhausted; select the best candidate image and explain its defects.')
+        raise c.GateError('Three whole-page attempts exhausted; do not redraw again or halt! Select the best candidate among attempts 1-3, explain its defects in defect_explanation, and call finish-page to proceed.')
     prompt = Path(prompt_path).read_text(encoding='utf-8-sig')
     if not c.nonempty(prompt):
         raise c.GateError('Persist a polished complete-page prompt before generation.')
@@ -306,7 +306,7 @@ def status(root, project):
             if len(gen_failed) >= 6 and page['id'] not in accepted:
                 reasons.append('Six image generation retries exhausted.')
             if len(reviewed) >= 3 and page['id'] not in accepted:
-                reasons.append('Three whole-page attempts exhausted.')
+                reasons.append('Three whole-page attempts exhausted; do not redraw or halt! Select best candidate (attempt 1/2/3) and call finish-page with defect_explanation to proceed.')
         except (c.GateError, OSError, ValueError, KeyError, TypeError, AttributeError) as error:
             reasons = [str(error)]
         page_blockers[page['id']] = reasons
