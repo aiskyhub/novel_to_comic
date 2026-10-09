@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/aiskyhub/novel_to_comic",
-  "commit_sha": "f283754ba62f45704f755ba83e7bf2e8df844c11",
+  "commit_sha": "1cefddaea6fd3bc9bb783650da94d7fa83d4344c",
   "commit_date": "2026-10-09T18:25:00+08:00",
   "commit_author": "小呆呆666",
   "commit_message": "fix: 修复QA门禁提前放行、占位图混入交付及跨卷证据Fail-Open三大P0风险",
