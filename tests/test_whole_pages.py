@@ -241,7 +241,11 @@ class WholePageTests(unittest.TestCase):
         fallback_qa['defect_explanation'] = '经三次审图均未达完全标准，择优选择第2次尝试图片。缺陷说明：背景细节微小偏差，但人物与对白完全准确，予以兜底放行。'
         f.invoke('finish-page', page='page01', attempt=2, file=images[1], qa=f.json_file(fallback_qa))
 
-        self.assertEqual(1, f.invoke('status')['pages_accepted'])
+        st = f.invoke('status')
+        self.assertEqual(0, st['pages_accepted'])
+        self.assertEqual(1, st['pages_flawed'])
+        self.assertEqual(1, st['pages_settled'])
+        self.assertIsNone(st['next_page'])
         f.invoke('prepare-pages')
         self.assertEqual(1, len(cp.project_load(f.root)['layout']['pages']))
 
@@ -256,6 +260,7 @@ class WholePageTests(unittest.TestCase):
         res = self.f.invoke('placeholder-page', page='page01', reason='生图服务器持续无响应，6次重试耗尽', finish=True)
         self.assertTrue(res['ok'])
         self.assertTrue(res['finished'])
+        self.assertEqual('placeholder_pending', res['status'])
         self.assertTrue(Path(res['image']).is_file())
         self.assertTrue(Path(res['qa']).is_file())
 
@@ -265,10 +270,103 @@ class WholePageTests(unittest.TestCase):
             self.assertEqual('PNG', img.format)
 
         st = self.f.invoke('status')
-        self.assertEqual(1, st['pages_accepted'])
+        self.assertEqual(0, st['pages_accepted'])
+        self.assertEqual(1, st['pages_placeholder'])
+        self.assertEqual(1, st['pages_settled'])
         self.assertIsNone(st['next_page'])
         self.f.invoke('prepare-pages')
         self.assertEqual(1, len(cp.project_load(self.f.root)['layout']['pages']))
+
+    def test_flawed_page_cannot_be_finished_before_exhausting_three_attempts(self):
+        self.locked_page()
+        f = self.f
+        image = f.image_file('#112233')
+        r1 = self.begin()
+        raw_qa = cp.load_json(f.page_qa('page01', r1['attempt'], image))
+        raw_qa['checks']['drawing_quality'] = False
+        raw_qa['defect_explanation'] = '第一次生成即尝试使用缺陷说明兜底放行'
+        with self.assertRaisesRegex(cp.GateError, 'Three whole-page attempts must be exhausted before fallback acceptance'):
+            f.invoke('finish-page', page='page01', attempt=r1['attempt'], file=image, qa=f.json_file(raw_qa))
+
+    def test_unresolved_critical_defect_blocks_page_finish(self):
+        self.locked_page()
+        f = self.f
+        image = f.image_file('#112233')
+        r1 = self.begin()
+        raw_qa = cp.load_json(f.page_qa('page01', r1['attempt'], image))
+        raw_qa['findings'] = [{
+            'severity': 'critical',
+            'description': '分镜严重缺格且角色脸部严重坍塌',
+            'resolved': False
+        }]
+        raw_qa['defect_explanation'] = '严重缺陷但希望强行放行'
+        with self.assertRaisesRegex(cp.GateError, 'unresolved critical defect'):
+            f.invoke('finish-page', page='page01', attempt=r1['attempt'], file=image, qa=f.json_file(raw_qa))
+
+    def test_placeholder_page_cannot_be_created_before_exhausting_six_failures(self):
+        self.locked_page()
+        # Only 5 generation failures
+        for number in range(1, 6):
+            self.begin()
+            self.f.invoke('fail-page', page='page01', attempt=number, reason='生图报错超时')
+        with self.assertRaisesRegex(cp.GateError, 'Six image generation retries must be recorded'):
+            self.f.invoke('placeholder-page', page='page01', reason='提前创建占位图')
+
+    def test_delivery_blocked_with_placeholder_unless_explicitly_authorized(self):
+        self.locked_page()
+        for number in range(1, 7):
+            self.begin()
+            self.f.invoke('fail-page', page='page01', attempt=number, reason='生图超时')
+        self.f.invoke('placeholder-page', page='page01', reason='6次生图失败占位', finish=True)
+        self.f.invoke('prepare-pages')
+        self.f.review_and_export()
+
+        # 1. Without allow_placeholders: complete is blocked
+        final_qa = {
+            'input_hash': cp.project_load(self.f.root)['layout']['input_hash'],
+            'checks': {'source_scope': True, 'story_complete': True, 'visual_consistency': True, 'exports_opened': True},
+            'evidence': '全部完成检查'
+        }
+        with self.assertRaisesRegex(cp.GateError, 'Final delivery blocked.*placeholder_pending'):
+            self.f.invoke('complete', file=self.f.json_file(final_qa))
+
+        # 2. With allow_placeholders: complete succeeds
+        authorized_qa = copy.deepcopy(final_qa)
+        authorized_qa['allow_placeholders'] = True
+        res = self.f.invoke('complete', file=self.f.json_file(authorized_qa))
+        self.assertTrue(res['ok'])
+        self.assertTrue(self.f.invoke('status')['complete'])
+
+    def test_delivery_blocked_with_accepted_flawed_unless_explicitly_authorized(self):
+        self.locked_page()
+        f = self.f
+        images = [f.image_file('#112233'), f.image_file('#445566'), f.image_file('#778899')]
+        for i in range(3):
+            r = self.begin()
+            f.invoke('fail-page', page='page01', attempt=r['attempt'], reason=f'瑕疵{i}', file=images[i])
+        fallback_qa = cp.load_json(f.page_qa('page01', 3, images[2]))
+        fallback_qa['checks']['drawing_quality'] = False
+        fallback_qa['defect_explanation'] = '三次耗尽择优放行第3次'
+        f.invoke('finish-page', page='page01', attempt=3, file=images[2], qa=f.json_file(fallback_qa))
+
+        f.invoke('prepare-pages')
+        f.review_and_export()
+
+        # 1. Without allow_flawed: complete is blocked
+        final_qa = {
+            'input_hash': cp.project_load(f.root)['layout']['input_hash'],
+            'checks': {'source_scope': True, 'story_complete': True, 'visual_consistency': True, 'exports_opened': True},
+            'evidence': '最终核验'
+        }
+        with self.assertRaisesRegex(cp.GateError, 'Final delivery blocked.*accepted_flawed'):
+            f.invoke('complete', file=f.json_file(final_qa))
+
+        # 2. With allow_flawed: complete succeeds
+        authorized_qa = copy.deepcopy(final_qa)
+        authorized_qa['allow_flawed'] = True
+        res = f.invoke('complete', file=f.json_file(authorized_qa))
+        self.assertTrue(res['ok'])
+        self.assertTrue(f.invoke('status')['complete'])
 
 
 if __name__ == '__main__':

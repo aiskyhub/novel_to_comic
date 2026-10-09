@@ -1,11 +1,11 @@
 {
   "repository": "https://github.com/aiskyhub/novel_to_comic",
   "commit_sha": "f283754ba62f45704f755ba83e7bf2e8df844c11",
-  "commit_date": "2026-10-09T14:15:00+08:00",
+  "commit_date": "2026-10-09T18:25:00+08:00",
   "commit_author": "小呆呆666",
-  "commit_message": "feat: 增加六次生图失败默认占位图机制，彻底重构删除废弃兼容描述与历史包袱",
-  "installed_at": "2026-10-09T14:15:00+08:00",
+  "commit_message": "fix: 修复QA门禁提前放行、占位图混入交付及跨卷证据Fail-Open三大P0风险",
+  "installed_at": "2026-10-09T18:25:00+08:00",
   "production_mode": "whole-page",
   "schema_version": 6,
-  "local_revision": "2.5.0"
+  "local_revision": "2.6.0"
 }

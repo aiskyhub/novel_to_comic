@@ -151,7 +151,7 @@ comic：drawable_panels/dialogue_and_speakers/reading_order/pacing/text_density�
 
 art仅包含references数组与pages对象，不接受其他生产账本字段。references继续记录真实文件SHA256、角色/形态subjects、用途purpose、设计指纹与基准QA。
 
-art.pages按真实page ID索引尝试数组。每次整页调用记录number、status、render_hash、实际prompt_path/prompt_sha256与at；通过后保存原生完整页path/sha256、qa与settled_at。失败记录真实failure（生图失败可标记generation_failed=true，最多重试六次；六次均失败通过placeholder-page自动生成标明失败诊断、保留剧本分镜与对白的1080×2400原生失败占位图并放行），可附整页文件。一个页输入最多三次审图调用；同图参考的新登记ID或提示词微调不刷新预算。若累计三次审图未达完全标准，允许兜底择优选择最符合的一张图片并在QA报告中写入defect_explanation解释缺陷后验收放行。pending必须先恢复或结算。
+art.pages按真实page ID索引尝试数组。每次整页调用记录number、status（pending/accepted/accepted_flawed/rejected/blocked/placeholder_pending/failed/cancelled/stale）、render_hash、实际prompt_path/prompt_sha256与at；通过后保存原生完整页path/sha256、qa与settled_at。页面状态细分为：合格为 accepted；已满 3 次审图预算且带缺陷兜底暂存为 accepted_flawed（未满 3 次尝试严禁带缺陷放行；含 unresolved critical 缺陷直接标记为 blocked 阻断）；生图失败记录真实failure（生图失败可标记generation_failed=true，最多重试六次；六次均失败耗尽后通过placeholder-page自动生成标明失败诊断、保留剧本分镜与对白的1080×2400原生失败占位图并置为 placeholder_pending 暂存）。已结算页（accepted/accepted_flawed/placeholder_pending）允许生成内部预览包并继续推进下一页，但在 final_review 与 complete 最终交付时，默认严格阻断含占位图或缺陷暂存页面的交付，除非显式提供 --allow-placeholders / --allow-flawed 授权。
 
 render_hash绑定本页全部分镜、对白、人物状态、页布局、字号、画风与实际参考语义。只改变一页的内容不会使另一页输入相同的完整PNG失效。页面可指定reference_ids选择已登记基准；缺省按本页角色/形态选择最近的有效参考，不新增独立绑定任务。
 
@@ -161,7 +161,7 @@ render_hash绑定本页全部分镜、对白、人物状态、页布局、字号
 {"page_id":"page01","attempt":1,"render_hash":"本页真实输入指纹"}
 ```
 
-正文报告只有一份整页报告：checks包含PAGE_DRAWING_CHECKS与LAYOUT_CHECKS全部项目，reviewed_ids按本页panel_ids顺序列全，reviewed_page_ids只包含本页；image_sha256与attempt_binding须精确匹配。evidence、detail_notes、elegance_notes、findings、defect_explanation（三次审图未达标时的兜底缺陷解释）与phone_reading_notes记录真实观察；不自动生成通过结论。页内每个镜头在同一整页原图中人工核对，不产生独立镜头文件或独立尝试账本。
+正文报告只有一份整页报告：checks包含PAGE_DRAWING_CHECKS与LAYOUT_CHECKS全部项目，reviewed_ids按本页panel_ids顺序列全，reviewed_page_ids只包含本页；image_sha256与attempt_binding须精确匹配。evidence、detail_notes、elegance_notes、findings、defect_explanation（已满三次审图预算未达标时的兜底缺陷解释，未满三次禁止利用此字段放行缺陷）与phone_reading_notes记录真实观察；不自动生成通过结论。页内每个镜头在同一整页原图中人工核对，不产生独立镜头文件或独立尝试账本。
 
 layout保存prepare-pages按顺序复制的完整原生PNG，path、sha256、真实width/height、panel_ids与phone_previews（360/390/430宽预览路径、尺寸与哈希）。复制成品PNG必须与art/pages已验收文件的字节完全一致；图片本身包含页边框、格间距与全部原生气泡，程序不添加漫画内容。
 

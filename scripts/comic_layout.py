@@ -74,11 +74,11 @@ def _atomic_bytes(path,data):
 
 
 def layout_fingerprint(root,project):
-    from comic_pages import accepted_page
+    from comic_pages import settled_page
     c=core()
     images=[]
     for page in project['script']['pages']:
-        attempt=accepted_page(root,project,page)
+        attempt=settled_page(root,project,page)
         if attempt is None:
             raise c.GateError('Missing/stale/unreviewed whole page: '+page['id'])
         images.append((page['id'],attempt['sha256']))
@@ -87,12 +87,12 @@ def layout_fingerprint(root,project):
 
 def prepare_pages(root,project):
     from PIL import Image
-    from comic_pages import accepted_page,check_page_image
+    from comic_pages import settled_page,check_page_image
     c=core()
     fingerprint=layout_fingerprint(root,project)
     pages=[]
     for order,page in enumerate(project['script']['pages'],1):
-        attempt=accepted_page(root,project,page)
+        attempt=settled_page(root,project,page)
         source=c.inside(root,attempt['path'])
         width,height=check_page_image(source)
         relative=f'pages/{order:06d}-{page["id"]}-{attempt["sha256"][:12]}.png'
@@ -116,7 +116,8 @@ def prepare_pages(root,project):
                 _atomic_bytes(path,data)
                 previews.append({'width':preview_width,'height':preview_height,'path':preview_relative,'sha256':hashlib_bytes(data)})
         pages.append({'id':page['id'],'order':order,'chapter_id':page['chapter_id'],'panel_ids':page['panel_ids'],
-                      'path':relative,'sha256':attempt['sha256'],'width':width,'height':height,'phone_previews':previews})
+                      'path':relative,'sha256':attempt['sha256'],'width':width,'height':height,'phone_previews':previews,
+                      'status':attempt.get('status','accepted')})
     return {'input_hash':fingerprint,'pages':pages,'qa':None}
 
 
@@ -320,7 +321,18 @@ def verify_exports(root,project):
         for name, page in zip(names, layout['pages']):
             if hashlib_bytes(archive.read(name)) != page['sha256']:
                 raise c.GateError('CBZ image differs from the reviewed page.')
-    return {'ok': True, 'page_count': pdf_pages, 'formats': ['png', 'reader', 'pdf', 'cbz']}
+    placeholder_pages = [p['id'] for p in layout['pages'] if p.get('status') == 'placeholder_pending']
+    flawed_pages = [p['id'] for p in layout['pages'] if p.get('status') == 'accepted_flawed']
+    return {
+        'ok': True,
+        'page_count': pdf_pages,
+        'formats': ['png', 'reader', 'pdf', 'cbz'],
+        'has_placeholders': bool(placeholder_pages),
+        'placeholder_pages': placeholder_pages,
+        'has_flawed': bool(flawed_pages),
+        'flawed_pages': flawed_pages,
+        'delivery_ready': not bool(placeholder_pages or flawed_pages)
+    }
 
 
 def hashlib_bytes(data):

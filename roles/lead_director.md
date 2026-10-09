@@ -66,12 +66,12 @@
    - 运行 `begin-page --page <page_id> --prompt <file>` 登记调用；
    - 调度**画面渲染执行员子代理**调用绘图工具一次性输出 1080×2400 原生整页 PNG（**若生图失败，执行员可重试六次**；若仍失败则运行 `fail-page --generation-failure` 记录异常）；
    - 调度**画面与排版品控员子代理**核验（可运行 `preview-page` 生成手机视口预览，运行 `qa-inputs` 提取机械参数），出具真实整页 QA 报告（放宽字体验收，字体大小仅为建议不作为卡点）；
-   - 若前 1、2 次审图合格，运行 `finish-page` 入库；若不合格且未达三次审图，运行 `fail-page` 派单返修；
-   - **【三绘即决铁律：严禁无限重绘，严禁中途停工】**：单页最多尝试 3 次出图与审图。**重绘达 3 次后，无论画面是否完美，绝对禁止再发起第 4 次重绘（绝对禁止再次调用 begin-page），也绝对禁止停止流水线、中断等待或向用户挂起请示！** 总导演必须立即指令品控员从前 3 次历史尝试中**直接对比挑选一张最合适、缺陷最轻微的图片**，并在 QA 报告中写明缺陷说明（`defect_explanation`）；总导演立即执行 `finish-page` 兜底放行入库，并**直接无缝推进下一页生产**！
-   - **【六次生图报错兜底铁律：默认失败占位图，严禁中断死锁】**：若遇生图接口报错、网络异常或无法出图，允许重试最多 6 次（通过 `fail-page ... --generation-failure` 记录）。**若 6 次重试全部失败无法出图，绝对禁止死锁或停滞！** 立即执行 `placeholder-page --project <dir> --page <page_id> --reason "<failure_reason>" --finish` 自动生成标明失败诊断、保留剧本分镜剧情与台词的 1080×2400 原生失败占位图，自动出具放行 QA 报告验收入库，并**直接无缝推进下一页生产**！
+   - 若前 1、2 次审图合格，运行 `finish-page` 入库（标记为 `accepted`）；若不合格且未达三次审图，运行 `fail-page` 派单返修（前两次审图机械门禁严禁带缺陷通过）；
+   - **【三绘即决铁律：严禁无限重绘，严禁中途停工】**：单页最多尝试 3 次出图与审图。**重绘达 3 次后，无论画面是否完美，绝对禁止再发起第 4 次重绘（绝对禁止再次调用 begin-page），也绝对禁止停止流水线、中断等待或向用户挂起请示！** 总导演必须立即指令品控员从前 3 次历史尝试中**直接对比挑选一张最合适、缺陷最轻微的图片**，并在 QA 报告中写明缺陷说明（`defect_explanation`）；总导演立即执行 `finish-page` 兜底暂存入库为 `accepted_flawed` 状态（若含未解决 critical 严重缺陷则标记为 `blocked` 阻断），并**直接无缝推进下一页生产**！
+   - **【六次生图报错兜底铁律：默认失败占位图，严禁中断死锁】**：若遇生图接口报错、网络异常或无法出图，允许重试最多 6 次（通过 `fail-page ... --generation-failure` 记录）。**若 6 次重试全部失败无法出图，绝对禁止死锁或停滞！** 立即执行 `placeholder-page --project <dir> --page <page_id> --reason "<failure_reason>" --finish` 自动生成标明失败诊断、保留剧本分镜剧情与台词的 1080×2400 原生失败占位图，暂存为 `placeholder_pending` 状态，并**直接无缝推进下一页生产**！
 
 ### 阶段 6：排版审阅与交付
-1. 调度**后制包装子代理**运行 `prepare-pages` 归档与生成全卷手机预览；
+1. 调度**后制包装子代理**运行 `prepare-pages` 归档与生成全卷手机预览（支持 `accepted`、`accepted_flawed`、`placeholder_pending` 已结算页面）；
 2. 填写排版审阅报告后运行 `review-layout`；
 3. 运行 `export` 导出 HTML/PDF/CBZ，运行 `verify-export` 校验交付完整性；
-4. 运行 `complete` 记录最终验收。
+4. 运行 `complete` 记录最终验收。**交付门禁拦截**：若全卷包含 `placeholder_pending` 或 `accepted_flawed` 页面，默认严格禁止交付；正式交付需重绘补全或由用户显式传入 `--allow-placeholders` / `--allow-flawed` 授权。

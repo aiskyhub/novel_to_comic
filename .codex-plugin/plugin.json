@@ -1,6 +1,6 @@
 {
   "name": "novel-to-comic",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "Faithful novel adaptation with polished whole-page prompts, one image call per page and native phone-reading pages.",
   "author": {
     "name": "xdd666t"

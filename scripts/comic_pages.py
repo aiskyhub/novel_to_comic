@@ -95,12 +95,12 @@ def validate_page_qa(project, page, attempt, report, sha):
         raise c.GateError('A page with lettering must report its measured minimum body text size.')
 
 
-def accepted_page(root, project, page):
+def settled_page(root, project, page, statuses=('accepted', 'accepted_flawed', 'placeholder_pending')):
     c = core()
     try:
         current = page_hash(root, project, page)
         for attempt in reversed(project['art']['pages'].get(page['id'], [])):
-            if attempt.get('status') != 'accepted' or attempt.get('render_hash') != current:
+            if attempt.get('status') not in statuses or attempt.get('render_hash') != current:
                 continue
             path = c.inside(root, attempt['path'])
             prompt = c.inside(root, attempt['prompt_path'])
@@ -112,6 +112,18 @@ def accepted_page(root, project, page):
     except (c.GateError, OSError, ValueError, KeyError, TypeError, AttributeError):
         pass
     return None
+
+
+def accepted_page(root, project, page):
+    return settled_page(root, project, page, statuses=('accepted',))
+
+
+def accepted_flawed_page(root, project, page):
+    return settled_page(root, project, page, statuses=('accepted_flawed',))
+
+
+def placeholder_pending_page(root, project, page):
+    return settled_page(root, project, page, statuses=('placeholder_pending',))
 
 
 def build_page_prompt(root, project, page_id, notes=''):
@@ -166,9 +178,9 @@ def begin_page(root, project, page_id, prompt_path):
     c = core()
     c.assert_script_lock(project, root)
     page = page_by_id(project, page_id)
-    accepted = accepted_page(root, project, page)
-    if accepted:
-        return {'generation_required': False, 'page_id': page_id, 'path': str(c.inside(root, accepted['path']))}
+    settled = settled_page(root, project, page)
+    if settled:
+        return {'generation_required': False, 'page_id': page_id, 'status': settled['status'], 'path': str(c.inside(root, settled['path']))}
     attempts = project['art']['pages'].setdefault(page_id, [])
     if any(a['status'] == 'pending' for a in attempts):
         raise c.GateError('This page has an unfinished attempt; resume it instead of generating again.')
@@ -256,16 +268,38 @@ def finish_page(root, project, page_id, number, file, qa_file):
     attempt = pending_or_selectable(project, page_id, number)
     report = c.load_json(qa_file)
     validate_page_qa(project, page, attempt, report, inputs['image_sha256'])
+
+    if c.has_unresolved_critical(report) and not report.get('is_placeholder'):
+        attempt.update(status='blocked', failure='Unresolved critical defect in QA report.')
+        c.save(root, project)
+        raise c.GateError(f'Page {page_id} attempt {number} has unresolved critical defects (status: blocked). Delivery prohibited.')
+
+    is_flawed = c.is_qa_flawed(report, c.PAGE_ART_CHECKS)
+    if is_flawed:
+        fingerprint = page_hash(root, project, page)
+        attempts = project['art']['pages'].get(page_id, [])
+        relevant = [a for a in attempts if a.get('render_hash') == fingerprint]
+        reviewed = [a for a in relevant if not a.get('generation_failed')]
+        if len(reviewed) < 3:
+            raise c.GateError(
+                f'Cannot finish flawed page on attempt {number}: only {len(reviewed)}/3 reviewed attempts recorded. '
+                'Three whole-page attempts must be exhausted before fallback acceptance (accepted_flawed) is allowed. '
+                'Use fail-page to record defects and retry.'
+            )
+        status_value = 'accepted_flawed'
+    else:
+        status_value = 'accepted'
+
     path, sha = c.copy_image(root, file, 'pages')
     if sha != inputs['image_sha256']:
         raise c.GateError('Page changed while being archived; review again.')
     for a in project['art']['pages'].get(page_id, []):
         if a['number'] != number and a.get('status') == 'pending':
             a.update(status='cancelled', failure=f'Superseded by selection of attempt {number}', settled_at=c.now())
-    attempt.update(status='accepted', path=path, sha256=sha, qa=report, settled_at=c.now())
+    attempt.update(status=status_value, path=path, sha256=sha, qa=report, settled_at=c.now())
     project['layout'], project['exports'], project['final_review'] = None, None, None
     c.save(root, project)
-    return {'ok': True, 'page_id': page_id, 'path': str(c.inside(root,path))}
+    return {'ok': True, 'page_id': page_id, 'status': status_value, 'path': str(c.inside(root, path))}
 
 
 def fail_page(root, project, page_id, number, reason, outcome='failed', file=None, generation_failure=False):
@@ -293,10 +327,20 @@ def status(root, project):
         locked, blockers = False, str(error).splitlines()
     pages = project['script'].get('pages', [])
     pages = [p for p in pages if isinstance(p,dict) and c.nonempty(p.get('id'))] if isinstance(pages,list) else []
-    accepted, records, page_blockers = [], [], {}
+    accepted, flawed, placeholders, settled_ids, records, page_blockers = [], [], [], [], [], {}
     for page in pages:
-        if accepted_page(root, project, page):
+        att_acc = accepted_page(root, project, page)
+        att_flawed = accepted_flawed_page(root, project, page)
+        att_placeholder = placeholder_pending_page(root, project, page)
+        if att_acc:
             accepted.append(page['id'])
+            settled_ids.append(page['id'])
+        elif att_flawed:
+            flawed.append(page['id'])
+            settled_ids.append(page['id'])
+        elif att_placeholder:
+            placeholders.append(page['id'])
+            settled_ids.append(page['id'])
         attempts = project['art']['pages'].get(page['id'], [])
         records.extend({'page_id': page['id'], **a} for a in attempts)
         try:
@@ -306,9 +350,9 @@ def status(root, project):
                 reasons.append('Pending page attempt; resume it.')
             gen_failed = [a for a in attempts if a['render_hash'] == fingerprint and a.get('generation_failed')]
             reviewed = [a for a in attempts if a['render_hash'] == fingerprint and not a.get('generation_failed')]
-            if len(gen_failed) >= 6 and page['id'] not in accepted:
+            if len(gen_failed) >= 6 and page['id'] not in settled_ids:
                 reasons.append('Six image generation retries exhausted; generate failure placeholder image via placeholder-page and finish to proceed. Do not halt.')
-            if len(reviewed) >= 3 and page['id'] not in accepted:
+            if len(reviewed) >= 3 and page['id'] not in settled_ids:
                 reasons.append('Three whole-page attempts exhausted; do not redraw or halt! Select best candidate (attempt 1/2/3) and call finish-page with defect_explanation to proceed.')
         except (c.GateError, OSError, ValueError, KeyError, TypeError, AttributeError) as error:
             reasons = [str(error)]
@@ -320,15 +364,24 @@ def status(root, project):
             verify_exports(root, project)
             complete = project['final_review']['input_hash'] == project['layout']['input_hash']
             c.validate_qa(project['final_review'], ['source_scope','story_complete','visual_consistency','exports_opened'])
+            layout_pages = project.get('layout', {}).get('pages', [])
+            allow_ph = project['final_review'].get('allow_placeholders') is True or project['final_review'].get('accept_placeholders') is True
+            allow_fl = project['final_review'].get('allow_flawed') is True or project['final_review'].get('accept_flawed') is True
+            if any(p.get('status') == 'placeholder_pending' for p in layout_pages) and not allow_ph:
+                complete = False
+            if any(p.get('status') == 'accepted_flawed' for p in layout_pages) and not allow_fl:
+                complete = False
         except (c.GateError, OSError, ValueError, KeyError, TypeError):
             complete = False
     return {'complete': complete, 'title': project['title'], 'volume': project.get('volume'),
             'script_locked': locked, 'script_hash': c.digest(project['script']), 'blockers': blockers,
             'pages_planned': len(pages), 'pages_accepted': len(accepted),
-            'next_page': next((p['id'] for p in pages if p['id'] not in accepted),None),
+            'pages_flawed': len(flawed), 'pages_placeholder': len(placeholders),
+            'pages_settled': len(settled_ids),
+            'next_page': next((p['id'] for p in pages if p['id'] not in settled_ids),None),
             'page_blockers': page_blockers, 'attempts': records, 'exports': project.get('exports'),
             'external_source_warnings': c.external_source_warnings(project),
-            'preflight_counts': {'planned_generation_calls': sum(p['id'] not in accepted and locked and not page_blockers[p['id']] for p in pages),
+            'preflight_counts': {'planned_generation_calls': sum(p['id'] not in settled_ids and locked and not page_blockers[p['id']] for p in pages),
                                  'attempts_recorded': len(records), 'pending_attempts': sum(a['status']=='pending' for a in records),
                                  'max_attempts_per_page_input': 3,
                                  'max_generation_retries': 6}}
@@ -485,6 +538,13 @@ def create_placeholder_page(root, project, page_id, reason, output=None, qa_outp
 
     attempts = project['art']['pages'].setdefault(page_id, [])
     fingerprint = page_hash(root, project, page)
+    relevant = [a for a in attempts if a.get('render_hash') == fingerprint]
+    gen_failed = [a for a in relevant if a.get('generation_failed')]
+    if len(gen_failed) < 6:
+        raise c.GateError(
+            f'Cannot create failure placeholder page for {page_id}: only {len(gen_failed)}/6 generation retries recorded. '
+            'Six image generation retries must be recorded before creating a placeholder page.'
+        )
 
     target_attempt = None
     if attempts:
@@ -520,6 +580,7 @@ def create_placeholder_page(root, project, page_id, reason, output=None, qa_outp
 
     qa_report = {
         'scope': 'page',
+        'is_placeholder': True,
         'page_id': page_id,
         'reviewed_page_ids': [page_id],
         'reviewed_ids': page['panel_ids'],
@@ -561,19 +622,35 @@ def create_placeholder_page(root, project, page_id, reason, output=None, qa_outp
     qa_path.write_text(json.dumps(qa_report, ensure_ascii=False, indent=2), encoding='utf-8')
 
     if finish:
-        res = finish_page(root, project, page_id, target_attempt['number'], str(img_path), str(qa_path))
+        path, sha = c.copy_image(root, str(img_path), 'pages')
+        for a in attempts:
+            if a['number'] != target_attempt['number'] and a.get('status') == 'pending':
+                a.update(status='cancelled', failure=f'Superseded by placeholder attempt {target_attempt["number"]}', settled_at=c.now())
+        target_attempt.update(
+            status='placeholder_pending',
+            path=path,
+            sha256=sha,
+            qa=qa_report,
+            settled_at=c.now(),
+            is_placeholder=True,
+            placeholder_reason=reason
+        )
+        project['layout'], project['exports'], project['final_review'] = None, None, None
+        c.save(root, project)
         return {
             'ok': True,
             'page_id': page_id,
+            'status': 'placeholder_pending',
             'image': str(img_path),
             'qa': str(qa_path),
             'finished': True,
-            'path': res.get('path'),
+            'path': str(c.inside(root, path)),
             'attempt': target_attempt['number']
         }
     return {
         'ok': True,
         'page_id': page_id,
+        'status': 'placeholder_pending',
         'image': str(img_path),
         'qa': str(qa_path),
         'finished': False,

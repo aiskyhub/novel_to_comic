@@ -143,25 +143,40 @@ def is_script_lock_valid(project, root=None):
     return True, []
 
 
+class UnitRefStatus(str):
+    def __bool__(self):
+        return self == 'verified'
+
+    def __eq__(self, other):
+        if isinstance(other, bool):
+            return bool(self) is other
+        return super().__eq__(other)
+
+
+VERIFIED = UnitRefStatus('verified')
+UNVERIFIED = UnitRefStatus('unverified')
+INVALID = UnitRefStatus('invalid')
+
+
 def validate_unit_ref(ref, units, root=None, project=None):
     if isinstance(ref, str):
         if nonempty(ref) and ref in units:
-            return True, None
-        return False, f'unknown unit ID: {ref}'
+            return VERIFIED, None
+        return INVALID, f'unknown unit ID: {ref}'
     if isinstance(ref, dict):
         vol_id = ref.get('volume_id')
         src_hash = ref.get('source_index_hash')
         uid = ref.get('unit_id')
         if not nonempty(vol_id) or not nonempty(src_hash) or not nonempty(uid):
-            return False, 'cross-volume reference requires volume_id, source_index_hash, and unit_id.'
+            return INVALID, 'cross-volume reference requires volume_id, source_index_hash, and unit_id.'
         if project:
             curr_vol = project.get('volume') or ''
             if vol_id == curr_vol or vol_id == project.get('title'):
                 if src_hash != project.get('source_index_hash'):
-                    return False, f'cross-volume source_index_hash mismatch for current volume {vol_id}.'
+                    return INVALID, f'cross-volume source_index_hash mismatch for current volume {vol_id}.'
                 if uid not in units:
-                    return False, f'cross-volume unit {uid} not in current volume {vol_id}.'
-                return True, None
+                    return INVALID, f'cross-volume unit {uid} not in current volume {vol_id}.'
+                return VERIFIED, None
         if root is not None:
             other_dir = Path(root).parent / vol_id
             other_proj_file = other_dir / 'project.json'
@@ -169,15 +184,17 @@ def validate_unit_ref(ref, units, root=None, project=None):
                 try:
                     other_proj = load_json(other_proj_file)
                     if other_proj.get('source_index_hash') != src_hash:
-                        return False, f'cross-volume source_index_hash mismatch for {vol_id}.'
+                        return INVALID, f'cross-volume source_index_hash mismatch for {vol_id}.'
                     other_units = {u.get('id') for u in other_proj.get('source', {}).get('units', []) if isinstance(u, dict)}
                     if uid not in other_units:
-                        return False, f'unit {uid} not found in volume {vol_id}.'
-                    return True, None
+                        return INVALID, f'unit {uid} not found in volume {vol_id}.'
+                    return VERIFIED, None
                 except Exception as e:
-                    return False, f'unable to read cross-volume project {vol_id}: {e}'
-        return True, None
-    return False, 'expected unit ID string or cross-volume reference object.'
+                    return INVALID, f'unable to read cross-volume project {vol_id}: {e}'
+            else:
+                return UNVERIFIED, f'cross-volume reference to {vol_id} ({uid}) is unverified: target volume project not found at {other_proj_file}'
+        return UNVERIFIED, f'cross-volume reference {vol_id}:{uid} unverified: project root not provided.'
+    return INVALID, 'expected unit ID string or cross-volume reference object.'
 
 
 def atomic_json(path, value):
@@ -485,10 +502,17 @@ def script_errors(project, root=None):
                 errors.append(f'{base}.source_facts[{index}]: text and valid source evidence required.')
             else:
                 for uid in fact_units:
-                    ok_unit, err_unit = validate_unit_ref(uid, units, root, project)
-                    if not ok_unit:
+                    status_unit, err_unit = validate_unit_ref(uid, units, root, project)
+                    if status_unit == INVALID:
                         errors.append(f'{base}.source_facts[{index}]: {err_unit}')
                         break
+                    elif status_unit == UNVERIFIED:
+                        if fact.get('status') != 'unverified':
+                            errors.append(
+                                f'{base}.source_facts[{index}]: {err_unit} '
+                                '(unverified cross-volume reference cannot masquerade as verified fact; set status="unverified" on this source_fact to archive as unverified background).'
+                            )
+                            break
 
     # Characters that readers are expected to distinguish need explicit, evidence-backed comparisons.
     required_pairs = set()
@@ -526,9 +550,9 @@ def script_errors(project, root=None):
             errors.append(f'script.events[{eid}]: description and valid source evidence required.')
         else:
             for uid in evidence:
-                ok_unit, err_unit = validate_unit_ref(uid, units, root, project)
-                if not ok_unit:
-                    errors.append(f'script.events[{eid}]: {err_unit}')
+                status_unit, err_unit = validate_unit_ref(uid, units, root, project)
+                if status_unit != VERIFIED:
+                    errors.append(f'script.events[{eid}]: {err_unit or "event evidence must be verified."}')
                     break
         role = event.get('narrative_role')
         if role is not None and role not in VALID_NARRATIVE_ROLES:
@@ -595,9 +619,9 @@ def script_errors(project, root=None):
             source_ids = []
         else:
             for uid in source_ids:
-                ok_unit, err_unit = validate_unit_ref(uid, units, root, project)
-                if not ok_unit:
-                    errors.append(f'script.panels[{pid}].source_unit_ids: {err_unit}')
+                status_unit, err_unit = validate_unit_ref(uid, units, root, project)
+                if status_unit != VERIFIED:
+                    errors.append(f'script.panels[{pid}].source_unit_ids: {err_unit or "panel evidence must be verified."}')
                     break
                 if isinstance(uid, str):
                     covered.add(uid)
@@ -818,9 +842,12 @@ def validate_qa(report, required, scope=None):
             if (not isinstance(finding, dict) or finding.get('severity') not in ('critical', 'major', 'minor', 'info') or
                     not nonempty(finding.get('description')) or type(finding.get('resolved')) is not bool):
                 raise GateError(f'QA findings[{index}] needs severity, description, and resolved fields.')
-            if finding.get('severity') in ('critical', 'major') and not finding.get('resolved'):
+            if finding.get('severity') == 'critical' and not finding.get('resolved'):
+                if not report.get('is_placeholder'):
+                    raise GateError(f'QA findings[{index}] has an unresolved critical defect: {finding.get("description")}. Critical defects block acceptance and cannot be bypassed with defect_explanation.')
+            elif finding.get('severity') == 'major' and not finding.get('resolved'):
                 if not has_defect_explanation:
-                    raise GateError(f'QA findings[{index}] has an unresolved critical/major defect.')
+                    raise GateError(f'QA findings[{index}] has an unresolved major defect.')
     if scope == 'reference':
         comparisons = report.get('comparisons')
         if not isinstance(comparisons, list):
@@ -833,6 +860,28 @@ def validate_qa(report, required, scope=None):
                 raise GateError(f'reference QA comparisons[{index}] must identify two compared characters.')
             if not nonempty(pair.get('evidence', pair.get('finding', ''))):
                 raise GateError(f'reference QA comparisons[{index}] requires a concrete comparison finding.')
+
+
+def is_qa_flawed(report, required):
+    if not isinstance(report, dict):
+        return True
+    checks = report.get('checks', {})
+    if not isinstance(checks, dict) or any(checks.get(key) is not True for key in required):
+        return True
+    findings = report.get('findings', [])
+    if isinstance(findings, list):
+        if any(isinstance(f, dict) and f.get('severity') in ('critical', 'major') and not f.get('resolved') for f in findings):
+            return True
+    return False
+
+
+def has_unresolved_critical(report):
+    if not isinstance(report, dict):
+        return False
+    findings = report.get('findings', [])
+    if isinstance(findings, list):
+        return any(isinstance(f, dict) and f.get('severity') == 'critical' and not f.get('resolved') for f in findings)
+    return False
 
 
 def validate_reference_qa(report, character_ids, image_sha256, reference_visual_key):
@@ -1253,6 +1302,12 @@ def validate_stage_review(report, root=None, project=None):
     return True
 
 
+VALID_PAGE_STATUSES = (
+    'pending', 'accepted', 'accepted_flawed', 'rejected',
+    'blocked', 'placeholder_pending', 'failed', 'cancelled', 'stale'
+)
+
+
 def art_structure_errors(project):
     art=project.get('art')
     if not isinstance(art,dict) or set(art)!={'references','pages'}:
@@ -1269,7 +1324,7 @@ def art_structure_errors(project):
                 continue
             for a in attempts:
                 if (not isinstance(a,dict) or type(a.get('number')) is not int or
-                    a.get('status') not in ('pending','accepted','failed','cancelled','stale') or not nonempty(a.get('render_hash'))):
+                    a.get('status') not in VALID_PAGE_STATUSES or not nonempty(a.get('render_hash'))):
                     errors.append('art.pages: malformed whole-page attempt.')
     return errors
 
@@ -1570,6 +1625,15 @@ def external_source_warnings(project):
             warnings.append('External original is unavailable; the project archive remains the production source: ' + str(path))
         elif sha_file(path) != item.get('sha256'):
             warnings.append('External original changed; review/re-extract before replacing archived source: ' + str(path))
+    characters = project.get('script', {}).get('characters', [])
+    if isinstance(characters, list):
+        for char in characters:
+            if isinstance(char, dict):
+                for idx, fact in enumerate(char.get('source_facts', [])):
+                    if isinstance(fact, dict) and fact.get('status') == 'unverified':
+                        warnings.append(
+                            f"Character '{char.get('id', 'unknown')}' source_fact[{idx}] contains unverified cross-volume background: {fact.get('text', '')}"
+                        )
     return warnings
 
 
@@ -2706,6 +2770,21 @@ def run(args):
                     validate_qa(report, ['source_scope', 'story_complete', 'visual_consistency', 'exports_opened'])
                     if report.get('input_hash') != fingerprint:
                         raise GateError('Final review must bind current deliverable inputs.')
+                    layout_pages = layout.get('pages', [])
+                    allow_placeholders = getattr(args, 'allow_placeholders', False) or report.get('allow_placeholders') is True or report.get('accept_placeholders') is True
+                    allow_flawed = getattr(args, 'allow_flawed', False) or report.get('allow_flawed') is True or report.get('accept_flawed') is True
+                    placeholder_pids = [p['id'] for p in layout_pages if p.get('status') == 'placeholder_pending']
+                    if placeholder_pids and not allow_placeholders:
+                        raise GateError(
+                            f'Final delivery blocked: page(s) {placeholder_pids} are placeholder_pending. '
+                            'Formal delivery requires full artwork completion or explicit authorization via allow_placeholders in final_review report.'
+                        )
+                    flawed_pids = [p['id'] for p in layout_pages if p.get('status') == 'accepted_flawed']
+                    if flawed_pids and not allow_flawed:
+                        raise GateError(
+                            f'Final delivery blocked: page(s) {flawed_pids} are accepted_flawed. '
+                            'Formal delivery requires redraw repair or explicit authorization via allow_flawed in final_review report.'
+                        )
                     project['final_review'] = {**report, 'verification': verification, 'at': now()}
     elif command in ('status','preflight'):
         from comic_pages import status
@@ -2822,10 +2901,13 @@ def parser():
             sub.add_argument('--attempt',type=int,required=True)
         if name == 'begin-page':
             sub.add_argument('--prompt',required=True)
+        if name == 'complete':
+            sub.add_argument('--allow-placeholders', action='store_true', help='Explicitly authorize delivery with placeholder pages')
+            sub.add_argument('--allow-flawed', action='store_true', help='Explicitly authorize delivery with accepted_flawed pages')
         if name == 'fail-page':
             sub.add_argument('--file',help='Archive an actual failed whole-page output')
             sub.add_argument('--reason',required=True)
-            sub.add_argument('--outcome',choices=('failed','cancelled','stale'),default='failed')
+            sub.add_argument('--outcome',choices=('failed','rejected','blocked','cancelled','stale'),default='failed')
             sub.add_argument('--generation-failure', action='store_true', help='Mark as render generation failure (allows up to 6 retries)')
     return p
 

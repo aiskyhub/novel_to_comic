@@ -224,7 +224,50 @@ class VolumePipelineTests(unittest.TestCase):
         bad_ref = {'volume_id': '跨卷测试', 'source_index_hash': 'wrong_hash', 'unit_id': 'u0000001'}
         valid3, err3 = cp.validate_unit_ref(bad_ref, known_units, root=vol_dir, project=proj)
         self.assertFalse(valid3)
+        self.assertEqual(cp.INVALID, valid3)
         self.assertIn('mismatch', err3)
+
+        # 4. Cross-volume reference when target volume does not exist -> UNVERIFIED (fail-closed, not fail-open)
+        missing_vol_ref = {'volume_id': '未导入的第2卷', 'source_index_hash': '0'*64, 'unit_id': 'u0000018'}
+        status4, err4 = cp.validate_unit_ref(missing_vol_ref, known_units, root=vol_dir, project=proj)
+        self.assertEqual(cp.UNVERIFIED, status4)
+        self.assertFalse(status4)
+        self.assertIn('unverified', err4)
+
+        # 5. Key plot events and panels cannot use unverified refs
+        script = proj['script']
+        script['events'].append({
+            'id': 'e01',
+            'description': '跨卷关键事件',
+            'source_unit_ids': [missing_vol_ref]
+        })
+        errs = cp.script_errors(proj, root=vol_dir)
+        self.assertTrue(any('script.events[e01]' in e and 'unverified' in e for e in errs))
+
+        # 6. Character source facts with unverified ref must be flagged with status='unverified' to archive
+        script['characters'].append({
+            'id': 'c01',
+            'name': '主角',
+            'importance': 'major',
+            'design_tier': 'lead',
+            'design_notes': [],
+            'source_facts': [{
+                'text': '未核验的第2卷背景设定',
+                'source_unit_ids': [missing_vol_ref]
+            }]
+        })
+        errs2 = cp.script_errors(proj, root=vol_dir)
+        self.assertTrue(any('unverified cross-volume reference cannot masquerade as verified fact' in e for e in errs2))
+
+        # When explicitly marked with status='unverified', it can be archived as background
+        script['characters'][0]['source_facts'][0]['status'] = 'unverified'
+        # Remove invalid event to test character background archiving
+        script['events'] = [e for e in script['events'] if e.get('id') != 'e01']
+        errs3 = cp.script_errors(proj, root=vol_dir)
+        self.assertFalse(any('cannot masquerade' in e for e in errs3))
+        # And it surfaces in external_source_warnings
+        warnings = cp.external_source_warnings(proj)
+        self.assertTrue(any('unverified cross-volume background' in w for w in warnings))
 
     def test_doctor_and_preflight_typeset_cli(self):
         """doctor and preflight-typeset run cleanly and report diagnostic info."""

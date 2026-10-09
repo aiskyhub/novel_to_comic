@@ -41,15 +41,15 @@ init-book默认复制原稿并核验SHA256；只有用户明确--action move时�
 | preview-page | --page [--file] | 验收前为待审验整页生成 360/390/430px 手机预览（不改变原图） |
 | begin-page | --page --prompt | 登记一次整页调用；返回实际提示词、参考路径与尝试号 |
 | qa-inputs | --page --attempt --file | 读取整页哈希/尝试绑定；不自动生成通过报告 |
-| finish-page | --page --attempt --file --qa | 整页验收，归档原始PNG字节 |
-| fail-page | --page --attempt --reason [--file] [--outcome failed/cancelled/stale] [--generation-failure] | 保存本次整页失败与原因（生图失败可标记--generation-failure，最多重试六次） |
-| placeholder-page | --page --reason [--output] [--qa-output] [--finish] | 6次生图失败耗尽时生成标明失败原因的默认失败占位图（含原剧本保留分镜与对白）；可加--finish直接放行推进流程 |
+| finish-page | --page --attempt --file --qa | 整页验收，归档原始PNG字节（无缺陷为accepted；累计尝试已满3次且带可控缺陷则兜底暂存为accepted_flawed；未满3次尝试严禁带缺陷放行；含未解决critical严重缺陷则标记为blocked阻断） |
+| fail-page | --page --attempt --reason [--file] [--outcome failed/cancelled/stale/rejected/blocked] [--generation-failure] | 保存本次整页失败与原因（生图失败可标记--generation-failure，最多重试六次） |
+| placeholder-page | --page --reason [--output] [--qa-output] [--finish] | 6次生图失败耗尽时生成标明失败原因的默认失败占位图（含原剧本保留分镜与对白）；加--finish标记为placeholder_pending暂存，允许生成内部预览包推进流程，但阻断正式交付 |
 | prepare-pages | — | 按顺序复制完整页并生成手机缩小预览；不绘制内容 |
 | review-layout | --file | 本卷全部原生完整页阅读审查 |
 | export | — | 导出HTML、PDF、CBZ |
 | verify-export | — | 核对完整页、预览、导出字节与顺序 |
-| complete | --file | 记录真实最终验收 |
-| status / preflight | — | 只读显示页数、pending、剩余整页调用与阻断 |
+| complete | --file [--allow-placeholders] [--allow-flawed] | 记录真实最终验收（默认严格禁止带placeholder_pending或accepted_flawed页面交付，除非显式指定授权参数） |
+| status / preflight | — | 只读显示页数、pending、已合格/带缺陷/占位页数、剩余整页调用与阻断 |
 | doctor | — | 检查依赖与项目状态 |
 | preflight-typeset | — | 预检对白气泡容量、字高排字可行性与估算调用成本 |
 | estimate-cost | — | 预先计算全卷正文页数、API 生图调用预算与分批交付清单 |
@@ -57,6 +57,6 @@ init-book默认复制原稿并核验SHA256；只有用户明确--action move时�
 
 基准QA还可用qa-inputs --file --characters或--bindings；已登记基准可用--reference检查。正文只使用--page。
 
-正常生产：status→build-prompt→提示词子代理打磨→begin-page→渲染子代理一次绘图得到完整PNG（生图报错允许重试最多六次；若六次全部失败无法出图，立即调用placeholder-page自动生成标明失败原因的默认占位图并finish-page放行）→品控子代理看整页→qa-inputs→填写一份整页报告→主代理finish-page。失败时fail-page记录具体问题，再修订完整提示词。若累计三次审图未达完全标准，选择最符合的图片并在QA报告中解释缺陷处，通过finish-page兜底放行。已经验收的页generation_required=false，不重绘；pending必须恢复，不重复调用。
+正常生产：status→build-prompt→提示词子代理打磨→begin-page→渲染子代理一次绘图得到完整PNG（生图报错允许重试最多六次；若六次全部失败耗尽，调用placeholder-page自动生成标明失败诊断的占位图并置为placeholder_pending推进流程）→品控子代理看整页→qa-inputs→填写一份整页报告→主代理finish-page。失败时fail-page记录具体问题，再修订完整提示词。若累计三次审图未达完全标准，选择最符合的图片并在QA报告中解释缺陷处，通过finish-page兜底暂存为accepted_flawed（三次之前禁止带缺陷放行）。已经结算的页（accepted/accepted_flawed/placeholder_pending）generation_required=false，不重绘；pending必须恢复，不重复调用。正式交付complete时，若存在占位图或缺陷暂存页，必须经用户明确授权参数（--allow-placeholders/--allow-flawed）方可放行。
 
 整页报告字段见 [schemas.md](schemas.md)。prepare-pages输出layout.pages[].phone_previews中的360/390/430宽预览，真正阅读后填写phone_reading_notes。所有复制与预览步骤不消耗生图调用。审图预算按每页当前输入最多三次统计（生图失败允许重试六次，六次耗尽启用默认失败占位图），三次审图未达标兜底择优并解释缺陷；微调提示词不重置；状态统计不是平台实际计费额度。
