@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/aiskyhub/novel_to_comic",
-  "commit_sha": "44be45cf2df0aa315daff1fc589ac50177ed3b16",
+  "commit_sha": "f283754ba62f45704f755ba83e7bf2e8df844c11",
   "commit_date": "2026-10-09T14:15:00+08:00",
   "commit_author": "小呆呆666",
   "commit_message": "feat: 增加六次生图失败默认占位图机制，彻底重构删除废弃兼容描述与历史包袱",
