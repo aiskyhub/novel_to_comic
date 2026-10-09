@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/aiskyhub/novel_to_comic",
-  "commit_sha": "99631d1be7972b658edd3b0dd6f49b0f7254137e",
+  "commit_sha": "900d961ee4072ab642a3ad030d2e8f4a87592e5c",
   "commit_date": "2026-10-08T23:24:00+08:00",
   "commit_author": "小呆呆666",
   "commit_message": "feat: 规范子代理模型继承铁律，主代理开启子代理必须使用同等模型 (Model: inherit)",
