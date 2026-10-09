@@ -3,9 +3,9 @@
   "commit_sha": "900d961ee4072ab642a3ad030d2e8f4a87592e5c",
   "commit_date": "2026-10-08T23:24:00+08:00",
   "commit_author": "小呆呆666",
-  "commit_message": "feat: 规范子代理模型继承铁律，主代理开启子代理必须使用同等模型 (Model: inherit)",
-  "installed_at": "2026-10-09T09:59:00+08:00",
+  "commit_message": "feat: 放宽子代理模型限制为通用规范，建议选用与主代理一致的模型",
+  "installed_at": "2026-10-09T10:53:00+08:00",
   "production_mode": "whole-page",
   "schema_version": 6,
-  "local_revision": "2.4.1"
+  "local_revision": "2.4.2"
 }
