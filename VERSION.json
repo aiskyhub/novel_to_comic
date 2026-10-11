@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/aiskyhub/novel_to_comic",
-  "commit_sha": "1cefddaea6fd3bc9bb783650da94d7fa83d4344c",
+  "commit_sha": "d364f2ad82964addbaa99cb1d19dfe7a1e57c07e",
   "commit_date": "2026-10-09T18:25:00+08:00",
   "commit_author": "小呆呆666",
   "commit_message": "feat: 明确exports成品文件与已完成成品图禁止乱删除及二次确认铁律",
