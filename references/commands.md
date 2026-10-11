@@ -12,7 +12,7 @@ $comicCli = '本技能scripts/comic_pipeline.py绝对路径'
 
 ## 项目目录
 
-书名根目录维护README、docs/、source_texts/归档原稿与split_texts/切分正文；各卷目录独立维护project.json（Schema v6）、source/originals、scripts/chapters、docs/adaptation、design、art/references、art/pages、art/failed-pages、prompts、reports、pages/phone-previews和exports。正文资产只有完整页；分镜ID仍在剧本中追踪原著事件，不对应独立生成文件。
+书名根目录维护README、docs/、source_texts/归档原稿与split_texts/切分正文；各卷目录独立维护project.json（Schema v6）、source/originals、scripts/chapters、docs/adaptation、design、art/references、art/pages、art/failed-pages、prompts、reports、pages/phone-previews和exports。正文资产只有完整页；分镜ID仍在剧本中追踪原著事件，不对应独立生成文件。导出到 `exports` 的成品文件及已完成的整页成品图禁止乱删除，除非用户明确要求删除且完成强制二次确认后方可操作。
 
 init-book默认复制原稿并核验SHA256；只有用户明确--action move时移动。init仅用于新建或空卷目录，自动归档原稿副本；续做使用status，不重新初始化。原文重提取见 [recovery.md](recovery.md)。
 
@@ -46,7 +46,7 @@ init-book默认复制原稿并核验SHA256；只有用户明确--action move时�
 | placeholder-page | --page --reason [--output] [--qa-output] [--finish] | 6次生图失败耗尽时生成标明失败原因的默认失败占位图（含原剧本保留分镜与对白）；加--finish标记为placeholder_pending暂存，允许生成内部预览包推进流程，但阻断正式交付 |
 | prepare-pages | — | 按顺序复制完整页并生成手机缩小预览；不绘制内容 |
 | review-layout | --file | 本卷全部原生完整页阅读审查 |
-| export | — | 导出HTML、PDF、CBZ |
+| export | — | 导出HTML、PDF、CBZ（独立指纹隔离保存，严禁擅自删除历史成品） |
 | verify-export | — | 核对完整页、预览、导出字节与顺序 |
 | complete | --file [--allow-placeholders] [--allow-flawed] | 记录真实最终验收（默认严格禁止带placeholder_pending或accepted_flawed页面交付，除非显式指定授权参数） |
 | status / preflight | — | 只读显示页数、pending、已合格/带缺陷/占位页数、剩余整页调用与阻断 |
